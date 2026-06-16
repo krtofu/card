@@ -1,0 +1,1 @@
+export { REPRINT_SECTIONS } from "@/data/reprints";

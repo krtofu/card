@@ -1,0 +1,1 @@
+export { YT_IDS, YT_META } from "@/data/youtube";

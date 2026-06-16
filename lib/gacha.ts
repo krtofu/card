@@ -1,0 +1,1 @@
+export { GACHA_TYPES, GACHA_DATA } from "@/data/gacha";

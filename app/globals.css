@@ -1,0 +1,73 @@
+@import "tailwindcss";
+
+/* 🌟 테일윈드 v4에게 클래스 기반 다크모드를 강제하는 마법의 명령어 */
+@variant dark (&:where(.dark, .dark *));
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.slide-up { animation: slideUp 160ms ease-out; }
+
+@keyframes nudge {
+  0%   { transform: translateX(0); }
+  40%  { transform: translateX(2px); }
+  100% { transform: translateX(0); }
+}
+.nudge { animation: nudge 180ms ease-out; }
+
+@keyframes fadeIn {
+  from { opacity: 0.7; }
+  to   { opacity: 1; }
+}
+.fade-in { animation: fadeIn 220ms ease-out; }
+
+@keyframes glowPulse {
+  0%   { box-shadow: 0 0 0 rgba(255,255,255,0); }
+  60%  { box-shadow: 0 0 18px rgba(255,255,255,0.10); }
+  100% { box-shadow: 0 0 0 rgba(255,255,255,0); }
+}
+.glow-pulse { animation: glowPulse 280ms ease-out; }
+
+@keyframes video-fade {
+  0% {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-video-fade {
+  animation: video-fade 280ms ease-out;
+}
+
+/* 얇고 고급스러운 다크 테마 커스텀 스크롤바 */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px; /* 스크롤바의 너비 (원하시면 더 얇게 4px로 하셔도 됩니다!) */
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent; /* 스크롤바 뒷 배경은 투명하게 */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.15); /* 스크롤바 색상 (은은한 흰색) */
+  border-radius: 10px; /* 스크롤바 끝을 둥글게 */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.3); /* 마우스를 올리면 살짝 더 밝아짐 */
+}
+
+/* 파이어폭스 브라우저 호환용 */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
