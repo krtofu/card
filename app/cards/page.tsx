@@ -12,13 +12,12 @@ export type UserCardState = {
   skillLevel: number;
 };
 
-// 🌟 [핵심 해결] TypeScript에게 데이터의 생김새(규칙)를 미리 알려줍니다!
+// 필터용 데이터 정의
 type CharDef = { id: string; name: string; img: string; matchKeys?: string[] };
 type UnitDef = { id: string; name: string; chars: CharDef[] };
 type AttrDef = { id: string; name: string; img: string };
 type SkillDef = { id: string; name: string; img: string; matchKeys: string[] };
 
-// 🌟 위에서 만든 규칙을 적용해서 에러를 완벽하게 차단합니다.
 const UNIT_FILTERS: UnitDef[] = [
   {
     id: "ln", name: "Leo/need",
@@ -98,10 +97,9 @@ export default function MyCardsPage() {
   const [activeModalCard, setActiveModalCard] = useState<FinalCardInfo | null>(null);
   const [mounted, setMounted] = useState(false);
 
-  // 🌟 스위치 상태 관리
   const [showPostAwake, setShowPostAwake] = useState(false);
   
-  // 🌟 마법의 필터 상태 관리 (장바구니)
+  // 필터 상태
   const [selectedChars, setSelectedChars] = useState<string[]>([]);
   const [selectedAttrs, setSelectedAttrs] = useState<string[]>([]);
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
@@ -132,13 +130,11 @@ export default function MyCardsPage() {
     localStorage.setItem("sekard_user_card_states", JSON.stringify(updated));
   };
 
-  // 🌟 토글(스위치) 헬퍼 함수
   const toggleFilter = (list: string[], setList: (val: string[]) => void, id: string) => {
     if (list.includes(id)) setList(list.filter(item => item !== id));
     else setList([...list, id]);
   };
 
-  // 🌟 초기화 버튼
   const resetFilters = () => {
     setSelectedChars([]);
     setSelectedAttrs([]);
@@ -146,18 +142,13 @@ export default function MyCardsPage() {
     setShowOnlyOwned(false);
   };
 
-  // 🌟 대망의 필터링 엔진!
   const filteredCards = ALL_CARDS.filter(card => {
-    // 1. 보유 필터
     if (showOnlyOwned && !cardStates[card.id]?.isOwned) return false;
 
-    // 2. 캐릭터 필터
     if (selectedChars.length > 0) {
       const matchesChar = selectedChars.some(selId => {
         const charObj = UNIT_FILTERS.flatMap(u => u.chars).find(c => c.id === selId);
         if (!charObj) return false;
-
-        // matchKeys가 있으면 (버싱) 해당 키워드 포함 검사, 없으면 정확히 이름 일치 검사
         if (charObj.matchKeys) {
           return charObj.matchKeys.some(key => card.character.includes(key));
         }
@@ -166,7 +157,6 @@ export default function MyCardsPage() {
       if (!matchesChar) return false;
     }
 
-    // 3. 속성 필터
     if (selectedAttrs.length > 0) {
       const matchesAttr = selectedAttrs.some(selId => {
         const attrObj = ATTR_FILTERS.find(a => a.id === selId);
@@ -175,7 +165,6 @@ export default function MyCardsPage() {
       if (!matchesAttr) return false;
     }
 
-    // 4. 스킬 필터
     if (selectedSkills.length > 0) {
       const matchesSkill = selectedSkills.some(selId => {
         const skillObj = SKILL_FILTERS.find(s => s.id === selId);
@@ -184,7 +173,7 @@ export default function MyCardsPage() {
       if (!matchesSkill) return false;
     }
 
-    return true; // 무사히 살아남은 카드만 보여줍니다!
+    return true; 
   });
 
   if (!mounted) return null;
@@ -210,7 +199,6 @@ export default function MyCardsPage() {
 
         <div className="space-y-6 max-h-[80vh] md:overflow-y-auto custom-scrollbar pr-2">
           
-          {/* ✅ 보유 카드만 보기 스위치 */}
           <button 
             onClick={() => setShowOnlyOwned(!showOnlyOwned)}
             className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all shadow-sm active:scale-[0.98] ${
@@ -223,7 +211,7 @@ export default function MyCardsPage() {
             <span className="text-sm">{showOnlyOwned ? "✓" : "○"}</span>
           </button>
 
-          {/* ✅ 속성 필터 */}
+          {/* ✅ 속성 필터 (반투명 삭제) */}
           <div className="space-y-2">
             <span className="text-[11px] font-bold text-zinc-500 tracking-widest pl-1">ATTRIBUTE</span>
             <div className="grid grid-cols-5 gap-1.5">
@@ -233,8 +221,8 @@ export default function MyCardsPage() {
                   onClick={() => toggleFilter(selectedAttrs, setSelectedAttrs, attr.id)}
                   className={`relative aspect-square rounded-full transition-all overflow-hidden ${
                     selectedAttrs.includes(attr.id)
-                      ? "ring-2 ring-sky-400 scale-105 opacity-100 drop-shadow-[0_0_8px_rgba(56,189,248,0.5)]"
-                      : "opacity-40 grayscale-[50%] hover:grayscale-0 hover:opacity-80"
+                      ? "ring-2 ring-sky-400 scale-105 drop-shadow-[0_0_8px_rgba(56,189,248,0.5)]"
+                      : "ring-1 ring-white/10 hover:ring-white/30"
                   }`}
                   title={attr.name}
                 >
@@ -244,7 +232,7 @@ export default function MyCardsPage() {
             </div>
           </div>
 
-          {/* ✅ 스킬 필터 */}
+          {/* ✅ 스킬 필터 (반투명 삭제) */}
           <div className="space-y-2">
             <span className="text-[11px] font-bold text-zinc-500 tracking-widest pl-1">SKILL</span>
             <div className="grid grid-cols-4 gap-1.5">
@@ -252,20 +240,20 @@ export default function MyCardsPage() {
                 <button
                   key={skill.id}
                   onClick={() => toggleFilter(selectedSkills, setSelectedSkills, skill.id)}
-                  className={`relative aspect-square rounded-full transition-all overflow-hidden ${
+                  className={`relative aspect-square rounded-full transition-all overflow-hidden bg-zinc-900 p-1 ${
                     selectedSkills.includes(skill.id)
-                      ? "ring-2 ring-purple-400 scale-105 opacity-100 drop-shadow-[0_0_8px_rgba(192,132,252,0.5)] bg-purple-500/10"
-                      : "opacity-40 hover:opacity-80 bg-zinc-900"
+                      ? "ring-2 ring-purple-400 scale-105 drop-shadow-[0_0_8px_rgba(192,132,252,0.5)] bg-purple-500/10"
+                      : "ring-1 ring-white/10 hover:ring-white/30"
                   }`}
                   title={skill.name}
                 >
-                  <img src={skill.img} alt={skill.name} className="w-full h-full object-contain p-1" />
+                  <img src={skill.img} alt={skill.name} className="w-full h-full object-contain" />
                 </button>
               ))}
             </div>
           </div>
 
-          {/* ✅ 캐릭터(유닛별) 필터 */}
+          {/* ✅ 캐릭터(유닛별) 필터 (반투명 삭제) */}
           <div className="space-y-4 pt-2">
             <span className="text-[11px] font-bold text-zinc-500 tracking-widest pl-1 border-t border-white/5 pt-4 block">CHARACTER</span>
             {UNIT_FILTERS.map((unit) => (
@@ -275,14 +263,14 @@ export default function MyCardsPage() {
                     <button
                       key={char.id}
                       onClick={() => toggleFilter(selectedChars, setSelectedChars, char.id)}
-                      className={`relative aspect-square rounded-full transition-all overflow-hidden ${
+                      className={`relative aspect-square rounded-full transition-all overflow-hidden bg-zinc-950 ${
                         selectedChars.includes(char.id)
-                          ? "ring-2 ring-emerald-400 scale-105 opacity-100 drop-shadow-[0_0_8px_rgba(52,211,153,0.3)]"
-                          : "opacity-40 grayscale-[60%] hover:grayscale-0 hover:opacity-100"
+                          ? "ring-2 ring-emerald-400 scale-105 drop-shadow-[0_0_8px_rgba(52,211,153,0.3)]"
+                          : "ring-1 ring-white/10 hover:ring-white/30"
                       }`}
                       title={char.name}
                     >
-                      <img src={char.img} alt={char.name} className="w-full h-full object-contain bg-zinc-950" />
+                      <img src={char.img} alt={char.name} className="w-full h-full object-contain" />
                     </button>
                   ))}
                 </div>
@@ -296,7 +284,6 @@ export default function MyCardsPage() {
       {/* 🗂️ 2. 우측: 필터링된 전체 카드 리스트 나열 구역 */}
       <div className="flex-1 flex flex-col min-w-0 bg-zinc-900/30 rounded-3xl p-4 md:p-6 border border-white/5">
         
-        {/* 타이틀 영역과 토글 버튼 우측 정렬 배치 */}
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
           <div>
             <h1 className="text-xl font-bold tracking-tight">내 4성 체크리스트</h1>
@@ -318,7 +305,6 @@ export default function MyCardsPage() {
           </button>
         </div>
 
-        {/* 필터링 결과가 없을 때 */}
         {filteredCards.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-zinc-500">
             <span className="text-4xl mb-3 opacity-50">🫥</span>
@@ -332,15 +318,14 @@ export default function MyCardsPage() {
                 <div 
                   key={card.id} 
                   onClick={() => setActiveModalCard(card)}
-                  className={`relative p-1 cursor-pointer transition-all flex flex-col items-center text-center group ${
-                    isOwned ? "opacity-100" : "opacity-40 hover:opacity-80"
-                  }`}
+                  className="relative p-1 cursor-pointer transition-all hover:scale-[1.05] flex flex-col items-center text-center group"
                 >
+                  {/* 🌟 카드 썸네일 (반투명 완전 삭제!) */}
                   <div className="relative w-fit shrink-0">
                     <img 
                       src={showPostAwake ? card.thumbPostPath : card.thumbPrePath} 
                       alt="썸네일" 
-                      className={`h-25 w-auto object-contain transition-all duration-300 rounded-lg group-hover:-translate-y-1 ${
+                      className={`h-25 w-auto object-contain transition-all duration-300 rounded-lg ${
                         isOwned 
                           ? "ring-2 ring-emerald-500/50 shadow-[0_4px_12px_rgba(52,211,153,0.2)]" 
                           : "ring-1 ring-white/10 group-hover:ring-white/30"
@@ -348,9 +333,8 @@ export default function MyCardsPage() {
                     />
                   </div>
                   
-                  <p className={`text-[11px] font-semibold mt-2.5 truncate w-25 transition-colors ${
-                    isOwned ? "text-emerald-100" : "text-zinc-400 group-hover:text-zinc-200"
-                  }`}>
+                  {/* 🌟 카드 텍스트 (흐린 회색 -> 100% 선명한 흰색 복구!) */}
+                  <p className="text-[11px] font-semibold mt-2.5 truncate w-25 transition-colors text-zinc-200 group-hover:text-white">
                     {card.cardName}
                   </p>
                   <p className="text-[10px] text-zinc-500 mt-0.5">
@@ -363,7 +347,6 @@ export default function MyCardsPage() {
         )}
       </div>
 
-      {/* 팝업 모달창 장착 */}
       <CardDetailModal
         card={activeModalCard}
         userState={currentModalState}
