@@ -249,65 +249,78 @@ export default function MyCardsPage() {
 
         <div className="space-y-6">
           
+          {/* ✅ 속성 필터 (말풍선 추가) */}
           <div className="space-y-2">
             <span className="text-[11px] font-bold text-zinc-500 tracking-widest pl-1">ATTRIBUTE</span>
             <div className="grid grid-cols-5 gap-1.5">
               {ATTR_FILTERS.map(attr => {
                 const isSelected = selectedAttrs.includes(attr.id);
-                const opacityClass = !isAnyAttrSelected || isSelected ? "opacity-100" : "opacity-40";
+                // 🌟 마우스를 올리면 흐려졌던 것도 다시 선명해지도록 hover:opacity-100 추가
+                const opacityClass = !isAnyAttrSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100";
                 
                 return (
                 <button key={attr.id} onClick={() => toggleFilter(selectedAttrs, setSelectedAttrs, attr.id)} 
-                  className={`relative aspect-square rounded-full transition-all duration-300 ${
+                  className={`relative group aspect-square rounded-full transition-all duration-300 ${
                     isSelected ? "scale-105" : "scale-[0.85] hover:scale-95"
                   } ${opacityClass}`}>
                   <img src={attr.img} alt={attr.name} className="w-full h-full object-contain" />
+                  
+                  {/* 🌟 말풍선(Tooltip) 추가! */}
+                  <div className="pointer-events-none absolute bottom-full mb-2 left-1/2 -translate-x-1/2 opacity-0 transition-all duration-200 group-hover:opacity-100 z-50">
+                    <div className="relative flex flex-col items-center">
+                      <div className="relative z-10 whitespace-nowrap rounded-md border border-zinc-600 bg-zinc-950 px-2.5 py-1.5 text-[11px] font-medium text-zinc-200 shadow-xl">
+                        {attr.name}
+                      </div>
+                      <div className="absolute -bottom-[4px] z-20 h-2 w-2 rotate-45 border-b border-r border-zinc-600 bg-zinc-950"></div>
+                    </div>
+                  </div>
                 </button>
               )})}
             </div>
           </div>
 
+          {/* ✅ 스킬 필터 (말풍선 추가) */}
           <div className="space-y-2">
             <span className="text-[11px] font-bold text-zinc-500 tracking-widest pl-1">SKILL</span>
             
             <div className="grid grid-cols-4 gap-1.5">
               {SKILL_FILTERS.map(skill => {
-                if (skill.id === "condition_group") {
-                  const opacityClass = !isAnySkillSelected || isAllCondSelected ? "opacity-100" : "opacity-40";
-                  return (
-                    <button key={skill.id} onClick={toggleCondSkillGroup}
-                      className={`relative aspect-square rounded-full p-1 transition-all duration-300 ${
-                        isAllCondSelected ? "bg-zinc-800 scale-105" : "bg-zinc-900 scale-[0.85] hover:scale-95"
-                      } ${opacityClass}`}>
-                      <img src={skill.img} alt={skill.name} className="w-full h-full object-contain" />
-                    </button>
-                  );
-                } else {
-                  const isSelected = selectedSkills.includes(skill.id);
-                  const opacityClass = !isAnySkillSelected || isSelected ? "opacity-100" : "opacity-40";
-                  return (
-                    <button key={skill.id} onClick={() => toggleFilter(selectedSkills, setSelectedSkills, skill.id)}
-                      className={`relative aspect-square rounded-full p-1 transition-all duration-300 ${
-                        isSelected ? "bg-zinc-800 scale-105" : "bg-zinc-900 scale-[0.85] hover:scale-95"
-                      } ${opacityClass}`}>
-                      <img src={skill.img} alt={skill.name} className="w-full h-full object-contain" />
-                    </button>
-                  );
-                }
+                const isCondGroup = skill.id === "condition_group";
+                const isSelected = isCondGroup ? isAllCondSelected : selectedSkills.includes(skill.id);
+                const opacityClass = !isAnySkillSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100";
+                
+                return (
+                  <button key={skill.id} onClick={isCondGroup ? toggleCondSkillGroup : () => toggleFilter(selectedSkills, setSelectedSkills, skill.id)}
+                    className={`relative group aspect-square rounded-full p-1 transition-all duration-300 ${
+                      isSelected ? "bg-zinc-800 scale-105" : "bg-zinc-900 scale-[0.85] hover:scale-95"
+                    } ${opacityClass}`}>
+                    <img src={skill.img} alt={skill.name} className="w-full h-full object-contain" />
+                    
+                    {/* 🌟 말풍선(Tooltip) 추가! */}
+                    <div className="pointer-events-none absolute bottom-full mb-2 left-1/2 -translate-x-1/2 opacity-0 transition-all duration-200 group-hover:opacity-100 z-50">
+                      <div className="relative flex flex-col items-center">
+                        <div className="relative z-10 whitespace-nowrap rounded-md border border-zinc-600 bg-zinc-950 px-2.5 py-1.5 text-[11px] font-medium text-zinc-200 shadow-xl">
+                          {skill.name}
+                        </div>
+                        <div className="absolute -bottom-[4px] z-20 h-2 w-2 rotate-45 border-b border-r border-zinc-600 bg-zinc-950"></div>
+                      </div>
+                    </div>
+                  </button>
+                );
               })}
             </div>
 
-            {/* 🌟 뱃지 가독성 대폭 개선! 텍스트 팍 키우고 색상 제거 */}
+            {/* 🌟 텍스트 뱃지: 글씨체 100% 흰색, 굵기 일정, 크기 확대! */}
             <div className="grid grid-cols-5 gap-1.5 mt-2">
               {condSubs.map(sub => {
                 const isSelected = selectedSkills.includes(sub.id);
-                const opacityClass = !isAnySkillSelected || isSelected ? "opacity-100" : "opacity-40";
+                const opacityClass = !isAnySkillSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100";
                 return (
                   <button key={sub.id} onClick={() => toggleFilter(selectedSkills, setSelectedSkills, sub.id)}
-                    className={`py-2 px-1 text-[12px] sm:text-sm font-bold tracking-tight rounded-lg transition-all duration-300 ${
+                    className={`py-2 px-1 text-[12px] sm:text-[13px] font-medium tracking-tight rounded-lg transition-all duration-300 text-white ${
                       isSelected 
-                        ? "bg-zinc-700 text-white scale-105 shadow-md" 
-                        : "bg-zinc-900 text-zinc-500 hover:bg-zinc-800 scale-95"
+                        ? "bg-zinc-700 scale-105 shadow-md" 
+                        : "bg-zinc-900 hover:bg-zinc-800 scale-95"
                     } ${opacityClass}`}>
                     {sub.name}
                   </button>
@@ -320,7 +333,7 @@ export default function MyCardsPage() {
             <span className="text-[11px] font-bold text-zinc-500 tracking-widest pl-1 border-t border-white/5 pt-4 block">CHARACTER</span>
             {UNIT_FILTERS.map((unit) => {
               const isAllSelected = unit.chars.every(c => selectedChars.includes(c.id));
-              const logoOpacityClass = !isAnyCharSelected || isAllSelected ? "opacity-100" : "opacity-40";
+              const logoOpacityClass = !isAnyCharSelected || isAllSelected ? "opacity-100" : "opacity-40 hover:opacity-100";
 
               return (
               <div key={unit.id} className="flex flex-col gap-2">
@@ -336,7 +349,7 @@ export default function MyCardsPage() {
                 <div className="grid grid-cols-4 gap-1.5 mt-1">
                   {unit.chars.map(char => {
                     const isSelected = selectedChars.includes(char.id);
-                    const charOpacityClass = !isAnyCharSelected || isSelected ? "opacity-100" : "opacity-40";
+                    const charOpacityClass = !isAnyCharSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100";
                     
                     return (
                     <button key={char.id} onClick={() => toggleFilter(selectedChars, setSelectedChars, char.id)}
