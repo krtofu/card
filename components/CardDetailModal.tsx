@@ -91,9 +91,7 @@ export default function CardDetailModal({
     return { src: "", label: skill };
   };
 
-  // 🌟 [핵심 마법] 풀네임 + 유닛 자동 감지 아이콘 매핑 함수
   const getCharacterIcon = (charName: string, unitName: string) => {
-    // 1. 오리지널 캐릭터 풀네임 매핑
     const originalMap: Record<string, string> = {
       "호시노 이치카": "Ichika", "텐마 사키": "Saki", "모치즈키 호나미": "Honami", "히노모리 시호": "Shiho",
       "하나사토 미노리": "Minori", "키리타니 하루카": "Haruka", "모모이 아이리": "Airi", "히노모리 시즈쿠": "Shizuku",
@@ -106,7 +104,6 @@ export default function CardDetailModal({
       return `/icons/characters/${originalMap[charName]}.png`;
     }
 
-    // 2. 버추얼 싱어 (유닛 이름에 따라 알파벳 자동 부착!)
     const vsMap: Record<string, string> = {
       "하츠네 미쿠": "MIKU", "미쿠": "MIKU",
       "카가미네 린": "RIN", "린": "RIN",
@@ -118,10 +115,9 @@ export default function CardDetailModal({
 
     if (vsMap[charName]) {
       const vsBase = vsMap[charName];
-      let suffix = "_0"; // 기본값 (아무 유닛도 아닐 때)
+      let suffix = "_0"; 
       
       const unit = unitName.toLowerCase();
-      // 유저가 영어나 한글로 어떻게 적었든 유연하게 감지
       if (unit.includes("레오니") || unit.includes("leo") || unit === "l/n") suffix = "_l";
       else if (unit.includes("모모점") || unit.includes("more") || unit === "mmj") suffix = "_m";
       else if (unit.includes("비배스") || unit.includes("vivid") || unit === "vbs") suffix = "_v";
@@ -131,15 +127,12 @@ export default function CardDetailModal({
       return `/icons/characters/${vsBase}${suffix}.png`;
     }
 
-    // 그래도 못 찾으면 원래 카드 아이콘(뽑기 아이콘) 띄우기
     return card.iconPath || ""; 
   };
 
   const currentGachaStyle = getGachaBadgeStyle(card.gachaType);
   const attrInfo = getAttrInfo(attribute);
   const skillInfo = getSkillInfo(card.skillType || ""); 
-  
-  // 👉 여기서 캐릭터 이름과 유닛(소속) 정보를 동시에 넘겨줍니다!
   const characterIconPath = getCharacterIcon(card.character || "", card.unit || ""); 
 
   return (
@@ -225,7 +218,7 @@ export default function CardDetailModal({
               </div>
             </div>
 
-            {/* 🎲 1. 관련 뽑기 (자동 아이콘 매핑!) */}
+            {/* 🎲 1. 관련 뽑기 */}
             <div className="flex gap-3.5">
               <div className="w-10 h-10 rounded-full bg-zinc-900 border border-white/10 shrink-0 overflow-hidden flex items-center justify-center">
                 <img src={characterIconPath} alt="Character Icon" className="w-full h-full object-contain" />
@@ -305,16 +298,34 @@ export default function CardDetailModal({
                 <div className="min-w-0 flex-1 flex items-baseline">
                   <p className="text-[15px] font-bold text-zinc-100 tracking-wide whitespace-nowrap">+ 카드 상태</p>
                 </div>
-                <button
-                  onClick={() => onUpdateState(card.id, { isOwned: !userState.isOwned })}
-                  className={`shrink-0 inline-flex items-center px-3 py-1 rounded-md text-xs font-bold border tracking-tight transition-all shadow-sm active:scale-95 ${
-                    userState.isOwned
-                      ? "bg-emerald-500/20 text-emerald-300 border-emerald-400/50 shadow-[0_0_10px_rgba(52,211,153,0.15)]"
-                      : "bg-zinc-800 text-zinc-400 border-zinc-700 hover:bg-zinc-700 hover:text-zinc-200"
-                  }`}
-                >
-                  {userState.isOwned ? "✓ 보유 중" : "❌ 미보유"}
-                </button>
+                
+                {/* 🌟 수정된 버튼 구역: 목표 버튼과 보유 버튼 나란히 배치 */}
+                <div className="flex items-center gap-1.5 shrink-0">
+                  
+                  {/* 🎯 목표(위시) 버튼 */}
+                  <button
+                    onClick={() => onUpdateState(card.id, { isTarget: !userState.isTarget })}
+                    className={`shrink-0 inline-flex items-center px-2.5 py-1 rounded-md text-[11px] sm:text-xs font-bold border tracking-tight transition-all shadow-sm active:scale-95 ${
+                      userState.isTarget
+                        ? "bg-pink-500/20 text-pink-300 border-pink-400/50 shadow-[0_0_10px_rgba(236,72,153,0.15)]"
+                        : "bg-zinc-800 text-zinc-400 border-zinc-700 hover:bg-zinc-700 hover:text-zinc-200"
+                    }`}
+                  >
+                    {userState.isTarget ? "⭐ 목표 중" : "☆ 목표 설정"}
+                  </button>
+
+                  {/* ✓ 보유 버튼 */}
+                  <button
+                    onClick={() => onUpdateState(card.id, { isOwned: !userState.isOwned })}
+                    className={`shrink-0 inline-flex items-center px-2.5 py-1 rounded-md text-[11px] sm:text-xs font-bold border tracking-tight transition-all shadow-sm active:scale-95 ${
+                      userState.isOwned
+                        ? "bg-emerald-500/20 text-emerald-300 border-emerald-400/50 shadow-[0_0_10px_rgba(52,211,153,0.15)]"
+                        : "bg-zinc-800 text-zinc-400 border-zinc-700 hover:bg-zinc-700 hover:text-zinc-200"
+                    }`}
+                  >
+                    {userState.isOwned ? "✓ 보유 중" : "❌ 미보유"}
+                  </button>
+                </div>
               </div>
 
               <div className="space-y-1.5">
