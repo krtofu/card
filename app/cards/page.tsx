@@ -17,7 +17,6 @@ type UnitDef = { id: string; name: string; logo: string; chars: CharDef[] };
 type AttrDef = { id: string; name: string; img: string };
 type SkillDef = { id: string; name: string; img: string; matchKeys: string[] };
 
-// 🌟 유닛별로 오리지널 4명 + 세카이 버싱 6명을 한 바구니에 담았습니다! (유닛당 총 10명씩)
 const UNIT_FILTERS: UnitDef[] = [
   { id: "ln", name: "Leo/need", logo: "/icons/Leoneed.png",
     chars: [
@@ -25,7 +24,6 @@ const UNIT_FILTERS: UnitDef[] = [
       { id: "saki", name: "텐마 사키", img: "/icons/characters/Saki.png" },
       { id: "honami", name: "모치즈키 호나미", img: "/icons/characters/Honami.png" },
       { id: "shiho", name: "히노모리 시호", img: "/icons/characters/Shiho.png" },
-      // 레오니 세카이 버싱 (id에 유닛 접미사를 붙여 개별 버튼으로 작동하게 합니다)
       { id: "miku_l", name: "하츠네 미쿠", img: "/icons/characters/MIKU_l.png", isVirtual: true, matchKeys: ["미쿠"] },
       { id: "rin_l", name: "카가미네 린", img: "/icons/characters/RIN_l.png", isVirtual: true, matchKeys: ["린"] },
       { id: "ren_l", name: "카가미네 렌", img: "/icons/characters/REN_l.png", isVirtual: true, matchKeys: ["렌"] },
@@ -40,7 +38,6 @@ const UNIT_FILTERS: UnitDef[] = [
       { id: "haruka", name: "키리타니 하루카", img: "/icons/characters/Haruka.png" },
       { id: "airi", name: "모모이 아이리", img: "/icons/characters/Airi.png" },
       { id: "shizuku", name: "히노모리 시즈쿠", img: "/icons/characters/Shizuku.png" },
-      // 모모점 세카이 버싱
       { id: "miku_m", name: "하츠네 미쿠", img: "/icons/characters/MIKU_m.png", isVirtual: true, matchKeys: ["미쿠"] },
       { id: "rin_m", name: "카가미네 린", img: "/icons/characters/RIN_m.png", isVirtual: true, matchKeys: ["린"] },
       { id: "ren_m", name: "카가미네 렌", img: "/icons/characters/REN_m.png", isVirtual: true, matchKeys: ["렌"] },
@@ -55,7 +52,6 @@ const UNIT_FILTERS: UnitDef[] = [
       { id: "an", name: "시라이시 안", img: "/icons/characters/An.png" },
       { id: "akito", name: "시노노메 아키토", img: "/icons/characters/Akito.png" },
       { id: "toya", name: "아오야기 토우야", img: "/icons/characters/Toya.png" },
-      // 비배스 세카이 버싱
       { id: "miku_v", name: "하츠네 미쿠", img: "/icons/characters/MIKU_v.png", isVirtual: true, matchKeys: ["미쿠"] },
       { id: "rin_v", name: "카가미네 린", img: "/icons/characters/RIN_v.png", isVirtual: true, matchKeys: ["린"] },
       { id: "ren_v", name: "카가미네 렌", img: "/icons/characters/REN_v.png", isVirtual: true, matchKeys: ["렌"] },
@@ -70,7 +66,6 @@ const UNIT_FILTERS: UnitDef[] = [
       { id: "emu", name: "오토리 에무", img: "/icons/characters/Emu.png" },
       { id: "nene", name: "쿠사나기 네네", img: "/icons/characters/Nene.png" },
       { id: "rui", name: "카미시로 루이", img: "/icons/characters/Rui.png" },
-      // 원더쇼 세카이 버싱
       { id: "miku_w", name: "하츠네 미쿠", img: "/icons/characters/MIKU_w.png", isVirtual: true, matchKeys: ["미쿠"] },
       { id: "rin_w", name: "카가미네 린", img: "/icons/characters/RIN_w.png", isVirtual: true, matchKeys: ["린"] },
       { id: "ren_w", name: "카가미네 렌", img: "/icons/characters/REN_w.png", isVirtual: true, matchKeys: ["렌"] },
@@ -85,7 +80,6 @@ const UNIT_FILTERS: UnitDef[] = [
       { id: "mafuyu", name: "아사히나 마후유", img: "/icons/characters/Mafuyu.png" },
       { id: "ena", name: "시노노메 에나", img: "/icons/characters/Ena.png" },
       { id: "mizuki", name: "아키야마 미즈키", img: "/icons/characters/Mizuki.png" },
-      // 니고 세카이 버싱
       { id: "miku_n", name: "하츠네 미쿠", img: "/icons/characters/MIKU_n.png", isVirtual: true, matchKeys: ["미쿠"] },
       { id: "rin_n", name: "카가미네 린", img: "/icons/characters/RIN_n.png", isVirtual: true, matchKeys: ["린"] },
       { id: "ren_n", name: "카가미네 렌", img: "/icons/characters/REN_n.png", isVirtual: true, matchKeys: ["렌"] },
@@ -96,7 +90,6 @@ const UNIT_FILTERS: UnitDef[] = [
   },
   { id: "vs", name: "무소속 / VIRTUAL SINGER", logo: "/icons/VS.png",
     chars: [
-      // 특정 세카이가 명시되지 않은 순수 무소속 버싱 카드용 필터 버튼
       { id: "miku_0", name: "하츠네 미쿠", img: "/icons/characters/MIKU_0.png", isVirtual: true, matchKeys: ["미쿠"] },
       { id: "rin_0", name: "카가미네 린", img: "/icons/characters/RIN_0.png", isVirtual: true, matchKeys: ["린"] },
       { id: "ren_0", name: "카가미네 렌", img: "/icons/characters/REN_0.png", isVirtual: true, matchKeys: ["렌"] },
@@ -159,18 +152,17 @@ export default function MyCardsPage() {
     setSelectedChars([]); setSelectedAttrs([]); setSelectedSkills([]); setShowOnlyOwned(false);
   };
 
-  // 🌟 정교해진 하이브리드 필터 엔진
   const filteredCards = ALL_CARDS.filter(card => {
+    // 1. 보유 필터
     if (showOnlyOwned && !cardStates[card.id]?.isOwned) return false;
     
+    // 2. 캐릭터 필터
     if (selectedChars.length > 0) {
       const matchesChar = selectedChars.some(selId => {
-        // 현재 선택된 버튼의 유닛 부모 찾기
         const parentUnit = UNIT_FILTERS.find(u => u.chars.some(c => c.id === selId));
         const charObj = parentUnit?.chars.find(c => c.id === selId);
         if (!charObj) return false;
 
-        // 버추얼 싱어 처리 (해당 유닛 소속 코드와 이름 조건이 모두 일치해야 함)
         if (charObj.isVirtual && charObj.matchKeys) {
           const cleanUnit = (card.unit || "").trim().toLowerCase();
           const targetUnitId = parentUnit?.id || "";
@@ -186,14 +178,28 @@ export default function MyCardsPage() {
           return isCorrectUnit && charObj.matchKeys.some(key => card.character.includes(key));
         }
 
-        // 오리지널 캐릭터 처리
         return card.character === charObj.name;
       });
       if (!matchesChar) return false;
     }
     
-    if (selectedAttrs.length > 0 && !selectedAttrs.some(selId => card.attribute === ATTR_FILTERS.find(a => a.id === selId)?.name)) return false;
+    // 🌟 [핵심 변경] 영어/한글, 대/소문자 완벽 대응 속성 필터 엔진!
+    if (selectedAttrs.length > 0) {
+      const matchesAttr = selectedAttrs.some(selId => {
+        // cardAttr는 데이터에 적힌 값(예: "pure", "Pure", "퓨어")을 전부 소문자로 통일
+        const cardAttr = (card.attribute || "").toLowerCase();
+        // attrObj는 우리가 등록해둔 필터 데이터 (예: id: "pure", name: "퓨어")
+        const attrObj = ATTR_FILTERS.find(a => a.id === selId);
+        
+        // 카드 데이터가 "pure" 이거나 "퓨어" 이면 무조건 통과!
+        return cardAttr === selId || cardAttr === attrObj?.name;
+      });
+      if (!matchesAttr) return false;
+    }
+
+    // 4. 스킬 필터
     if (selectedSkills.length > 0 && !selectedSkills.some(selId => SKILL_FILTERS.find(s => s.id === selId)?.matchKeys.includes(card.skillType || ""))) return false;
+    
     return true; 
   });
 
@@ -202,7 +208,6 @@ export default function MyCardsPage() {
   return (
     <div className="flex flex-col md:flex-row gap-6 px-4 py-6 min-h-screen text-zinc-100 max-w-screen-2xl mx-auto">
       
-      {/* 🧭 1. 왼편: 이미지 아이콘 필터 구역 */}
       <div className="w-full md:w-[280px] shrink-0 space-y-8">
         <div className="flex items-center justify-between border-b border-white/10 pb-3">
           <h2 className="text-sm font-bold text-zinc-300 tracking-wider uppercase">🔍 필터</h2>
@@ -247,8 +252,6 @@ export default function MyCardsPage() {
             <span className="text-[11px] font-bold text-zinc-500 tracking-widest pl-1 border-t border-white/5 pt-4 block">CHARACTER</span>
             {UNIT_FILTERS.map((unit) => (
               <div key={unit.id} className="flex flex-col gap-2">
-                
-                {/* 유닛 로고 버튼 (현재 유닛에 소속된 버싱포함 전원 선택 여부 판단) */}
                 <button 
                   onClick={() => toggleUnitFilter(unit.chars)} 
                   className={`w-full h-16 py-1 flex items-center justify-center rounded-xl transition-all duration-200 ${
@@ -259,8 +262,6 @@ export default function MyCardsPage() {
                 >
                   <img src={unit.logo} alt={unit.name} className="h-full w-auto object-contain max-w-[90%]" />
                 </button>
-                
-                {/* 🌟 4열(기존)에서 버싱포함 10명이 줄바꿈 정돈되도록 격자 배치유지 */}
                 <div className="grid grid-cols-4 gap-1.5 mt-1">
                   {unit.chars.map(char => (
                     <button key={char.id} onClick={() => toggleFilter(selectedChars, setSelectedChars, char.id)}
@@ -277,7 +278,6 @@ export default function MyCardsPage() {
         </div>
       </div>
 
-      {/* 🗂️ 2. 우측: 필터링된 전체 카드 리스트 나열 구역 */}
       <div className="flex-1 flex flex-col min-w-0 bg-zinc-900/30 rounded-3xl p-4 md:p-6 border border-white/5">
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
           <div>
