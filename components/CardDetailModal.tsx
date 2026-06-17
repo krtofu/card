@@ -72,8 +72,29 @@ export default function CardDetailModal({
     return { src: "", label: attr };
   };
 
+  // 🌟 스킬 뱃지 매핑 함수 (유저님이 주신 데이터 완벽 적용!)
+  const getSkillInfo = (skill: string) => {
+    if (!skill) return { src: "", label: "" };
+    
+    if (skill === "스업") {
+      return { src: "/icons/skills/score_o.png", label: "스업" };
+    } 
+    if (["퍼스업", "굿스업", "체스업", "블페", "팀스업"].includes(skill)) {
+      return { src: "/icons/skills/condition_o.png", label: skill }; // 이미지는 같지만 설명은 종류에 따라 다르게!
+    } 
+    if (skill === "판강") {
+      return { src: "/icons/skills/perfect_o.png", label: "판정 강화" };
+    } 
+    if (skill === "힐") {
+      return { src: "/icons/skills/heal_o.png", label: "라이프 회복" };
+    }
+    
+    return { src: "", label: skill }; // 매핑되지 않은 스킬은 글자로만 표시
+  };
+
   const currentGachaStyle = getGachaBadgeStyle(card.gachaType);
   const attrInfo = getAttrInfo(attribute);
+  const skillInfo = getSkillInfo(card.skillType || ""); // 스킬 정보 가져오기
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md transition-opacity">
@@ -88,7 +109,7 @@ export default function CardDetailModal({
           ✕
         </button>
 
-        {/* 🌌 상단 배너 (shrink-0 추가로 찌그러짐 완벽 방지, 높이를 명확히 지정) */}
+        {/* 🌌 상단 배너 */}
         <div className="relative -mx-6 -mt-6 h-64 md:h-[360px] shrink-0 flex overflow-hidden border-b border-white/10 bg-zinc-900">
           <div className="relative h-full flex-1 hover:flex-[3] max-w-[455px] md:max-w-[604px] transition-all duration-700 ease-in-out overflow-hidden group/pre z-10 hover:z-20">
             <img src={preIllustration} alt="특훈 전 일러스트" className="absolute left-0 top-0 h-full aspect-[16/9] max-w-none object-cover object-center" />
@@ -100,7 +121,7 @@ export default function CardDetailModal({
           </div>
         </div>
 
-        {/* 📝 하단부 (여기도 shrink-0을 추가해 아래쪽 내용도 찌그러지지 않게 보호) */}
+        {/* 📝 하단부 */}
         <div className="flex flex-col md:flex-row gap-8 pt-2 shrink-0">
           
           <div className="flex-1 flex flex-col gap-6">
@@ -115,6 +136,7 @@ export default function CardDetailModal({
                   {card.gachaType}
                 </span>
                 
+                {/* 💧 속성 뱃지 */}
                 {attrInfo.src ? (
                   <div className="relative group flex items-center justify-center cursor-help">
                     <img src={attrInfo.src} alt={attrInfo.label} className="w-[26px] h-[26px] object-contain drop-shadow-md shrink-0" />
@@ -128,24 +150,31 @@ export default function CardDetailModal({
                     </div>
                   </div>
                 ) : (
-                  <div className="relative group flex items-center justify-center cursor-help">
-                    <span className="shrink-0 inline-flex items-center px-2.5 py-1 text-[11px] font-bold rounded-full border border-zinc-700 bg-zinc-800/50 text-zinc-300 tracking-wide">
-                      {attrInfo.label}
-                    </span>
+                  <span className="shrink-0 inline-flex items-center px-2.5 py-1 text-[11px] font-bold rounded-full border border-zinc-700 bg-zinc-800/50 text-zinc-300 tracking-wide">
+                    {attrInfo.label}
+                  </span>
+                )}
+
+                {/* ✨ 스킬 뱃지 (새로 추가된 부분!) */}
+                {skillInfo.src ? (
+                  <div className="relative group flex items-center justify-center cursor-help ml-0.5">
+                    <img src={skillInfo.src} alt={skillInfo.label} className="w-[26px] h-[26px] object-contain drop-shadow-md shrink-0" />
                     <div className="pointer-events-none absolute bottom-full mb-3 left-1/2 -translate-x-1/2 opacity-0 transition-all duration-200 group-hover:opacity-100 z-50">
                       <div className="relative flex flex-col items-center">
                         <div className="relative z-10 whitespace-nowrap rounded-md border border-zinc-600 bg-zinc-950 px-2.5 py-1.5 text-[11px] font-bold text-zinc-200 shadow-xl">
-                          {attrInfo.label}
+                          {skillInfo.label}
                         </div>
                         <div className="absolute -bottom-[4px] z-20 h-2 w-2 rotate-45 border-b border-r border-zinc-600 bg-zinc-950"></div>
                       </div>
                     </div>
                   </div>
+                ) : (
+                  skillInfo.label && (
+                    <span className="shrink-0 inline-flex items-center px-2.5 py-1 text-[11px] font-bold rounded-full border border-purple-500/20 bg-purple-500/10 text-purple-300 tracking-wide ml-0.5">
+                      {skillInfo.label}
+                    </span>
+                  )
                 )}
-
-                <span className="shrink-0 inline-flex items-center px-2.5 py-1 text-[11px] font-bold rounded-full border border-purple-500/20 bg-purple-500/10 text-purple-300 tracking-wide">
-                  {card.skillType}
-                </span>
               </div>
             </div>
 
