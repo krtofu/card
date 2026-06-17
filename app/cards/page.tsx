@@ -90,6 +90,7 @@ export default function MyCardsPage() {
   const [activeModalCard, setActiveModalCard] = useState<FinalCardInfo | null>(null);
   const [mounted, setMounted] = useState(false);
   const [showPostAwake, setShowPostAwake] = useState(false);
+  
   const [selectedChars, setSelectedChars] = useState<string[]>([]);
   const [selectedAttrs, setSelectedAttrs] = useState<string[]>([]);
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
@@ -153,7 +154,12 @@ export default function MyCardsPage() {
             <div className="grid grid-cols-5 gap-1.5">
               {ATTR_FILTERS.map(attr => (
                 <button key={attr.id} onClick={() => toggleFilter(selectedAttrs, setSelectedAttrs, attr.id)} 
-                  className={`relative aspect-square rounded-full transition-all border ${selectedAttrs.includes(attr.id) ? "border-[#00FFD1]" : "border-transparent"}`}>
+                  // 🌟 통일성을 위해 속성 아이콘도 비활성 시 작게(scale-90), 활성 시 크게(scale-105) 설정
+                  className={`relative aspect-square rounded-full transition-all duration-200 border ${
+                    selectedAttrs.includes(attr.id) 
+                      ? "border-[#00FFD1] scale-105" 
+                      : "border-transparent scale-90 hover:scale-95"
+                  }`}>
                   <img src={attr.img} alt={attr.name} className="w-full h-full object-contain" />
                 </button>
               ))}
@@ -165,24 +171,44 @@ export default function MyCardsPage() {
             <div className="grid grid-cols-4 gap-1.5">
               {SKILL_FILTERS.map(skill => (
                 <button key={skill.id} onClick={() => toggleFilter(selectedSkills, setSelectedSkills, skill.id)}
-                  className={`relative aspect-square rounded-full p-1 border ${selectedSkills.includes(skill.id) ? "border-[#00FFD1] bg-zinc-800" : "border-transparent bg-zinc-900"}`}>
+                  // 🌟 스킬 아이콘도 비활성 시 작게(scale-90), 활성 시 크게(scale-105) 설정
+                  className={`relative aspect-square rounded-full p-1 transition-all duration-200 border ${
+                    selectedSkills.includes(skill.id) 
+                      ? "border-[#00FFD1] bg-zinc-800 scale-105" 
+                      : "border-transparent bg-zinc-900 scale-90 hover:scale-95"
+                  }`}>
                   <img src={skill.img} alt={skill.name} className="w-full h-full object-contain" />
                 </button>
               ))}
             </div>
           </div>
 
-          <div className="space-y-4 pt-2">
+          <div className="space-y-5 pt-2">
             <span className="text-[11px] font-bold text-zinc-500 tracking-widest pl-1 border-t border-white/5 pt-4 block">CHARACTER</span>
             {UNIT_FILTERS.map((unit) => (
               <div key={unit.id} className="flex flex-col gap-2">
-                <button onClick={() => toggleUnitFilter(unit.chars)} className={`w-full h-8 flex items-center justify-center rounded-lg ${unit.chars.every(c => selectedChars.includes(c.id)) ? "bg-zinc-800 border border-[#00FFD1]" : "bg-transparent"}`}>
-                  <img src={unit.logo} alt={unit.name} className="h-full w-auto object-contain max-w-[80%] opacity-100" />
+                
+                {/* 🌟 유닛 로고: 높이를 h-12(48px)로 1.5배 키우고 넓게 꽉 차게 설정하여 가독성 대폭 상향! */}
+                <button 
+                  onClick={() => toggleUnitFilter(unit.chars)} 
+                  className={`w-full h-12 py-1 flex items-center justify-center rounded-lg transition-all ${
+                    unit.chars.every(c => selectedChars.includes(c.id)) 
+                      ? "bg-zinc-800 border border-[#00FFD1]" 
+                      : "bg-transparent hover:bg-white/5"
+                  }`}
+                >
+                  <img src={unit.logo} alt={unit.name} className="h-full w-auto object-contain max-w-[95%]" />
                 </button>
-                <div className="grid grid-cols-4 gap-1.5">
+                
+                <div className="grid grid-cols-4 gap-1.5 mt-1">
                   {unit.chars.map(char => (
                     <button key={char.id} onClick={() => toggleFilter(selectedChars, setSelectedChars, char.id)}
-                      className={`relative aspect-square rounded-full transition-all ${selectedChars.includes(char.id) ? "ring-2 ring-[#00FFD1]" : "ring-1 ring-white/10"}`}>
+                      // 🌟 캐릭터 아이콘: 비활성화 상태에서는 확 작게(scale-85), 선택 시 쨍하게(scale-105) 애니메이션!
+                      className={`relative aspect-square rounded-full transition-all duration-200 bg-zinc-950 ${
+                        selectedChars.includes(char.id) 
+                          ? "ring-2 ring-[#00FFD1] scale-105 drop-shadow-[0_0_8px_rgba(0,255,209,0.7)]" 
+                          : "ring-1 ring-white/10 scale-[0.85] hover:scale-95 hover:ring-white/30"
+                      }`}>
                       <img src={char.img} alt={char.name} className="w-full h-full object-contain" />
                     </button>
                   ))}
