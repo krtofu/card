@@ -304,19 +304,29 @@ export default function CardDetailModal({
                   
                   {/* 🎯 목표(위시) 버튼 */}
                   <button
+                    disabled={userState.isOwned}
                     onClick={() => onUpdateState(card.id, { isTarget: !userState.isTarget })}
-                    className={`shrink-0 inline-flex items-center px-2.5 py-1 rounded-md text-[11px] sm:text-xs font-bold border tracking-tight transition-all shadow-sm active:scale-95 ${
-                      userState.isTarget
-                        ? "bg-pink-500/20 text-pink-300 border-pink-400/50 shadow-[0_0_10px_rgba(236,72,153,0.15)]"
-                        : "bg-zinc-800 text-zinc-400 border-zinc-700 hover:bg-zinc-700 hover:text-zinc-200"
+                    className={`shrink-0 inline-flex items-center px-2.5 py-1 rounded-md text-[11px] sm:text-xs font-bold border tracking-tight transition-all shadow-sm ${
+                      userState.isOwned
+                        ? "opacity-50 cursor-not-allowed bg-zinc-900 text-zinc-600 border-zinc-800"
+                        : userState.isTarget
+                          ? "bg-pink-500/20 text-pink-300 border-pink-400/50 shadow-[0_0_10px_rgba(236,72,153,0.15)] active:scale-95"
+                          : "bg-zinc-800 text-zinc-400 border-zinc-700 hover:bg-zinc-700 hover:text-zinc-200 active:scale-95"
                     }`}
                   >
-                    {userState.isTarget ? "⭐ 목표 중" : "☆ 목표 설정"}
+                    {userState.isTarget && !userState.isOwned ? "⭐ 목표 중" : "☆ 목표 설정"}
                   </button>
 
                   {/* ✓ 보유 버튼 */}
                   <button
-                    onClick={() => onUpdateState(card.id, { isOwned: !userState.isOwned })}
+                    onClick={() => {
+                      const nextOwned = !userState.isOwned;
+                      onUpdateState(card.id, { 
+                        isOwned: nextOwned,
+                        // 🌟 보유 중으로 바뀌면 자동으로 목표(isTarget)를 해제합니다!
+                        ...(nextOwned ? { isTarget: false } : {}) 
+                      });
+                    }}
                     className={`shrink-0 inline-flex items-center px-2.5 py-1 rounded-md text-[11px] sm:text-xs font-bold border tracking-tight transition-all shadow-sm active:scale-95 ${
                       userState.isOwned
                         ? "bg-emerald-500/20 text-emerald-300 border-emerald-400/50 shadow-[0_0_10px_rgba(52,211,153,0.15)]"
