@@ -153,10 +153,8 @@ export default function MyCardsPage() {
   };
 
   const filteredCards = ALL_CARDS.filter(card => {
-    // 1. 보유 필터
     if (showOnlyOwned && !cardStates[card.id]?.isOwned) return false;
     
-    // 2. 캐릭터 필터
     if (selectedChars.length > 0) {
       const matchesChar = selectedChars.some(selId => {
         const parentUnit = UNIT_FILTERS.find(u => u.chars.some(c => c.id === selId));
@@ -183,27 +181,26 @@ export default function MyCardsPage() {
       if (!matchesChar) return false;
     }
     
-    // 🌟 [핵심 변경] 영어/한글, 대/소문자 완벽 대응 속성 필터 엔진!
     if (selectedAttrs.length > 0) {
       const matchesAttr = selectedAttrs.some(selId => {
-        // cardAttr는 데이터에 적힌 값(예: "pure", "Pure", "퓨어")을 전부 소문자로 통일
         const cardAttr = (card.attribute || "").toLowerCase();
-        // attrObj는 우리가 등록해둔 필터 데이터 (예: id: "pure", name: "퓨어")
         const attrObj = ATTR_FILTERS.find(a => a.id === selId);
-        
-        // 카드 데이터가 "pure" 이거나 "퓨어" 이면 무조건 통과!
         return cardAttr === selId || cardAttr === attrObj?.name;
       });
       if (!matchesAttr) return false;
     }
 
-    // 4. 스킬 필터
     if (selectedSkills.length > 0 && !selectedSkills.some(selId => SKILL_FILTERS.find(s => s.id === selId)?.matchKeys.includes(card.skillType || ""))) return false;
     
     return true; 
   });
 
   if (!mounted) return null;
+
+  // 🌟 그룹별 활성화 여부 확인 변수들
+  const isAnyAttrSelected = selectedAttrs.length > 0;
+  const isAnySkillSelected = selectedSkills.length > 0;
+  const isAnyCharSelected = selectedChars.length > 0;
 
   return (
     <div className="flex flex-col md:flex-row gap-6 px-4 py-6 min-h-screen text-zinc-100 max-w-screen-2xl mx-auto">
@@ -220,60 +217,82 @@ export default function MyCardsPage() {
         </button>
 
         <div className="space-y-6">
+          
+          {/* ✅ 속성 필터 스포트라이트 적용 */}
           <div className="space-y-2">
             <span className="text-[11px] font-bold text-zinc-500 tracking-widest pl-1">ATTRIBUTE</span>
             <div className="grid grid-cols-5 gap-1.5">
-              {ATTR_FILTERS.map(attr => (
+              {ATTR_FILTERS.map(attr => {
+                const isSelected = selectedAttrs.includes(attr.id);
+                // 아무것도 안 눌렸거나, 내가 선택됐으면 100% 선명. 남이 선택됐으면 40%로 흐려짐
+                const opacityClass = !isAnyAttrSelected || isSelected ? "opacity-100" : "opacity-40";
+                
+                return (
                 <button key={attr.id} onClick={() => toggleFilter(selectedAttrs, setSelectedAttrs, attr.id)} 
-                  className={`relative aspect-square rounded-full transition-all duration-200 ${
-                    selectedAttrs.includes(attr.id) ? "scale-105" : "scale-[0.85] hover:scale-95"
-                  }`}>
+                  className={`relative aspect-square rounded-full transition-all duration-300 ${
+                    isSelected ? "scale-105" : "scale-[0.85] hover:scale-95"
+                  } ${opacityClass}`}>
                   <img src={attr.img} alt={attr.name} className="w-full h-full object-contain" />
                 </button>
-              ))}
+              )})}
             </div>
           </div>
 
+          {/* ✅ 스킬 필터 스포트라이트 적용 */}
           <div className="space-y-2">
             <span className="text-[11px] font-bold text-zinc-500 tracking-widest pl-1">SKILL</span>
             <div className="grid grid-cols-4 gap-1.5">
-              {SKILL_FILTERS.map(skill => (
+              {SKILL_FILTERS.map(skill => {
+                const isSelected = selectedSkills.includes(skill.id);
+                const opacityClass = !isAnySkillSelected || isSelected ? "opacity-100" : "opacity-40";
+                
+                return (
                 <button key={skill.id} onClick={() => toggleFilter(selectedSkills, setSelectedSkills, skill.id)}
-                  className={`relative aspect-square rounded-full p-1 transition-all duration-200 ${
-                    selectedSkills.includes(skill.id) ? "bg-zinc-800 scale-105" : "bg-zinc-900 scale-[0.85] hover:scale-95"
-                  }`}>
+                  className={`relative aspect-square rounded-full p-1 transition-all duration-300 ${
+                    isSelected ? "bg-zinc-800 scale-105" : "bg-zinc-900 scale-[0.85] hover:scale-95"
+                  } ${opacityClass}`}>
                   <img src={skill.img} alt={skill.name} className="w-full h-full object-contain" />
                 </button>
-              ))}
+              )})}
             </div>
           </div>
 
+          {/* ✅ 캐릭터/유닛 필터 스포트라이트 적용 */}
           <div className="space-y-6 pt-2">
             <span className="text-[11px] font-bold text-zinc-500 tracking-widest pl-1 border-t border-white/5 pt-4 block">CHARACTER</span>
-            {UNIT_FILTERS.map((unit) => (
+            {UNIT_FILTERS.map((unit) => {
+              const isAllSelected = unit.chars.every(c => selectedChars.includes(c.id));
+              // 유닛 로고: 아무도 안 눌렀거나 이 유닛이 전체선택 되었으면 선명함. 아니면 흐려짐
+              const logoOpacityClass = !isAnyCharSelected || isAllSelected ? "opacity-100" : "opacity-40";
+
+              return (
               <div key={unit.id} className="flex flex-col gap-2">
                 <button 
                   onClick={() => toggleUnitFilter(unit.chars)} 
-                  className={`w-full h-16 py-1 flex items-center justify-center rounded-xl transition-all duration-200 ${
-                    unit.chars.every(c => selectedChars.includes(c.id)) 
-                      ? "bg-[#00FFD1]/15 scale-105" 
-                      : "bg-transparent hover:bg-white/5 scale-95"
-                  }`}
+                  className={`w-full h-16 py-1 flex items-center justify-center rounded-xl transition-all duration-300 ${
+                    isAllSelected ? "bg-[#00FFD1]/15 scale-105" : "bg-transparent hover:bg-white/5 scale-95"
+                  } ${logoOpacityClass}`}
                 >
                   <img src={unit.logo} alt={unit.name} className="h-full w-auto object-contain max-w-[90%]" />
                 </button>
+                
                 <div className="grid grid-cols-4 gap-1.5 mt-1">
-                  {unit.chars.map(char => (
+                  {unit.chars.map(char => {
+                    const isSelected = selectedChars.includes(char.id);
+                    // 캐릭터 아이콘: 아무도 안 눌렀거나 내가 선택됐으면 선명함. 아니면 흐려짐
+                    const charOpacityClass = !isAnyCharSelected || isSelected ? "opacity-100" : "opacity-40";
+                    
+                    return (
                     <button key={char.id} onClick={() => toggleFilter(selectedChars, setSelectedChars, char.id)}
-                      className={`relative aspect-square rounded-full transition-all duration-200 bg-zinc-950 ${
-                        selectedChars.includes(char.id) ? "scale-105" : "scale-[0.80] hover:scale-[0.85]"
-                      }`}>
+                      className={`relative aspect-square rounded-full transition-all duration-300 bg-zinc-950 ${
+                        isSelected ? "scale-105" : "scale-[0.80] hover:scale-[0.85]"
+                      } ${charOpacityClass}`}>
                       <img src={char.img} alt={char.name} className="w-full h-full object-contain" />
                     </button>
-                  ))}
+                  )})}
                 </div>
               </div>
-            ))}
+            )})}
           </div>
         </div>
       </div>
