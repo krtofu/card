@@ -15,7 +15,9 @@ export type UserCardState = {
 type CharDef = { id: string; name: string; img: string; isVirtual?: boolean; matchKeys?: string[] };
 type UnitDef = { id: string; name: string; logo: string; chars: CharDef[] };
 type AttrDef = { id: string; name: string; img: string };
-type SkillDef = { id: string; name: string; img: string; matchKeys: string[] };
+// 🌟 스킬 타입 정의 확장: 하위 스킬(subs)을 가질 수 있도록 개조!
+type SubSkillDef = { id: string; name: string; matchKeys: string[] };
+type SkillDef = { id: string; name: string; img: string; matchKeys?: string[]; subs?: SubSkillDef[] };
 
 const UNIT_FILTERS: UnitDef[] = [
   { id: "ln", name: "Leo/need", logo: "/icons/Leoneed.png",
@@ -108,11 +110,26 @@ const ATTR_FILTERS: AttrDef[] = [
   { id: "cool", name: "쿨", img: "/icons/attrs/cool.png" }
 ];
 
+// 🌟 조건부 스업을 하위 메뉴(subs)로 정교하게 분리했습니다!
 const SKILL_FILTERS: SkillDef[] = [
   { id: "score", name: "스업", img: "/icons/skills/score_x.png", matchKeys: ["스업"] },
-  { id: "condition", name: "조건부 스업", img: "/icons/skills/condition_x.png", matchKeys: ["퍼스업", "굿스업", "체스업", "블페", "팀스업"] },
+  { id: "condition_group", name: "조건부 스업", img: "/icons/skills/condition_x.png", 
+    subs: [
+      { id: "cond_perfect", name: "퍼스업", matchKeys: ["퍼스업"] },
+      { id: "cond_good", name: "굿스업", matchKeys: ["굿스업"] },
+      { id: "cond_life", name: "체스업", matchKeys: ["체스업"] },
+      { id: "cond_bp", name: "블페", matchKeys: ["블페"] },
+      { id: "cond_team", name: "팀스업", matchKeys: ["팀스업"] }
+    ] 
+  },
   { id: "perfect", name: "판정 강화", img: "/icons/skills/perfect_x.png", matchKeys: ["판강"] },
   { id: "heal", name: "라이프 회복", img: "/icons/skills/heal_x.png", matchKeys: ["힐"] }
+];
+
+// 엔진이 찾기 쉽도록 모든 스킬 종류(일반 스킬 + 세부 조건부 스킬)를 한 줄로 펼쳐두는 평탄화 작업
+const ALL_SKILL_TARGETS = [
+  ...SKILL_FILTERS.filter(s => s.matchKeys),
+  ...(SKILL_FILTERS.find(s => s.id === "condition_group")?.subs || [])
 ];
 
 export default function MyCardsPage() {
@@ -146,6 +163,15 @@ export default function MyCardsPage() {
     const charIds = unitChars.map(c => c.id);
     const isAllSelected = charIds.every(id => selectedChars.includes(id));
     setSelectedChars(isAllSelected ? selectedChars.filter(id => !charIds.includes(id)) : [...new Set([...selectedChars, ...charIds])]);
+  };
+
+  // 🌟 조건부 스킬 그룹 전체 선택/해제 함수
+  const toggleCondSkillGroup = () => {
+    const condSubs = SKILL_FILTERS.find(s => s.id === "condition_group")?.subs || [];
+    const condIds = condSubs.map(s => s.id);
+    const isAllSelected = condIds.every(id => selectedSkills.includes(id));
+    
+    setSelectedSkills(isAllSelected ? selectedSkills.filter(id => !condIds.includes(id)) : [...new Set([...selectedSkills, ...condIds])]);
   };
 
   const resetFilters = () => {
@@ -190,7 +216,14 @@ export default function MyCardsPage() {
       if (!matchesAttr) return false;
     }
 
-    if (selectedSkills.length > 0 && !selectedSkills.some(selId => SKILL_FILTERS.find(s => s.id === selId)?.matchKeys.includes(card.skillType || ""))) return false;
+    // 🌟 변경된 스킬 필터 적용
+    if (selectedSkills.length > 0) {
+      const matchesSkill = selectedSkills.some(selId => {
+        const targetObj = ALL_SKILL_TARGETS.find(t => t.id === selId);
+        return targetObj?.matchKeys?.includes(card.skillType || "") ?? false;
+      });
+      if (!matchesSkill) return false;
+    }
     
     return true; 
   });
@@ -200,6 +233,11 @@ export default function MyCardsPage() {
   const isAnyAttrSelected = selectedAttrs.length > 0;
   const isAnySkillSelected = selectedSkills.length > 0;
   const isAnyCharSelected = selectedChars.length > 0;
+
+  // 조건부 스업 하위 ID 목록 추출
+  const condSubs = SKILL_FILTERS.find(s => s.id === "condition_group")?.subs || [];
+  const condIds = condSubs.map(s => s.id);
+  const isAllCondSelected = condIds.length > 0 && condIds.every(id => selectedSkills.includes(id));
 
   return (
     <div className="flex flex-col md:flex-row gap-6 px-4 py-6 min-h-screen text-zinc-100 max-w-screen-2xl mx-auto">
@@ -217,7 +255,6 @@ export default function MyCardsPage() {
 
         <div className="space-y-6">
           
-          {/* ✅ 속성 필터 */}
           <div className="space-y-2">
             <span className="text-[11px] font-bold text-zinc-500 tracking-widest pl-1">ATTRIBUTE</span>
             <div className="grid grid-cols-5 gap-1.5">
@@ -236,26 +273,60 @@ export default function MyCardsPage() {
             </div>
           </div>
 
-          {/* ✅ 스킬 필터 */}
+          {/* ✅ 대망의 스킬 필터 (스포트라이트 + 조건부 텍스트 뱃지) */}
           <div className="space-y-2">
             <span className="text-[11px] font-bold text-zinc-500 tracking-widest pl-1">SKILL</span>
+            
+            {/* 1층: 메인 4개 스킬 이미지 */}
             <div className="grid grid-cols-4 gap-1.5">
               {SKILL_FILTERS.map(skill => {
-                const isSelected = selectedSkills.includes(skill.id);
+                if (skill.id === "condition_group") {
+                  // 조건부 스킬 이미지 버튼
+                  const opacityClass = !isAnySkillSelected || isAllCondSelected ? "opacity-100" : "opacity-40";
+                  return (
+                    <button key={skill.id} onClick={toggleCondSkillGroup}
+                      className={`relative aspect-square rounded-full p-1 transition-all duration-300 ${
+                        isAllCondSelected ? "bg-zinc-800 scale-105" : "bg-zinc-900 scale-[0.85] hover:scale-95"
+                      } ${opacityClass}`}>
+                      <img src={skill.img} alt={skill.name} className="w-full h-full object-contain" />
+                    </button>
+                  );
+                } else {
+                  // 일반 스킬 이미지 버튼
+                  const isSelected = selectedSkills.includes(skill.id);
+                  const opacityClass = !isAnySkillSelected || isSelected ? "opacity-100" : "opacity-40";
+                  return (
+                    <button key={skill.id} onClick={() => toggleFilter(selectedSkills, setSelectedSkills, skill.id)}
+                      className={`relative aspect-square rounded-full p-1 transition-all duration-300 ${
+                        isSelected ? "bg-zinc-800 scale-105" : "bg-zinc-900 scale-[0.85] hover:scale-95"
+                      } ${opacityClass}`}>
+                      <img src={skill.img} alt={skill.name} className="w-full h-full object-contain" />
+                    </button>
+                  );
+                }
+              })}
+            </div>
+
+            {/* 2층: 조건부 세부 스킬 텍스트 뱃지 5종! */}
+            <div className="grid grid-cols-5 gap-1 mt-2">
+              {condSubs.map(sub => {
+                const isSelected = selectedSkills.includes(sub.id);
+                // 텍스트 뱃지도 스포트라이트 효과를 받습니다!
                 const opacityClass = !isAnySkillSelected || isSelected ? "opacity-100" : "opacity-40";
-                
                 return (
-                <button key={skill.id} onClick={() => toggleFilter(selectedSkills, setSelectedSkills, skill.id)}
-                  className={`relative aspect-square rounded-full p-1 transition-all duration-300 ${
-                    isSelected ? "bg-zinc-800 scale-105" : "bg-zinc-900 scale-[0.85] hover:scale-95"
-                  } ${opacityClass}`}>
-                  <img src={skill.img} alt={skill.name} className="w-full h-full object-contain" />
-                </button>
-              )})}
+                  <button key={sub.id} onClick={() => toggleFilter(selectedSkills, setSelectedSkills, sub.id)}
+                    className={`py-1.5 text-[10px] sm:text-[11px] font-bold rounded-lg transition-all duration-300 ${
+                      isSelected 
+                        ? "bg-[#00FFD1]/15 text-[#00FFD1] scale-105" 
+                        : "bg-zinc-900 text-zinc-500 hover:bg-zinc-800 scale-95"
+                    } ${opacityClass}`}>
+                    {sub.name}
+                  </button>
+                )
+              })}
             </div>
           </div>
 
-          {/* ✅ 캐릭터/유닛 필터 */}
           <div className="space-y-6 pt-2">
             <span className="text-[11px] font-bold text-zinc-500 tracking-widest pl-1 border-t border-white/5 pt-4 block">CHARACTER</span>
             {UNIT_FILTERS.map((unit) => {
@@ -310,7 +381,6 @@ export default function MyCardsPage() {
           <div className="grid grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-y-6 gap-x-4 w-full">
             {filteredCards.map((card) => {
               const isOwned = cardStates[card.id]?.isOwned;
-              // 🌟 추가된 목표 판별 로직
               const isTarget = cardStates[card.id]?.isTarget;
               
               return (
@@ -318,13 +388,8 @@ export default function MyCardsPage() {
                   <img src={showPostAwake ? card.thumbPostPath : card.thumbPrePath} alt="썸네일" 
                     className="h-25 w-auto object-contain transition-all duration-300 rounded-lg border border-white/10 group-hover:border-white/30" />
                   
-                  {/* 🌟 카드 텍스트 색상: 보유(민트) > 목표(핑크) > 기본(회색) 순으로 우선 적용 */}
                   <p className={`text-[11px] font-semibold mt-2.5 truncate w-25 transition-colors ${
-                    isOwned 
-                      ? "text-[#00FFD1]" 
-                      : isTarget 
-                        ? "text-pink-400" 
-                        : "text-zinc-200 group-hover:text-white"
+                    isOwned ? "text-[#00FFD1]" : isTarget ? "text-pink-400" : "text-zinc-200 group-hover:text-white"
                   }`}>
                     {card.cardName}
                   </p>
