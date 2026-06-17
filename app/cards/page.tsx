@@ -12,15 +12,15 @@ export type UserCardState = {
   skillLevel: number;
 };
 
-// 필터용 데이터 정의
+// 🌟 필터용 데이터 정의 (유닛 로고 속성 추가!)
 type CharDef = { id: string; name: string; img: string; matchKeys?: string[] };
-type UnitDef = { id: string; name: string; chars: CharDef[] };
+type UnitDef = { id: string; name: string; logo: string; chars: CharDef[] };
 type AttrDef = { id: string; name: string; img: string };
 type SkillDef = { id: string; name: string; img: string; matchKeys: string[] };
 
 const UNIT_FILTERS: UnitDef[] = [
   {
-    id: "ln", name: "Leo/need",
+    id: "ln", name: "Leo/need", logo: "/icons/Leoneed.png",
     chars: [
       { id: "ichika", name: "호시노 이치카", img: "/icons/characters/Ichika.png" },
       { id: "saki", name: "텐마 사키", img: "/icons/characters/Saki.png" },
@@ -29,7 +29,7 @@ const UNIT_FILTERS: UnitDef[] = [
     ]
   },
   {
-    id: "mmj", name: "MORE MORE JUMP!",
+    id: "mmj", name: "MORE MORE JUMP!", logo: "/icons/MMJ.png",
     chars: [
       { id: "minori", name: "하나사토 미노리", img: "/icons/characters/Minori.png" },
       { id: "haruka", name: "키리타니 하루카", img: "/icons/characters/Haruka.png" },
@@ -38,7 +38,7 @@ const UNIT_FILTERS: UnitDef[] = [
     ]
   },
   {
-    id: "vbs", name: "Vivid BAD SQUAD",
+    id: "vbs", name: "Vivid BAD SQUAD", logo: "/icons/VBS.png",
     chars: [
       { id: "kohane", name: "아즈사와 코하네", img: "/icons/characters/Kohane.png" },
       { id: "an", name: "시라이시 안", img: "/icons/characters/An.png" },
@@ -47,7 +47,7 @@ const UNIT_FILTERS: UnitDef[] = [
     ]
   },
   {
-    id: "wxs", name: "Wonderlands×Showtime",
+    id: "wxs", name: "Wonderlands×Showtime", logo: "/icons/Wds.png",
     chars: [
       { id: "tsukasa", name: "텐마 츠카사", img: "/icons/characters/Tsukasa.png" },
       { id: "emu", name: "오토리 에무", img: "/icons/characters/Emu.png" },
@@ -56,7 +56,7 @@ const UNIT_FILTERS: UnitDef[] = [
     ]
   },
   {
-    id: "n25", name: "25시, 나이트코드에서.",
+    id: "n25", name: "25시, 나이트코드에서.", logo: "/icons/25.png",
     chars: [
       { id: "kanade", name: "요이사키 카나데", img: "/icons/characters/Kanade.png" },
       { id: "mafuyu", name: "아사히나 마후유", img: "/icons/characters/Mafuyu.png" },
@@ -65,7 +65,7 @@ const UNIT_FILTERS: UnitDef[] = [
     ]
   },
   {
-    id: "vs", name: "VIRTUAL SINGER",
+    id: "vs", name: "VIRTUAL SINGER", logo: "/icons/VS.png",
     chars: [
       { id: "miku", name: "미쿠", img: "/icons/characters/MIKU_0.png", matchKeys: ["미쿠"] },
       { id: "rin", name: "린", img: "/icons/characters/RIN_0.png", matchKeys: ["린"] },
@@ -133,6 +133,21 @@ export default function MyCardsPage() {
   const toggleFilter = (list: string[], setList: (val: string[]) => void, id: string) => {
     if (list.includes(id)) setList(list.filter(item => item !== id));
     else setList([...list, id]);
+  };
+
+  // 🌟 유닛 로고 클릭 시 전체 선택/해제 마법의 함수!
+  const toggleUnitFilter = (unitChars: CharDef[]) => {
+    const charIds = unitChars.map(c => c.id);
+    const isAllSelected = charIds.every(id => selectedChars.includes(id));
+
+    if (isAllSelected) {
+      // 전부 선택되어 있으면 모두 끄기
+      setSelectedChars(selectedChars.filter(id => !charIds.includes(id)));
+    } else {
+      // 하나라도 빠져있으면 모두 켜기 (중복 방지)
+      const newSet = new Set([...selectedChars, ...charIds]);
+      setSelectedChars(Array.from(newSet));
+    }
   };
 
   const resetFilters = () => {
@@ -256,8 +271,27 @@ export default function MyCardsPage() {
           {/* ✅ 캐릭터(유닛별) 필터 */}
           <div className="space-y-4 pt-2">
             <span className="text-[11px] font-bold text-zinc-500 tracking-widest pl-1 border-t border-white/5 pt-4 block">CHARACTER</span>
-            {UNIT_FILTERS.map((unit) => (
-              <div key={unit.id} className="bg-zinc-900/50 p-2.5 rounded-2xl border border-white/5">
+            {UNIT_FILTERS.map((unit) => {
+              // 🌟 현재 이 유닛의 모든 캐릭터가 선택되었는지 검사
+              const isAllSelected = unit.chars.every(char => selectedChars.includes(char.id));
+
+              return (
+              <div key={unit.id} className="bg-zinc-900/50 p-2.5 rounded-2xl border border-white/5 flex flex-col gap-2.5">
+                
+                {/* 🌟 유닛 로고 버튼 (클릭 시 전체 선택/해제) */}
+                <button
+                  onClick={() => toggleUnitFilter(unit.chars)}
+                  className={`w-full h-8 flex items-center justify-center rounded-lg transition-all ${
+                    isAllSelected 
+                      ? "bg-[#00FFD1]/10 ring-1 ring-[#00FFD1]/50 drop-shadow-[0_0_8px_rgba(0,255,209,0.3)] opacity-100" 
+                      : "hover:bg-white/5 opacity-50 hover:opacity-100"
+                  }`}
+                  title={`${unit.name} 전체 선택/해제`}
+                >
+                  <img src={unit.logo} alt={unit.name} className="h-full w-auto object-contain max-w-[80%]" />
+                </button>
+
+                {/* 캐릭터 초상화 그리드 */}
                 <div className="grid grid-cols-4 gap-1.5">
                   {unit.chars.map(char => (
                     <button
@@ -275,7 +309,7 @@ export default function MyCardsPage() {
                   ))}
                 </div>
               </div>
-            ))}
+            )})}
           </div>
 
         </div>
@@ -324,7 +358,7 @@ export default function MyCardsPage() {
                     <img 
                       src={showPostAwake ? card.thumbPostPath : card.thumbPrePath} 
                       alt="썸네일" 
-                      // 🌟 카드 목록의 형광색 링과 글로우 삭제! (기본 하얀 테두리만 은은하게 유지)
+                      // 🌟 카드 테두리는 깔끔한 기본 하얀색으로 통일!
                       className="h-25 w-auto object-contain transition-all duration-300 rounded-lg ring-1 ring-white/10 group-hover:ring-white/30" 
                     />
                   </div>
