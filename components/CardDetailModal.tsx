@@ -72,7 +72,6 @@ export default function CardDetailModal({
     return { src: "", label: attr };
   };
 
-  // 🌟 스킬 뱃지 매핑 함수
   const getSkillInfo = (skill: string) => {
     if (!skill) return { src: "", label: "" };
     
@@ -92,9 +91,34 @@ export default function CardDetailModal({
     return { src: "", label: skill };
   };
 
+  // 🌟 캐릭터 얼굴 아이콘 매핑 함수 (유저님 데이터 완벽 반영!)
+  const getCharacterIcon = (charName: string) => {
+    const charMap: Record<string, string> = {
+      // 버추얼 싱어
+      "버싱 미쿠": "MIKU_0", "레오니 미쿠": "MIKU_l", "모모점 미쿠": "MIKU_m", "비배스 미쿠": "MIKU_v", "원더쇼 미쿠": "MIKU_w", "니고 미쿠": "MIKU_n",
+      "버싱 린": "RIN_0", "레오니 린": "RIN_l", "모모점 린": "RIN_m", "비배스 린": "RIN_v", "원더쇼 린": "RIN_w", "니고 린": "RIN_n",
+      "버싱 렌": "REN_0", "레오니 렌": "REN_l", "모모점 렌": "REN_m", "비배스 렌": "REN_v", "원더쇼 렌": "REN_w", "니고 렌": "REN_n",
+      "버싱 루카": "LUKA_0", "레오니 루카": "LUKA_l", "모모점 루카": "LUKA_m", "비배스 루카": "LUKA_v", "원더쇼 루카": "LUKA_w", "니고 루카": "LUKA_n",
+      "버싱 메이코": "MEIKO_0", "레오니 메이코": "MEIKO_l", "모모점 메이코": "MEIKO_m", "비배스 메이코": "MEIKO_v", "원더쇼 메이코": "MEIKO_w", "니고 메이코": "MEIKO_n",
+      "버싱 카이토": "KAITO_0", "레오니 카이토": "KAITO_l", "모모점 카이토": "KAITO_m", "비배스 카이토": "KAITO_v", "원더쇼 카이토": "KAITO_w", "니고 카이토": "KAITO_n",
+      // 오리지널 캐릭터
+      "이치카": "Ichika", "사키": "Saki", "호나미": "Honami", "시호": "Shiho",
+      "미노리": "Minori", "하루카": "Haruka", "아이리": "Airi", "시즈쿠": "Shizuku",
+      "코하네": "Kohane", "안": "An", "아키토": "Akito", "토우야": "Toya",
+      "츠카사": "Tsukasa", "에무": "Emu", "네네": "Nene", "루이": "Rui",
+      "카나데": "Kanade", "마후유": "Mafuyu", "에나": "Ena", "미즈키": "Mizuki"
+    };
+
+    const fileName = charMap[charName];
+    // 매핑된 이름이 있으면 그 이미지를 반환하고, 없으면 원래 있던 카드 아이콘을 임시로 보여줌
+    if (fileName) return `/icons/characters/${fileName}.png`;
+    return card.iconPath || ""; 
+  };
+
   const currentGachaStyle = getGachaBadgeStyle(card.gachaType);
   const attrInfo = getAttrInfo(attribute);
   const skillInfo = getSkillInfo(card.skillType || ""); 
+  const characterIconPath = getCharacterIcon(card.character || ""); // 👈 캐릭터 아이콘 경로 찾기!
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md transition-opacity">
@@ -132,7 +156,7 @@ export default function CardDetailModal({
               </div>
               
               <div className="flex flex-wrap items-center justify-end gap-1.5 shrink-0">
-                {/* ✨ 1. 스킬 뱃지 (가장 먼저 오도록 변경) */}
+                {/* ✨ 1. 스킬 뱃지 */}
                 {skillInfo.src ? (
                   <div className="relative group flex items-center justify-center cursor-help">
                     <img src={skillInfo.src} alt={skillInfo.label} className="w-[26px] h-[26px] object-contain drop-shadow-md shrink-0" />
@@ -153,7 +177,7 @@ export default function CardDetailModal({
                   )
                 )}
 
-                {/* 💧 2. 속성 뱃지 (스킬 뒤로 이동) */}
+                {/* 💧 2. 속성 뱃지 */}
                 {attrInfo.src ? (
                   <div className="relative group flex items-center justify-center cursor-help ml-0.5">
                     <img src={attrInfo.src} alt={attrInfo.label} className="w-[26px] h-[26px] object-contain drop-shadow-md shrink-0" />
@@ -179,10 +203,10 @@ export default function CardDetailModal({
               </div>
             </div>
 
-            {/* 🎲 1. 관련 뽑기 */}
+            {/* 🎲 1. 관련 뽑기 (여기서 캐릭터 얼굴 아이콘이 뜨도록 변경됨!) */}
             <div className="flex gap-3.5">
               <div className="w-10 h-10 rounded-full bg-zinc-900 border border-white/10 shrink-0 overflow-hidden flex items-center justify-center">
-                <img src={card.iconPath} alt="Icon" className="w-full h-full object-cover" />
+                <img src={characterIconPath} alt="Character Icon" className="w-full h-full object-contain" />
               </div>
               <div className="flex-1 flex flex-col gap-2">
                 <span className="font-bold text-zinc-200 text-sm mt-0.5">관련 뽑기</span>
