@@ -15,7 +15,6 @@ export type UserCardState = {
 type CharDef = { id: string; name: string; img: string; isVirtual?: boolean; matchKeys?: string[] };
 type UnitDef = { id: string; name: string; logo: string; chars: CharDef[] };
 type AttrDef = { id: string; name: string; img: string };
-// 🌟 스킬 타입 정의 확장: 하위 스킬(subs)을 가질 수 있도록 개조!
 type SubSkillDef = { id: string; name: string; matchKeys: string[] };
 type SkillDef = { id: string; name: string; img: string; matchKeys?: string[]; subs?: SubSkillDef[] };
 
@@ -110,7 +109,6 @@ const ATTR_FILTERS: AttrDef[] = [
   { id: "cool", name: "쿨", img: "/icons/attrs/cool.png" }
 ];
 
-// 🌟 조건부 스업을 하위 메뉴(subs)로 정교하게 분리했습니다!
 const SKILL_FILTERS: SkillDef[] = [
   { id: "score", name: "스업", img: "/icons/skills/score_x.png", matchKeys: ["스업"] },
   { id: "condition_group", name: "조건부 스업", img: "/icons/skills/condition_x.png", 
@@ -126,7 +124,6 @@ const SKILL_FILTERS: SkillDef[] = [
   { id: "heal", name: "라이프 회복", img: "/icons/skills/heal_x.png", matchKeys: ["힐"] }
 ];
 
-// 엔진이 찾기 쉽도록 모든 스킬 종류(일반 스킬 + 세부 조건부 스킬)를 한 줄로 펼쳐두는 평탄화 작업
 const ALL_SKILL_TARGETS = [
   ...SKILL_FILTERS.filter(s => s.matchKeys),
   ...(SKILL_FILTERS.find(s => s.id === "condition_group")?.subs || [])
@@ -165,7 +162,6 @@ export default function MyCardsPage() {
     setSelectedChars(isAllSelected ? selectedChars.filter(id => !charIds.includes(id)) : [...new Set([...selectedChars, ...charIds])]);
   };
 
-  // 🌟 조건부 스킬 그룹 전체 선택/해제 함수
   const toggleCondSkillGroup = () => {
     const condSubs = SKILL_FILTERS.find(s => s.id === "condition_group")?.subs || [];
     const condIds = condSubs.map(s => s.id);
@@ -216,7 +212,6 @@ export default function MyCardsPage() {
       if (!matchesAttr) return false;
     }
 
-    // 🌟 변경된 스킬 필터 적용
     if (selectedSkills.length > 0) {
       const matchesSkill = selectedSkills.some(selId => {
         const targetObj = ALL_SKILL_TARGETS.find(t => t.id === selId);
@@ -234,7 +229,6 @@ export default function MyCardsPage() {
   const isAnySkillSelected = selectedSkills.length > 0;
   const isAnyCharSelected = selectedChars.length > 0;
 
-  // 조건부 스업 하위 ID 목록 추출
   const condSubs = SKILL_FILTERS.find(s => s.id === "condition_group")?.subs || [];
   const condIds = condSubs.map(s => s.id);
   const isAllCondSelected = condIds.length > 0 && condIds.every(id => selectedSkills.includes(id));
@@ -273,15 +267,12 @@ export default function MyCardsPage() {
             </div>
           </div>
 
-          {/* ✅ 대망의 스킬 필터 (스포트라이트 + 조건부 텍스트 뱃지) */}
           <div className="space-y-2">
             <span className="text-[11px] font-bold text-zinc-500 tracking-widest pl-1">SKILL</span>
             
-            {/* 1층: 메인 4개 스킬 이미지 */}
             <div className="grid grid-cols-4 gap-1.5">
               {SKILL_FILTERS.map(skill => {
                 if (skill.id === "condition_group") {
-                  // 조건부 스킬 이미지 버튼
                   const opacityClass = !isAnySkillSelected || isAllCondSelected ? "opacity-100" : "opacity-40";
                   return (
                     <button key={skill.id} onClick={toggleCondSkillGroup}
@@ -292,7 +283,6 @@ export default function MyCardsPage() {
                     </button>
                   );
                 } else {
-                  // 일반 스킬 이미지 버튼
                   const isSelected = selectedSkills.includes(skill.id);
                   const opacityClass = !isAnySkillSelected || isSelected ? "opacity-100" : "opacity-40";
                   return (
@@ -307,17 +297,16 @@ export default function MyCardsPage() {
               })}
             </div>
 
-            {/* 2층: 조건부 세부 스킬 텍스트 뱃지 5종! */}
-            <div className="grid grid-cols-5 gap-1 mt-2">
+            {/* 🌟 뱃지 가독성 대폭 개선! 텍스트 팍 키우고 색상 제거 */}
+            <div className="grid grid-cols-5 gap-1.5 mt-2">
               {condSubs.map(sub => {
                 const isSelected = selectedSkills.includes(sub.id);
-                // 텍스트 뱃지도 스포트라이트 효과를 받습니다!
                 const opacityClass = !isAnySkillSelected || isSelected ? "opacity-100" : "opacity-40";
                 return (
                   <button key={sub.id} onClick={() => toggleFilter(selectedSkills, setSelectedSkills, sub.id)}
-                    className={`py-1.5 text-[10px] sm:text-[11px] font-bold rounded-lg transition-all duration-300 ${
+                    className={`py-2 px-1 text-[12px] sm:text-sm font-bold tracking-tight rounded-lg transition-all duration-300 ${
                       isSelected 
-                        ? "bg-[#00FFD1]/15 text-[#00FFD1] scale-105" 
+                        ? "bg-zinc-700 text-white scale-105 shadow-md" 
                         : "bg-zinc-900 text-zinc-500 hover:bg-zinc-800 scale-95"
                     } ${opacityClass}`}>
                     {sub.name}
