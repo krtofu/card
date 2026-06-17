@@ -12,18 +12,26 @@ export type UserCardState = {
   skillLevel: number;
 };
 
-type CharDef = { id: string; name: string; img: string; matchKeys?: string[] };
+type CharDef = { id: string; name: string; img: string; isVirtual?: boolean; matchKeys?: string[] };
 type UnitDef = { id: string; name: string; logo: string; chars: CharDef[] };
 type AttrDef = { id: string; name: string; img: string };
 type SkillDef = { id: string; name: string; img: string; matchKeys: string[] };
 
+// 🌟 유닛별로 오리지널 4명 + 세카이 버싱 6명을 한 바구니에 담았습니다! (유닛당 총 10명씩)
 const UNIT_FILTERS: UnitDef[] = [
   { id: "ln", name: "Leo/need", logo: "/icons/Leoneed.png",
     chars: [
       { id: "ichika", name: "호시노 이치카", img: "/icons/characters/Ichika.png" },
       { id: "saki", name: "텐마 사키", img: "/icons/characters/Saki.png" },
       { id: "honami", name: "모치즈키 호나미", img: "/icons/characters/Honami.png" },
-      { id: "shiho", name: "히노모리 시호", img: "/icons/characters/Shiho.png" }
+      { id: "shiho", name: "히노모리 시호", img: "/icons/characters/Shiho.png" },
+      // 레오니 세카이 버싱 (id에 유닛 접미사를 붙여 개별 버튼으로 작동하게 합니다)
+      { id: "miku_l", name: "하츠네 미쿠", img: "/icons/characters/MIKU_l.png", isVirtual: true, matchKeys: ["미쿠"] },
+      { id: "rin_l", name: "카가미네 린", img: "/icons/characters/RIN_l.png", isVirtual: true, matchKeys: ["린"] },
+      { id: "ren_l", name: "카가미네 렌", img: "/icons/characters/REN_l.png", isVirtual: true, matchKeys: ["렌"] },
+      { id: "luka_l", name: "메구리네 루카", img: "/icons/characters/LUKA_l.png", isVirtual: true, matchKeys: ["루카"] },
+      { id: "meiko_l", name: "MEIKO", img: "/icons/characters/MEIKO_l.png", isVirtual: true, matchKeys: ["메이코", "MEIKO"] },
+      { id: "kaito_l", name: "KAITO", img: "/icons/characters/KAITO_l.png", isVirtual: true, matchKeys: ["카이토", "KAITO"] }
     ]
   },
   { id: "mmj", name: "MORE MORE JUMP!", logo: "/icons/MMJ.png",
@@ -31,7 +39,14 @@ const UNIT_FILTERS: UnitDef[] = [
       { id: "minori", name: "하나사토 미노리", img: "/icons/characters/Minori.png" },
       { id: "haruka", name: "키리타니 하루카", img: "/icons/characters/Haruka.png" },
       { id: "airi", name: "모모이 아이리", img: "/icons/characters/Airi.png" },
-      { id: "shizuku", name: "히노모리 시즈쿠", img: "/icons/characters/Shizuku.png" }
+      { id: "shizuku", name: "히노모리 시즈쿠", img: "/icons/characters/Shizuku.png" },
+      // 모모점 세카이 버싱
+      { id: "miku_m", name: "하츠네 미쿠", img: "/icons/characters/MIKU_m.png", isVirtual: true, matchKeys: ["미쿠"] },
+      { id: "rin_m", name: "카가미네 린", img: "/icons/characters/RIN_m.png", isVirtual: true, matchKeys: ["린"] },
+      { id: "ren_m", name: "카가미네 렌", img: "/icons/characters/REN_m.png", isVirtual: true, matchKeys: ["렌"] },
+      { id: "luka_m", name: "메구리네 루카", img: "/icons/characters/LUKA_m.png", isVirtual: true, matchKeys: ["루카"] },
+      { id: "meiko_m", name: "MEIKO", img: "/icons/characters/MEIKO_m.png", isVirtual: true, matchKeys: ["메이코", "MEIKO"] },
+      { id: "kaito_m", name: "KAITO", img: "/icons/characters/KAITO_m.png", isVirtual: true, matchKeys: ["카이토", "KAITO"] }
     ]
   },
   { id: "vbs", name: "Vivid BAD SQUAD", logo: "/icons/VBS.png",
@@ -39,7 +54,14 @@ const UNIT_FILTERS: UnitDef[] = [
       { id: "kohane", name: "아즈사와 코하네", img: "/icons/characters/Kohane.png" },
       { id: "an", name: "시라이시 안", img: "/icons/characters/An.png" },
       { id: "akito", name: "시노노메 아키토", img: "/icons/characters/Akito.png" },
-      { id: "toya", name: "아오야기 토우야", img: "/icons/characters/Toya.png" }
+      { id: "toya", name: "아오야기 토우야", img: "/icons/characters/Toya.png" },
+      // 비배스 세카이 버싱
+      { id: "miku_v", name: "하츠네 미쿠", img: "/icons/characters/MIKU_v.png", isVirtual: true, matchKeys: ["미쿠"] },
+      { id: "rin_v", name: "카가미네 린", img: "/icons/characters/RIN_v.png", isVirtual: true, matchKeys: ["린"] },
+      { id: "ren_v", name: "카가미네 렌", img: "/icons/characters/REN_v.png", isVirtual: true, matchKeys: ["렌"] },
+      { id: "luka_v", name: "메구리네 루카", img: "/icons/characters/LUKA_v.png", isVirtual: true, matchKeys: ["루카"] },
+      { id: "meiko_v", name: "MEIKO", img: "/icons/characters/MEIKO_v.png", isVirtual: true, matchKeys: ["메이코", "MEIKO"] },
+      { id: "kaito_v", name: "KAITO", img: "/icons/characters/KAITO_v.png", isVirtual: true, matchKeys: ["카이토", "KAITO"] }
     ]
   },
   { id: "wxs", name: "Wonderlands×Showtime", logo: "/icons/Wds.png",
@@ -47,7 +69,14 @@ const UNIT_FILTERS: UnitDef[] = [
       { id: "tsukasa", name: "텐마 츠카사", img: "/icons/characters/Tsukasa.png" },
       { id: "emu", name: "오토리 에무", img: "/icons/characters/Emu.png" },
       { id: "nene", name: "쿠사나기 네네", img: "/icons/characters/Nene.png" },
-      { id: "rui", name: "카미시로 루이", img: "/icons/characters/Rui.png" }
+      { id: "rui", name: "카미시로 루이", img: "/icons/characters/Rui.png" },
+      // 원더쇼 세카이 버싱
+      { id: "miku_w", name: "하츠네 미쿠", img: "/icons/characters/MIKU_w.png", isVirtual: true, matchKeys: ["미쿠"] },
+      { id: "rin_w", name: "카가미네 린", img: "/icons/characters/RIN_w.png", isVirtual: true, matchKeys: ["린"] },
+      { id: "ren_w", name: "카가미네 렌", img: "/icons/characters/REN_w.png", isVirtual: true, matchKeys: ["렌"] },
+      { id: "luka_w", name: "메구리네 루카", img: "/icons/characters/LUKA_w.png", isVirtual: true, matchKeys: ["루카"] },
+      { id: "meiko_w", name: "MEIKO", img: "/icons/characters/MEIKO_w.png", isVirtual: true, matchKeys: ["메이코", "MEIKO"] },
+      { id: "kaito_w", name: "KAITO", img: "/icons/characters/KAITO_w.png", isVirtual: true, matchKeys: ["카이토", "KAITO"] }
     ]
   },
   { id: "n25", name: "25시, 나이트코드에서.", logo: "/icons/25.png",
@@ -55,17 +84,25 @@ const UNIT_FILTERS: UnitDef[] = [
       { id: "kanade", name: "요이사키 카나데", img: "/icons/characters/Kanade.png" },
       { id: "mafuyu", name: "아사히나 마후유", img: "/icons/characters/Mafuyu.png" },
       { id: "ena", name: "시노노메 에나", img: "/icons/characters/Ena.png" },
-      { id: "mizuki", name: "아키야마 미즈키", img: "/icons/characters/Mizuki.png" }
+      { id: "mizuki", name: "아키야마 미즈키", img: "/icons/characters/Mizuki.png" },
+      // 니고 세카이 버싱
+      { id: "miku_n", name: "하츠네 미쿠", img: "/icons/characters/MIKU_n.png", isVirtual: true, matchKeys: ["미쿠"] },
+      { id: "rin_n", name: "카가미네 린", img: "/icons/characters/RIN_n.png", isVirtual: true, matchKeys: ["린"] },
+      { id: "ren_n", name: "카가미네 렌", img: "/icons/characters/REN_n.png", isVirtual: true, matchKeys: ["렌"] },
+      { id: "luka_n", name: "메구리네 루카", img: "/icons/characters/LUKA_n.png", isVirtual: true, matchKeys: ["루카"] },
+      { id: "meiko_n", name: "MEIKO", img: "/icons/characters/MEIKO_n.png", isVirtual: true, matchKeys: ["메이코", "MEIKO"] },
+      { id: "kaito_n", name: "KAITO", img: "/icons/characters/KAITO_n.png", isVirtual: true, matchKeys: ["카이토", "KAITO"] }
     ]
   },
-  { id: "vs", name: "VIRTUAL SINGER", logo: "/icons/VS.png",
+  { id: "vs", name: "무소속 / VIRTUAL SINGER", logo: "/icons/VS.png",
     chars: [
-      { id: "miku", name: "미쿠", img: "/icons/characters/MIKU_0.png", matchKeys: ["미쿠"] },
-      { id: "rin", name: "린", img: "/icons/characters/RIN_0.png", matchKeys: ["린"] },
-      { id: "ren", name: "렌", img: "/icons/characters/REN_0.png", matchKeys: ["렌"] },
-      { id: "luka", name: "루카", img: "/icons/characters/LUKA_0.png", matchKeys: ["루카"] },
-      { id: "meiko", name: "MEIKO", img: "/icons/characters/MEIKO_0.png", matchKeys: ["메이코", "MEIKO"] },
-      { id: "kaito", name: "KAITO", img: "/icons/characters/KAITO_0.png", matchKeys: ["카이토", "KAITO"] }
+      // 특정 세카이가 명시되지 않은 순수 무소속 버싱 카드용 필터 버튼
+      { id: "miku_0", name: "하츠네 미쿠", img: "/icons/characters/MIKU_0.png", isVirtual: true, matchKeys: ["미쿠"] },
+      { id: "rin_0", name: "카가미네 린", img: "/icons/characters/RIN_0.png", isVirtual: true, matchKeys: ["린"] },
+      { id: "ren_0", name: "카가미네 렌", img: "/icons/characters/REN_0.png", isVirtual: true, matchKeys: ["렌"] },
+      { id: "luka_0", name: "메구리네 루카", img: "/icons/characters/LUKA_0.png", isVirtual: true, matchKeys: ["루카"] },
+      { id: "meiko_0", name: "MEIKO", img: "/icons/characters/MEIKO_0.png", isVirtual: true, matchKeys: ["메이코", "MEIKO"] },
+      { id: "kaito_0", name: "KAITO", img: "/icons/characters/KAITO_0.png", isVirtual: true, matchKeys: ["카이토", "KAITO"] }
     ]
   }
 ];
@@ -122,12 +159,39 @@ export default function MyCardsPage() {
     setSelectedChars([]); setSelectedAttrs([]); setSelectedSkills([]); setShowOnlyOwned(false);
   };
 
+  // 🌟 정교해진 하이브리드 필터 엔진
   const filteredCards = ALL_CARDS.filter(card => {
     if (showOnlyOwned && !cardStates[card.id]?.isOwned) return false;
-    if (selectedChars.length > 0 && !selectedChars.some(selId => {
-        const charObj = UNIT_FILTERS.flatMap(u => u.chars).find(c => c.id === selId);
-        return charObj?.matchKeys ? charObj.matchKeys.some(key => card.character.includes(key)) : card.character === charObj?.name;
-    })) return false;
+    
+    if (selectedChars.length > 0) {
+      const matchesChar = selectedChars.some(selId => {
+        // 현재 선택된 버튼의 유닛 부모 찾기
+        const parentUnit = UNIT_FILTERS.find(u => u.chars.some(c => c.id === selId));
+        const charObj = parentUnit?.chars.find(c => c.id === selId);
+        if (!charObj) return false;
+
+        // 버추얼 싱어 처리 (해당 유닛 소속 코드와 이름 조건이 모두 일치해야 함)
+        if (charObj.isVirtual && charObj.matchKeys) {
+          const cleanUnit = (card.unit || "").trim().toLowerCase();
+          const targetUnitId = parentUnit?.id || "";
+          
+          let isCorrectUnit = false;
+          if (targetUnitId === "ln" && (cleanUnit.includes("레오니") || cleanUnit.includes("leo") || cleanUnit === "l/n")) isCorrectUnit = true;
+          else if (targetUnitId === "mmj" && (cleanUnit.includes("모모점") || cleanUnit.includes("more") || cleanUnit === "mmj")) isCorrectUnit = true;
+          else if (targetUnitId === "vbs" && (cleanUnit.includes("비배스") || cleanUnit.includes("vivid") || cleanUnit === "vbs")) isCorrectUnit = true;
+          else if (targetUnitId === "wxs" && (cleanUnit.includes("원더쇼") || cleanUnit.includes("wonder") || cleanUnit === "wxs")) isCorrectUnit = true;
+          else if (targetUnitId === "n25" && (cleanUnit.includes("니고") || cleanUnit.includes("25") || cleanUnit === "niigo")) isCorrectUnit = true;
+          else if (targetUnitId === "vs" && (cleanUnit.includes("버싱") || cleanUnit.includes("virtual") || cleanUnit === "")) isCorrectUnit = true;
+
+          return isCorrectUnit && charObj.matchKeys.some(key => card.character.includes(key));
+        }
+
+        // 오리지널 캐릭터 처리
+        return card.character === charObj.name;
+      });
+      if (!matchesChar) return false;
+    }
+    
     if (selectedAttrs.length > 0 && !selectedAttrs.some(selId => card.attribute === ATTR_FILTERS.find(a => a.id === selId)?.name)) return false;
     if (selectedSkills.length > 0 && !selectedSkills.some(selId => SKILL_FILTERS.find(s => s.id === selId)?.matchKeys.includes(card.skillType || ""))) return false;
     return true; 
@@ -156,11 +220,8 @@ export default function MyCardsPage() {
             <div className="grid grid-cols-5 gap-1.5">
               {ATTR_FILTERS.map(attr => (
                 <button key={attr.id} onClick={() => toggleFilter(selectedAttrs, setSelectedAttrs, attr.id)} 
-                  // 🌟 반투명, 테두리 완벽 제거! 크기로만 구분
                   className={`relative aspect-square rounded-full transition-all duration-200 ${
-                    selectedAttrs.includes(attr.id) 
-                      ? "scale-105" 
-                      : "scale-[0.85] hover:scale-95"
+                    selectedAttrs.includes(attr.id) ? "scale-105" : "scale-[0.85] hover:scale-95"
                   }`}>
                   <img src={attr.img} alt={attr.name} className="w-full h-full object-contain" />
                 </button>
@@ -173,11 +234,8 @@ export default function MyCardsPage() {
             <div className="grid grid-cols-4 gap-1.5">
               {SKILL_FILTERS.map(skill => (
                 <button key={skill.id} onClick={() => toggleFilter(selectedSkills, setSelectedSkills, skill.id)}
-                  // 🌟 반투명, 테두리 완벽 제거! 크기로만 구분
                   className={`relative aspect-square rounded-full p-1 transition-all duration-200 ${
-                    selectedSkills.includes(skill.id) 
-                      ? "bg-zinc-800 scale-105" 
-                      : "bg-zinc-900 scale-[0.85] hover:scale-95"
+                    selectedSkills.includes(skill.id) ? "bg-zinc-800 scale-105" : "bg-zinc-900 scale-[0.85] hover:scale-95"
                   }`}>
                   <img src={skill.img} alt={skill.name} className="w-full h-full object-contain" />
                 </button>
@@ -190,7 +248,7 @@ export default function MyCardsPage() {
             {UNIT_FILTERS.map((unit) => (
               <div key={unit.id} className="flex flex-col gap-2">
                 
-                {/* 🌟 로고: 테두리 없이 깔끔하게 h-16 크기 유지! 선택 시 배경색만 살짝 변경 */}
+                {/* 유닛 로고 버튼 (현재 유닛에 소속된 버싱포함 전원 선택 여부 판단) */}
                 <button 
                   onClick={() => toggleUnitFilter(unit.chars)} 
                   className={`w-full h-16 py-1 flex items-center justify-center rounded-xl transition-all duration-200 ${
@@ -202,14 +260,12 @@ export default function MyCardsPage() {
                   <img src={unit.logo} alt={unit.name} className="h-full w-auto object-contain max-w-[90%]" />
                 </button>
                 
+                {/* 🌟 4열(기존)에서 버싱포함 10명이 줄바꿈 정돈되도록 격자 배치유지 */}
                 <div className="grid grid-cols-4 gap-1.5 mt-1">
                   {unit.chars.map(char => (
                     <button key={char.id} onClick={() => toggleFilter(selectedChars, setSelectedChars, char.id)}
-                      // 🌟 캐릭터: 반투명, 테두리 완벽 제거! 오직 크기로만 구분
                       className={`relative aspect-square rounded-full transition-all duration-200 bg-zinc-950 ${
-                        selectedChars.includes(char.id) 
-                          ? "scale-105" 
-                          : "scale-[0.80] hover:scale-[0.85]"
+                        selectedChars.includes(char.id) ? "scale-105" : "scale-[0.80] hover:scale-[0.85]"
                       }`}>
                       <img src={char.img} alt={char.name} className="w-full h-full object-contain" />
                     </button>
@@ -221,6 +277,7 @@ export default function MyCardsPage() {
         </div>
       </div>
 
+      {/* 🗂️ 2. 우측: 필터링된 전체 카드 리스트 나열 구역 */}
       <div className="flex-1 flex flex-col min-w-0 bg-zinc-900/30 rounded-3xl p-4 md:p-6 border border-white/5">
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
           <div>
