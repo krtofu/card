@@ -60,7 +60,7 @@ export type FinalCardInfo = {
   hasHair: boolean;         // 👈 필터에서 써먹을 수 있게 true/false 값만 저장!
 };
 
-// 3. 카드 데이터를 생성해주는 함수
+// 3. 카드 데이터를 생성해주는 함수 (여기를 덮어쓰기 해주세요!)
 export function defineCharacterCards(
   unit: UnitName,
   character: CharacterName,
@@ -71,12 +71,47 @@ export function defineCharacterCards(
   return cards.map((card) => {
     const folderBase = `/cards/${unitFolder}/${characterFolder}/${card.id}`;
 
-    // 🌟 규칙에 맞춰 썸네일, 일러스트, 아이콘 자동 매칭
     const thumbPrePath = `${folderBase}/thumb_pre.png`;
     const thumbPostPath = `${folderBase}/thumb_post.png`;
     const preAwakePath = `${folderBase}/pre.png`;
     const postAwakePath = `${folderBase}/post.png`;
-    const iconPath = `${folderBase}/icon.png`;
+
+    // 🌟 [뿌리 개조] 여기서 캐릭터 얼굴 아이콘을 확정 지어버립니다!
+    let finalIconPath = `${folderBase}/icon.png`; // 기본값
+    
+    // 혹시 모를 띄어쓰기를 전부 제거(.trim)하고 검사합니다
+    const cleanCharName = character.trim(); 
+    const cleanUnitName = unit.trim().toLowerCase();
+
+    const originalMap: Record<string, string> = {
+      "호시노 이치카": "Ichika", "텐마 사키": "Saki", "모치즈키 호나미": "Honami", "히노모리 시호": "Shiho",
+      "하나사토 미노리": "Minori", "키리타니 하루카": "Haruka", "모모이 아이리": "Airi", "히노모리 시즈쿠": "Shizuku",
+      "아즈사와 코하네": "Kohane", "시라이시 안": "An", "시노노메 아키토": "Akito", "아오야기 토우야": "Toya",
+      "텐마 츠카사": "Tsukasa", "오토리 에무": "Emu", "쿠사나기 네네": "Nene", "카미시로 루이": "Rui",
+      "요이사키 카나데": "Kanade", "아사히나 마후유": "Mafuyu", "시노노메 에나": "Ena", "아키야마 미즈키": "Mizuki"
+    };
+
+    const vsMap: Record<string, string> = {
+      "하츠네 미쿠": "MIKU", "미쿠": "MIKU",
+      "카가미네 린": "RIN", "린": "RIN",
+      "카가미네 렌": "REN", "렌": "REN",
+      "메구리네 루카": "LUKA", "루카": "LUKA",
+      "MEIKO": "MEIKO", "메이코": "MEIKO",
+      "KAITO": "KAITO", "카이토": "KAITO"
+    };
+
+    if (originalMap[cleanCharName]) {
+      finalIconPath = `/icons/characters/${originalMap[cleanCharName]}.png`;
+    } else if (vsMap[cleanCharName]) {
+      const vsBase = vsMap[cleanCharName];
+      let suffix = "_0";
+      if (cleanUnitName.includes("레오니") || cleanUnitName.includes("leo") || cleanUnitName === "l/n") suffix = "_l";
+      else if (cleanUnitName.includes("모모점") || cleanUnitName.includes("more") || cleanUnitName === "mmj") suffix = "_m";
+      else if (cleanUnitName.includes("비배스") || cleanUnitName.includes("vivid") || cleanUnitName === "vbs") suffix = "_v";
+      else if (cleanUnitName.includes("원더쇼") || cleanUnitName.includes("wonder") || cleanUnitName === "wxs") suffix = "_w";
+      else if (cleanUnitName.includes("니고") || cleanUnitName.includes("25") || cleanUnitName === "niigo") suffix = "_n";
+      finalIconPath = `/icons/characters/${vsBase}${suffix}.png`;
+    }
 
     // 👗 의상 경로 처리
     let costumeData = undefined;
@@ -95,7 +130,6 @@ export function defineCharacterCards(
       };
     }
 
-    // 🌟 에러가 나던 return 부분! (모든 정보를 누락 없이 꽉 채워서 반환합니다)
     return {
       id: card.id,
       unit,
@@ -111,7 +145,7 @@ export function defineCharacterCards(
       thumbPostPath, 
       preAwakePath,
       postAwakePath,
-      iconPath, 
+      iconPath: finalIconPath, // 👈 이제 앱 어디서든 무조건 '얼굴 아이콘 경로'가 나갑니다!
       
       gachaBannerPath: card.gachaBannerPath,
       eventBannerPath: card.eventBannerPath,
@@ -119,7 +153,7 @@ export function defineCharacterCards(
       songJacketPath: card.songJacketPath,
       
       costume: costumeData,
-      hasHair: !!card.hasHair, // 🌟 복잡한 객체 대신 가볍게 true/false만 반환!
+      hasHair: !!card.hasHair, 
     };
   });
 }
