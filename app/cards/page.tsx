@@ -203,7 +203,7 @@ export default function MyCardsPage() {
             onClick={() => setShowOnlyOwned(!showOnlyOwned)}
             className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all shadow-sm active:scale-[0.98] ${
               showOnlyOwned 
-                ? "bg-emerald-500/20 border-emerald-500/50 text-emerald-300" 
+                ? "bg-[#39C5BB]/20 border-[#39C5BB]/50 text-[#39C5BB]" 
                 : "bg-zinc-900 border-white/5 text-zinc-400 hover:bg-zinc-800"
             }`}
           >
@@ -211,7 +211,7 @@ export default function MyCardsPage() {
             <span className="text-sm">{showOnlyOwned ? "✓" : "○"}</span>
           </button>
 
-          {/* ✅ 속성 필터 (반투명 삭제) */}
+          {/* ✅ 속성 필터 */}
           <div className="space-y-2">
             <span className="text-[11px] font-bold text-zinc-500 tracking-widest pl-1">ATTRIBUTE</span>
             <div className="grid grid-cols-5 gap-1.5">
@@ -221,7 +221,7 @@ export default function MyCardsPage() {
                   onClick={() => toggleFilter(selectedAttrs, setSelectedAttrs, attr.id)}
                   className={`relative aspect-square rounded-full transition-all overflow-hidden ${
                     selectedAttrs.includes(attr.id)
-                      ? "ring-2 ring-sky-400 scale-105 drop-shadow-[0_0_8px_rgba(56,189,248,0.5)]"
+                      ? "ring-2 ring-[#39C5BB] scale-105 drop-shadow-[0_0_8px_rgba(57,197,187,0.6)]"
                       : "ring-1 ring-white/10 hover:ring-white/30"
                   }`}
                   title={attr.name}
@@ -232,7 +232,7 @@ export default function MyCardsPage() {
             </div>
           </div>
 
-          {/* ✅ 스킬 필터 (반투명 삭제) */}
+          {/* ✅ 스킬 필터 */}
           <div className="space-y-2">
             <span className="text-[11px] font-bold text-zinc-500 tracking-widest pl-1">SKILL</span>
             <div className="grid grid-cols-4 gap-1.5">
@@ -240,10 +240,10 @@ export default function MyCardsPage() {
                 <button
                   key={skill.id}
                   onClick={() => toggleFilter(selectedSkills, setSelectedSkills, skill.id)}
-                  className={`relative aspect-square rounded-full transition-all overflow-hidden bg-zinc-900 p-1 ${
+                  className={`relative aspect-square rounded-full transition-all overflow-hidden p-1 ${
                     selectedSkills.includes(skill.id)
-                      ? "ring-2 ring-purple-400 scale-105 drop-shadow-[0_0_8px_rgba(192,132,252,0.5)] bg-purple-500/10"
-                      : "ring-1 ring-white/10 hover:ring-white/30"
+                      ? "ring-2 ring-[#39C5BB] scale-105 drop-shadow-[0_0_8px_rgba(57,197,187,0.6)] bg-[#39C5BB]/10"
+                      : "ring-1 ring-white/10 hover:ring-white/30 bg-zinc-900"
                   }`}
                   title={skill.name}
                 >
@@ -253,7 +253,7 @@ export default function MyCardsPage() {
             </div>
           </div>
 
-          {/* ✅ 캐릭터(유닛별) 필터 (반투명 삭제) */}
+          {/* ✅ 캐릭터(유닛별) 필터 */}
           <div className="space-y-4 pt-2">
             <span className="text-[11px] font-bold text-zinc-500 tracking-widest pl-1 border-t border-white/5 pt-4 block">CHARACTER</span>
             {UNIT_FILTERS.map((unit) => (
@@ -265,7 +265,7 @@ export default function MyCardsPage() {
                       onClick={() => toggleFilter(selectedChars, setSelectedChars, char.id)}
                       className={`relative aspect-square rounded-full transition-all overflow-hidden bg-zinc-950 ${
                         selectedChars.includes(char.id)
-                          ? "ring-2 ring-emerald-400 scale-105 drop-shadow-[0_0_8px_rgba(52,211,153,0.3)]"
+                          ? "ring-2 ring-[#39C5BB] scale-105 drop-shadow-[0_0_8px_rgba(57,197,187,0.6)]"
                           : "ring-1 ring-white/10 hover:ring-white/30"
                       }`}
                       title={char.name}
@@ -320,20 +320,18 @@ export default function MyCardsPage() {
                   onClick={() => setActiveModalCard(card)}
                   className="relative p-1 cursor-pointer transition-all hover:scale-[1.05] flex flex-col items-center text-center group"
                 >
-                  {/* 🌟 카드 썸네일 (반투명 완전 삭제!) */}
                   <div className="relative w-fit shrink-0">
                     <img 
                       src={showPostAwake ? card.thumbPostPath : card.thumbPrePath} 
                       alt="썸네일" 
                       className={`h-25 w-auto object-contain transition-all duration-300 rounded-lg ${
                         isOwned 
-                          ? "ring-2 ring-emerald-500/50 shadow-[0_4px_12px_rgba(52,211,153,0.2)]" 
+                          ? "ring-2 ring-[#39C5BB]/70 shadow-[0_0_12px_rgba(57,197,187,0.4)]" 
                           : "ring-1 ring-white/10 group-hover:ring-white/30"
                       }`} 
                     />
                   </div>
                   
-                  {/* 🌟 카드 텍스트 (흐린 회색 -> 100% 선명한 흰색 복구!) */}
                   <p className="text-[11px] font-semibold mt-2.5 truncate w-25 transition-colors text-zinc-200 group-hover:text-white">
                     {card.cardName}
                   </p>
