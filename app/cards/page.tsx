@@ -324,15 +324,15 @@ export default function MyCardsPage() {
                     <img 
                       src={showPostAwake ? card.thumbPostPath : card.thumbPrePath} 
                       alt="썸네일" 
-                      className={`h-25 w-auto object-contain transition-all duration-300 rounded-lg ${
-                        isOwned 
-                          ? "ring-2 ring-[#00FFD1]/80 shadow-[0_0_12px_rgba(0,255,209,0.5)]" 
-                          : "ring-1 ring-white/10 group-hover:ring-white/30"
-                      }`} 
+                      // 🌟 카드 목록의 형광색 링과 글로우 삭제! (기본 하얀 테두리만 은은하게 유지)
+                      className="h-25 w-auto object-contain transition-all duration-300 rounded-lg ring-1 ring-white/10 group-hover:ring-white/30" 
                     />
                   </div>
                   
-                  <p className="text-[11px] font-semibold mt-2.5 truncate w-25 transition-colors text-zinc-200 group-hover:text-white">
+                  {/* 🌟 카드 이름을 통해 보유 여부 은은하게 표시 */}
+                  <p className={`text-[11px] font-semibold mt-2.5 truncate w-25 transition-colors ${
+                    isOwned ? "text-[#00FFD1]" : "text-zinc-200 group-hover:text-white"
+                  }`}>
                     {card.cardName}
                   </p>
                   <p className="text-[10px] text-zinc-500 mt-0.5">
