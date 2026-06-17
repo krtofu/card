@@ -70,10 +70,10 @@ export const IchikaCards = defineCharacterCards(
       skillType: "판강",
 
       // 🖼️ [배너 및 악곡 이미지 경로]
-      gachaBannerPath: "", 
-      eventBannerPath: "", 
-      songName: "",        
-      songJacketPath: "",  
+      gachaBannerPath: "/gachas/23y/banner_23_04.png", 
+      eventBannerPath: "/events/23y/banner_23_04.png", 
+      songName: "유성의 펄스",        
+      songJacketPath: "/jacket/23y/Pulse_of_the_Meteor.png",  
 
       // 👗 [의상 정보]
       hasCostume: true,
