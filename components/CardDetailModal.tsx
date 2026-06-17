@@ -91,34 +91,56 @@ export default function CardDetailModal({
     return { src: "", label: skill };
   };
 
-  // 🌟 캐릭터 얼굴 아이콘 매핑 함수 (유저님 데이터 완벽 반영!)
-  const getCharacterIcon = (charName: string) => {
-    const charMap: Record<string, string> = {
-      // 버추얼 싱어
-      "버싱 미쿠": "MIKU_0", "레오니 미쿠": "MIKU_l", "모모점 미쿠": "MIKU_m", "비배스 미쿠": "MIKU_v", "원더쇼 미쿠": "MIKU_w", "니고 미쿠": "MIKU_n",
-      "버싱 린": "RIN_0", "레오니 린": "RIN_l", "모모점 린": "RIN_m", "비배스 린": "RIN_v", "원더쇼 린": "RIN_w", "니고 린": "RIN_n",
-      "버싱 렌": "REN_0", "레오니 렌": "REN_l", "모모점 렌": "REN_m", "비배스 렌": "REN_v", "원더쇼 렌": "REN_w", "니고 렌": "REN_n",
-      "버싱 루카": "LUKA_0", "레오니 루카": "LUKA_l", "모모점 루카": "LUKA_m", "비배스 루카": "LUKA_v", "원더쇼 루카": "LUKA_w", "니고 루카": "LUKA_n",
-      "버싱 메이코": "MEIKO_0", "레오니 메이코": "MEIKO_l", "모모점 메이코": "MEIKO_m", "비배스 메이코": "MEIKO_v", "원더쇼 메이코": "MEIKO_w", "니고 메이코": "MEIKO_n",
-      "버싱 카이토": "KAITO_0", "레오니 카이토": "KAITO_l", "모모점 카이토": "KAITO_m", "비배스 카이토": "KAITO_v", "원더쇼 카이토": "KAITO_w", "니고 카이토": "KAITO_n",
-      // 오리지널 캐릭터
-      "이치카": "Ichika", "사키": "Saki", "호나미": "Honami", "시호": "Shiho",
-      "미노리": "Minori", "하루카": "Haruka", "아이리": "Airi", "시즈쿠": "Shizuku",
-      "코하네": "Kohane", "안": "An", "아키토": "Akito", "토우야": "Toya",
-      "츠카사": "Tsukasa", "에무": "Emu", "네네": "Nene", "루이": "Rui",
-      "카나데": "Kanade", "마후유": "Mafuyu", "에나": "Ena", "미즈키": "Mizuki"
+  // 🌟 [핵심 마법] 풀네임 + 유닛 자동 감지 아이콘 매핑 함수
+  const getCharacterIcon = (charName: string, unitName: string) => {
+    // 1. 오리지널 캐릭터 풀네임 매핑
+    const originalMap: Record<string, string> = {
+      "호시노 이치카": "Ichika", "텐마 사키": "Saki", "모치즈키 호나미": "Honami", "히노모리 시호": "Shiho",
+      "하나사토 미노리": "Minori", "키리타니 하루카": "Haruka", "모모이 아이리": "Airi", "히노모리 시즈쿠": "Shizuku",
+      "아즈사와 코하네": "Kohane", "시라이시 안": "An", "시노노메 아키토": "Akito", "아오야기 토우야": "Toya",
+      "텐마 츠카사": "Tsukasa", "오토리 에무": "Emu", "쿠사나기 네네": "Nene", "카미시로 루이": "Rui",
+      "요이사키 카나데": "Kanade", "아사히나 마후유": "Mafuyu", "시노노메 에나": "Ena", "아키야마 미즈키": "Mizuki"
     };
 
-    const fileName = charMap[charName];
-    // 매핑된 이름이 있으면 그 이미지를 반환하고, 없으면 원래 있던 카드 아이콘을 임시로 보여줌
-    if (fileName) return `/icons/characters/${fileName}.png`;
+    if (originalMap[charName]) {
+      return `/icons/characters/${originalMap[charName]}.png`;
+    }
+
+    // 2. 버추얼 싱어 (유닛 이름에 따라 알파벳 자동 부착!)
+    const vsMap: Record<string, string> = {
+      "하츠네 미쿠": "MIKU", "미쿠": "MIKU",
+      "카가미네 린": "RIN", "린": "RIN",
+      "카가미네 렌": "REN", "렌": "REN",
+      "메구리네 루카": "LUKA", "루카": "LUKA",
+      "MEIKO": "MEIKO", "메이코": "MEIKO",
+      "KAITO": "KAITO", "카이토": "KAITO"
+    };
+
+    if (vsMap[charName]) {
+      const vsBase = vsMap[charName];
+      let suffix = "_0"; // 기본값 (아무 유닛도 아닐 때)
+      
+      const unit = unitName.toLowerCase();
+      // 유저가 영어나 한글로 어떻게 적었든 유연하게 감지
+      if (unit.includes("레오니") || unit.includes("leo") || unit === "l/n") suffix = "_l";
+      else if (unit.includes("모모점") || unit.includes("more") || unit === "mmj") suffix = "_m";
+      else if (unit.includes("비배스") || unit.includes("vivid") || unit === "vbs") suffix = "_v";
+      else if (unit.includes("원더쇼") || unit.includes("wonder") || unit === "wxs") suffix = "_w";
+      else if (unit.includes("니고") || unit.includes("25") || unit === "niigo") suffix = "_n";
+
+      return `/icons/characters/${vsBase}${suffix}.png`;
+    }
+
+    // 그래도 못 찾으면 원래 카드 아이콘(뽑기 아이콘) 띄우기
     return card.iconPath || ""; 
   };
 
   const currentGachaStyle = getGachaBadgeStyle(card.gachaType);
   const attrInfo = getAttrInfo(attribute);
   const skillInfo = getSkillInfo(card.skillType || ""); 
-  const characterIconPath = getCharacterIcon(card.character || ""); // 👈 캐릭터 아이콘 경로 찾기!
+  
+  // 👉 여기서 캐릭터 이름과 유닛(소속) 정보를 동시에 넘겨줍니다!
+  const characterIconPath = getCharacterIcon(card.character || "", card.unit || ""); 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md transition-opacity">
@@ -203,7 +225,7 @@ export default function CardDetailModal({
               </div>
             </div>
 
-            {/* 🎲 1. 관련 뽑기 (여기서 캐릭터 얼굴 아이콘이 뜨도록 변경됨!) */}
+            {/* 🎲 1. 관련 뽑기 (자동 아이콘 매핑!) */}
             <div className="flex gap-3.5">
               <div className="w-10 h-10 rounded-full bg-zinc-900 border border-white/10 shrink-0 overflow-hidden flex items-center justify-center">
                 <img src={characterIconPath} alt="Character Icon" className="w-full h-full object-contain" />
