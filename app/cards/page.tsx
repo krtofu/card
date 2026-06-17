@@ -203,7 +203,7 @@ export default function MyCardsPage() {
             onClick={() => setShowOnlyOwned(!showOnlyOwned)}
             className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all shadow-sm active:scale-[0.98] ${
               showOnlyOwned 
-                ? "bg-[#39C5BB]/20 border-[#39C5BB]/50 text-[#39C5BB]" 
+                ? "bg-[#00FFD1]/10 border-[#00FFD1]/50 text-[#00FFD1]" 
                 : "bg-zinc-900 border-white/5 text-zinc-400 hover:bg-zinc-800"
             }`}
           >
@@ -221,7 +221,7 @@ export default function MyCardsPage() {
                   onClick={() => toggleFilter(selectedAttrs, setSelectedAttrs, attr.id)}
                   className={`relative aspect-square rounded-full transition-all overflow-hidden ${
                     selectedAttrs.includes(attr.id)
-                      ? "ring-2 ring-[#39C5BB] scale-105 drop-shadow-[0_0_8px_rgba(57,197,187,0.6)]"
+                      ? "ring-2 ring-[#00FFD1] scale-105 drop-shadow-[0_0_8px_rgba(0,255,209,0.7)]"
                       : "ring-1 ring-white/10 hover:ring-white/30"
                   }`}
                   title={attr.name}
@@ -242,7 +242,7 @@ export default function MyCardsPage() {
                   onClick={() => toggleFilter(selectedSkills, setSelectedSkills, skill.id)}
                   className={`relative aspect-square rounded-full transition-all overflow-hidden p-1 ${
                     selectedSkills.includes(skill.id)
-                      ? "ring-2 ring-[#39C5BB] scale-105 drop-shadow-[0_0_8px_rgba(57,197,187,0.6)] bg-[#39C5BB]/10"
+                      ? "ring-2 ring-[#00FFD1] scale-105 drop-shadow-[0_0_8px_rgba(0,255,209,0.7)] bg-[#00FFD1]/10"
                       : "ring-1 ring-white/10 hover:ring-white/30 bg-zinc-900"
                   }`}
                   title={skill.name}
@@ -265,7 +265,7 @@ export default function MyCardsPage() {
                       onClick={() => toggleFilter(selectedChars, setSelectedChars, char.id)}
                       className={`relative aspect-square rounded-full transition-all overflow-hidden bg-zinc-950 ${
                         selectedChars.includes(char.id)
-                          ? "ring-2 ring-[#39C5BB] scale-105 drop-shadow-[0_0_8px_rgba(57,197,187,0.6)]"
+                          ? "ring-2 ring-[#00FFD1] scale-105 drop-shadow-[0_0_8px_rgba(0,255,209,0.7)]"
                           : "ring-1 ring-white/10 hover:ring-white/30"
                       }`}
                       title={char.name}
@@ -326,7 +326,7 @@ export default function MyCardsPage() {
                       alt="썸네일" 
                       className={`h-25 w-auto object-contain transition-all duration-300 rounded-lg ${
                         isOwned 
-                          ? "ring-2 ring-[#39C5BB]/70 shadow-[0_0_12px_rgba(57,197,187,0.4)]" 
+                          ? "ring-2 ring-[#00FFD1]/80 shadow-[0_0_12px_rgba(0,255,209,0.5)]" 
                           : "ring-1 ring-white/10 group-hover:ring-white/30"
                       }`} 
                     />
