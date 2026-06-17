@@ -197,7 +197,6 @@ export default function MyCardsPage() {
 
   if (!mounted) return null;
 
-  // 🌟 그룹별 활성화 여부 확인 변수들
   const isAnyAttrSelected = selectedAttrs.length > 0;
   const isAnySkillSelected = selectedSkills.length > 0;
   const isAnyCharSelected = selectedChars.length > 0;
@@ -218,13 +217,12 @@ export default function MyCardsPage() {
 
         <div className="space-y-6">
           
-          {/* ✅ 속성 필터 스포트라이트 적용 */}
+          {/* ✅ 속성 필터 */}
           <div className="space-y-2">
             <span className="text-[11px] font-bold text-zinc-500 tracking-widest pl-1">ATTRIBUTE</span>
             <div className="grid grid-cols-5 gap-1.5">
               {ATTR_FILTERS.map(attr => {
                 const isSelected = selectedAttrs.includes(attr.id);
-                // 아무것도 안 눌렸거나, 내가 선택됐으면 100% 선명. 남이 선택됐으면 40%로 흐려짐
                 const opacityClass = !isAnyAttrSelected || isSelected ? "opacity-100" : "opacity-40";
                 
                 return (
@@ -238,7 +236,7 @@ export default function MyCardsPage() {
             </div>
           </div>
 
-          {/* ✅ 스킬 필터 스포트라이트 적용 */}
+          {/* ✅ 스킬 필터 */}
           <div className="space-y-2">
             <span className="text-[11px] font-bold text-zinc-500 tracking-widest pl-1">SKILL</span>
             <div className="grid grid-cols-4 gap-1.5">
@@ -257,12 +255,11 @@ export default function MyCardsPage() {
             </div>
           </div>
 
-          {/* ✅ 캐릭터/유닛 필터 스포트라이트 적용 */}
+          {/* ✅ 캐릭터/유닛 필터 */}
           <div className="space-y-6 pt-2">
             <span className="text-[11px] font-bold text-zinc-500 tracking-widest pl-1 border-t border-white/5 pt-4 block">CHARACTER</span>
             {UNIT_FILTERS.map((unit) => {
               const isAllSelected = unit.chars.every(c => selectedChars.includes(c.id));
-              // 유닛 로고: 아무도 안 눌렀거나 이 유닛이 전체선택 되었으면 선명함. 아니면 흐려짐
               const logoOpacityClass = !isAnyCharSelected || isAllSelected ? "opacity-100" : "opacity-40";
 
               return (
@@ -279,7 +276,6 @@ export default function MyCardsPage() {
                 <div className="grid grid-cols-4 gap-1.5 mt-1">
                   {unit.chars.map(char => {
                     const isSelected = selectedChars.includes(char.id);
-                    // 캐릭터 아이콘: 아무도 안 눌렀거나 내가 선택됐으면 선명함. 아니면 흐려짐
                     const charOpacityClass = !isAnyCharSelected || isSelected ? "opacity-100" : "opacity-40";
                     
                     return (
@@ -314,11 +310,24 @@ export default function MyCardsPage() {
           <div className="grid grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-y-6 gap-x-4 w-full">
             {filteredCards.map((card) => {
               const isOwned = cardStates[card.id]?.isOwned;
+              // 🌟 추가된 목표 판별 로직
+              const isTarget = cardStates[card.id]?.isTarget;
+              
               return (
                 <div key={card.id} onClick={() => setActiveModalCard(card)} className="relative p-1 cursor-pointer transition-all hover:scale-[1.05] flex flex-col items-center text-center group">
                   <img src={showPostAwake ? card.thumbPostPath : card.thumbPrePath} alt="썸네일" 
                     className="h-25 w-auto object-contain transition-all duration-300 rounded-lg border border-white/10 group-hover:border-white/30" />
-                  <p className={`text-[11px] font-semibold mt-2.5 truncate w-25 ${isOwned ? "text-[#00FFD1]" : "text-zinc-200"}`}>{card.cardName}</p>
+                  
+                  {/* 🌟 카드 텍스트 색상: 보유(민트) > 목표(핑크) > 기본(회색) 순으로 우선 적용 */}
+                  <p className={`text-[11px] font-semibold mt-2.5 truncate w-25 transition-colors ${
+                    isOwned 
+                      ? "text-[#00FFD1]" 
+                      : isTarget 
+                        ? "text-pink-400" 
+                        : "text-zinc-200 group-hover:text-white"
+                  }`}>
+                    {card.cardName}
+                  </p>
                   <p className="text-[10px] text-zinc-500 mt-0.5">{card.character}</p>
                 </div>
               );
