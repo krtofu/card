@@ -11,7 +11,7 @@ export const IchikaCards = defineCharacterCards(
       gachaType: "통상",
       gachaPoolName: "서비스 시작 기념 뽑기",
       eventName: "",
-      skillType: "라이프 회복",
+      skillType: "힐",
 
       // 🖼️ [배너 및 악곡 이미지 경로]
       gachaBannerPath: "/gachas/22y/banner_22_01.png", 
@@ -193,7 +193,7 @@ export const IchikaCards = defineCharacterCards(
       gachaType: "한정",
       gachaPoolName: "Before the storm 뽑기",
       eventName: "Don't lose faith!",
-      skillType: "라이프 회복",
+      skillType: "힐",
 
       // 🖼️ [배너 및 악곡 이미지 경로]
       gachaBannerPath: "", 
@@ -236,7 +236,7 @@ export const IchikaCards = defineCharacterCards(
       gachaType: "한정",
       gachaPoolName: "Sweet Cute Valentine! 뽑기",
       eventName: "캔들 향기는 추억과 함께",
-      skillType: "라이프 회복",
+      skillType: "힐",
 
       // 🖼️ [배너 및 악곡 이미지 경로]
       gachaBannerPath: "", 
@@ -259,7 +259,7 @@ export const IchikaCards = defineCharacterCards(
       gachaType: "통상",
       gachaPoolName: "출항과 유대의 본 보야지 뽑기",
       eventName: "출항 전의 원데이 트립",
-      skillType: "라이프 회복",
+      skillType: "힐",
 
       // 🖼️ [배너 및 악곡 이미지 경로]
       gachaBannerPath: "", 
@@ -342,7 +342,7 @@ export const IchikaCards = defineCharacterCards(
       gachaType: "한정",
       gachaPoolName: "싸움 끝에 기다리는 것은 뽑기",
       eventName: "릴랙스 티타임",
-      skillType: "라이프 회복",
+      skillType: "힐",
 
       // 🖼️ [배너 및 악곡 이미지 경로]
       gachaBannerPath: "", 

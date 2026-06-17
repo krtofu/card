@@ -77,16 +77,16 @@ export default function CardDetailModal({
     if (!skill) return { src: "", label: "" };
     
     if (skill === "스업") {
-      return { src: "/icons/skills/score_o.png", label: "스업" };
+      return { src: "/icons/skills/score_x.png", label: "스업" };
     } 
     if (["퍼스업", "굿스업", "체스업", "블페", "팀스업"].includes(skill)) {
-      return { src: "/icons/skills/condition_o.png", label: skill }; // 이미지는 같지만 설명은 종류에 따라 다르게!
+      return { src: "/icons/skills/condition_x.png", label: skill }; // 이미지는 같지만 설명은 종류에 따라 다르게!
     } 
     if (skill === "판강") {
-      return { src: "/icons/skills/perfect_o.png", label: "판정 강화" };
+      return { src: "/icons/skills/perfect_x.png", label: "판정 강화" };
     } 
     if (skill === "힐") {
-      return { src: "/icons/skills/heal_o.png", label: "라이프 회복" };
+      return { src: "/icons/skills/heal_x.png", label: "라이프 회복" };
     }
     
     return { src: "", label: skill }; // 매핑되지 않은 스킬은 글자로만 표시
