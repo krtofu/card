@@ -143,7 +143,7 @@ export default function MyCardsPage() {
           <button onClick={resetFilters} className="text-[11px] font-bold text-zinc-500 hover:text-white transition-colors bg-zinc-900 px-2.5 py-1 rounded-md border border-white/5">초기화 ↺</button>
         </div>
 
-        <button onClick={() => setShowOnlyOwned(!showOnlyOwned)} className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all ${showOnlyOwned ? "bg-zinc-800 border-[#00FFD1]/50 text-[#00FFD1]" : "bg-zinc-900 border-white/5 text-zinc-400"}`}>
+        <button onClick={() => setShowOnlyOwned(!showOnlyOwned)} className={`w-full flex items-center justify-between p-3 rounded-xl border-2 transition-all ${showOnlyOwned ? "bg-[#00FFD1]/10 border-[#00FFD1] text-[#00FFD1]" : "bg-zinc-900 border-transparent text-zinc-400"}`}>
           <span className="text-xs font-bold tracking-wide">내 보유 카드만 보기</span>
           <span className="text-sm">{showOnlyOwned ? "✓" : "○"}</span>
         </button>
@@ -154,11 +154,11 @@ export default function MyCardsPage() {
             <div className="grid grid-cols-5 gap-1.5">
               {ATTR_FILTERS.map(attr => (
                 <button key={attr.id} onClick={() => toggleFilter(selectedAttrs, setSelectedAttrs, attr.id)} 
-                  // 🌟 통일성을 위해 속성 아이콘도 비활성 시 작게(scale-90), 활성 시 크게(scale-105) 설정
-                  className={`relative aspect-square rounded-full transition-all duration-200 border ${
+                  // 🌟 링, 글로우 삭제! 오직 선명한 실선(border)과 크기 변화만 남김
+                  className={`relative aspect-square rounded-full transition-all duration-200 border-2 ${
                     selectedAttrs.includes(attr.id) 
-                      ? "border-[#00FFD1] scale-105" 
-                      : "border-transparent scale-90 hover:scale-95"
+                      ? "border-[#00FFD1] scale-105 opacity-100" 
+                      : "border-transparent scale-90 opacity-40 hover:opacity-80"
                   }`}>
                   <img src={attr.img} alt={attr.name} className="w-full h-full object-contain" />
                 </button>
@@ -171,11 +171,11 @@ export default function MyCardsPage() {
             <div className="grid grid-cols-4 gap-1.5">
               {SKILL_FILTERS.map(skill => (
                 <button key={skill.id} onClick={() => toggleFilter(selectedSkills, setSelectedSkills, skill.id)}
-                  // 🌟 스킬 아이콘도 비활성 시 작게(scale-90), 활성 시 크게(scale-105) 설정
-                  className={`relative aspect-square rounded-full p-1 transition-all duration-200 border ${
+                  // 🌟 링, 글로우 삭제!
+                  className={`relative aspect-square rounded-full p-1 transition-all duration-200 border-2 ${
                     selectedSkills.includes(skill.id) 
-                      ? "border-[#00FFD1] bg-zinc-800 scale-105" 
-                      : "border-transparent bg-zinc-900 scale-90 hover:scale-95"
+                      ? "border-[#00FFD1] bg-zinc-800 scale-105 opacity-100" 
+                      : "border-transparent bg-zinc-900 scale-90 opacity-40 hover:opacity-80"
                   }`}>
                   <img src={skill.img} alt={skill.name} className="w-full h-full object-contain" />
                 </button>
@@ -183,31 +183,31 @@ export default function MyCardsPage() {
             </div>
           </div>
 
-          <div className="space-y-5 pt-2">
+          <div className="space-y-6 pt-2">
             <span className="text-[11px] font-bold text-zinc-500 tracking-widest pl-1 border-t border-white/5 pt-4 block">CHARACTER</span>
             {UNIT_FILTERS.map((unit) => (
               <div key={unit.id} className="flex flex-col gap-2">
                 
-                {/* 🌟 유닛 로고: 높이를 h-12(48px)로 1.5배 키우고 넓게 꽉 차게 설정하여 가독성 대폭 상향! */}
+                {/* 🌟 로고: h-16 (약 64px)로 대폭 확대! 반투명 삭제(무조건 opacity-100) */}
                 <button 
                   onClick={() => toggleUnitFilter(unit.chars)} 
-                  className={`w-full h-12 py-1 flex items-center justify-center rounded-lg transition-all ${
+                  className={`w-full h-16 py-1 flex items-center justify-center rounded-xl border-2 transition-all ${
                     unit.chars.every(c => selectedChars.includes(c.id)) 
-                      ? "bg-zinc-800 border border-[#00FFD1]" 
-                      : "bg-transparent hover:bg-white/5"
+                      ? "bg-[#00FFD1]/5 border-[#00FFD1]" 
+                      : "bg-transparent border-transparent hover:bg-white/5"
                   }`}
                 >
-                  <img src={unit.logo} alt={unit.name} className="h-full w-auto object-contain max-w-[95%]" />
+                  <img src={unit.logo} alt={unit.name} className="h-full w-auto object-contain max-w-[90%] opacity-100" />
                 </button>
                 
                 <div className="grid grid-cols-4 gap-1.5 mt-1">
                   {unit.chars.map(char => (
                     <button key={char.id} onClick={() => toggleFilter(selectedChars, setSelectedChars, char.id)}
-                      // 🌟 캐릭터 아이콘: 비활성화 상태에서는 확 작게(scale-85), 선택 시 쨍하게(scale-105) 애니메이션!
-                      className={`relative aspect-square rounded-full transition-all duration-200 bg-zinc-950 ${
+                      // 🌟 캐릭터 버튼: 글로우, 링 완벽 삭제. 실선 테두리(border) 적용. 비활성시 더 작게!
+                      className={`relative aspect-square rounded-full transition-all duration-200 bg-zinc-950 border-2 ${
                         selectedChars.includes(char.id) 
-                          ? "ring-2 ring-[#00FFD1] scale-105 drop-shadow-[0_0_8px_rgba(0,255,209,0.7)]" 
-                          : "ring-1 ring-white/10 scale-[0.85] hover:scale-95 hover:ring-white/30"
+                          ? "border-[#00FFD1] scale-105 opacity-100" 
+                          : "border-transparent scale-[0.80] opacity-40 hover:opacity-80 hover:scale-[0.85]"
                       }`}>
                       <img src={char.img} alt={char.name} className="w-full h-full object-contain" />
                     </button>
@@ -238,7 +238,9 @@ export default function MyCardsPage() {
               const isOwned = cardStates[card.id]?.isOwned;
               return (
                 <div key={card.id} onClick={() => setActiveModalCard(card)} className="relative p-1 cursor-pointer transition-all hover:scale-[1.05] flex flex-col items-center text-center group">
-                  <img src={showPostAwake ? card.thumbPostPath : card.thumbPrePath} alt="썸네일" className="h-25 w-auto object-contain transition-all duration-300 rounded-lg ring-1 ring-white/10" />
+                  <img src={showPostAwake ? card.thumbPostPath : card.thumbPrePath} alt="썸네일" 
+                    // 🌟 카드 목록도 링/글로우 완벽 삭제. 아주 얇고 깔끔한 border만 적용
+                    className="h-25 w-auto object-contain transition-all duration-300 rounded-lg border border-white/10 group-hover:border-white/30" />
                   <p className={`text-[11px] font-semibold mt-2.5 truncate w-25 ${isOwned ? "text-[#00FFD1]" : "text-zinc-200"}`}>{card.cardName}</p>
                   <p className="text-[10px] text-zinc-500 mt-0.5">{card.character}</p>
                 </div>
