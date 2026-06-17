@@ -132,11 +132,7 @@ export default function CardDetailModal({
               </div>
               
               <div className="flex flex-wrap items-center justify-end gap-1.5 shrink-0">
-                <span className={`shrink-0 inline-flex items-center px-3 py-1 text-xs font-bold rounded-full border tracking-wide transition-all ${currentGachaStyle}`}>
-                  {card.gachaType}
-                </span>
-                
-                {/* 💧 속성 뱃지 */}
+                {/* 💧 1. 속성 뱃지 */}
                 {attrInfo.src ? (
                   <div className="relative group flex items-center justify-center cursor-help">
                     <img src={attrInfo.src} alt={attrInfo.label} className="w-[26px] h-[26px] object-contain drop-shadow-md shrink-0" />
@@ -155,7 +151,7 @@ export default function CardDetailModal({
                   </span>
                 )}
 
-                {/* ✨ 스킬 뱃지 (새로 추가된 부분!) */}
+                {/* ✨ 2. 스킬 뱃지 */}
                 {skillInfo.src ? (
                   <div className="relative group flex items-center justify-center cursor-help ml-0.5">
                     <img src={skillInfo.src} alt={skillInfo.label} className="w-[26px] h-[26px] object-contain drop-shadow-md shrink-0" />
@@ -175,6 +171,11 @@ export default function CardDetailModal({
                     </span>
                   )
                 )}
+
+                {/* 🎫 3. 가챠 뱃지 */}
+                <span className={`shrink-0 inline-flex items-center px-3 py-1 text-xs font-bold rounded-full border tracking-wide transition-all ml-0.5 ${currentGachaStyle}`}>
+                  {card.gachaType}
+                </span>
               </div>
             </div>
 
