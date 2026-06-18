@@ -129,14 +129,23 @@ const ALL_SKILL_TARGETS = [
   ...(SKILL_FILTERS.find(s => s.id === "condition_group")?.subs || [])
 ];
 
+// 🌟 [추가됨] 세분화된 콜라보 필터 목록 및 인식 키워드 설정!
+const COLLAB_FILTERS = [
+  { id: "collab_evil", name: "에빌", matchKeys: ["에빌", "악의", "대죄", "evillious"] },
+  { id: "collab_sanrio", name: "산리오", matchKeys: ["산리오", "sanrio"] },
+  { id: "collab_enstar", name: "앙스타", matchKeys: ["앙스타", "앙상블", "ensemble"] },
+  { id: "collab_tamagotchi", name: "다마고치", matchKeys: ["다마고치", "tamagotchi"] }
+];
+
 export default function MyCardsPage() {
   const [cardStates, setCardStates] = useState<Record<string, UserCardState>>({});
   const [activeModalCard, setActiveModalCard] = useState<FinalCardInfo | null>(null);
   const [mounted, setMounted] = useState(false);
   const [showPostAwake, setShowPostAwake] = useState(false);
   
-  // 🌟 접기/펴기 상태 관리 (구역이 3개로 깔끔하게 정리됨!)
+  // 🌟 접기/펴기 상태 관리
   const [isStatusExpanded, setIsStatusExpanded] = useState(true);
+  const [isCollabExpanded, setIsCollabExpanded] = useState(true);
   const [isAttrExpanded, setIsAttrExpanded] = useState(true);
   const [isSkillExpanded, setIsSkillExpanded] = useState(true);
   const [isCharExpanded, setIsCharExpanded] = useState(true);
@@ -178,13 +187,16 @@ export default function MyCardsPage() {
     setSelectedSkills(isAllSelected ? selectedSkills.filter(id => !condIds.includes(id)) : [...new Set([...selectedSkills, ...condIds])]);
   };
 
-  // 🌟 한정 버튼 누르면 콜라보까지 싹 다 잡히도록 스마트 토글 기능 추가
+  // 🌟 한정 버튼 누르면 콜라보(에빌,산리오,앙스타,다마고치)까지 싹 다 잡히도록 로직 강화!
+  const collabIds = COLLAB_FILTERS.map(c => c.id);
+  const limitedGroup = ["limited", ...collabIds];
+  const isAllLimitedSelected = limitedGroup.every(id => selectedTypes.includes(id));
+
   const toggleLimitedGroup = () => {
-    const isAllLimitedSelected = selectedTypes.includes("limited") && selectedTypes.includes("collab");
     if (isAllLimitedSelected) {
-      setSelectedTypes(selectedTypes.filter(id => id !== "limited" && id !== "collab"));
+      setSelectedTypes(selectedTypes.filter(id => !limitedGroup.includes(id)));
     } else {
-      setSelectedTypes([...new Set([...selectedTypes, "limited", "collab"])]);
+      setSelectedTypes([...new Set([...selectedTypes, ...limitedGroup])]);
     }
   };
 
@@ -206,11 +218,20 @@ export default function MyCardsPage() {
       if (!(matchOwned || matchUnowned || matchTarget)) return false;
     }
 
-    // 2. 가챠 타입 필터
+    // 🌟 2. 가챠 타입 & 세분화된 콜라보 필터
     if (selectedTypes.length > 0) {
       const matchNormal = selectedTypes.includes("normal") && card.gachaType === "통상";
       const matchLimited = selectedTypes.includes("limited") && ["한정", "페스", "월링"].includes(card.gachaType);
-      const matchCollab = selectedTypes.includes("collab") && card.gachaType === "콜라보";
+      
+      let matchCollab = false;
+      if (card.gachaType === "콜라보") {
+        matchCollab = COLLAB_FILTERS.some(collab => {
+          if (!selectedTypes.includes(collab.id)) return false;
+          // 콜라보 카드일 경우 gachaPoolName이나 eventName에서 키워드를 찾아 매칭합니다.
+          const searchStr = (card.gachaPoolName + " " + card.eventName).toLowerCase();
+          return collab.matchKeys.some(key => searchStr.includes(key.toLowerCase()));
+        });
+      }
       
       if (!(matchNormal || matchLimited || matchCollab)) return false;
     }
@@ -285,9 +306,6 @@ export default function MyCardsPage() {
   const condIds = condSubs.map(s => s.id);
   const isAllCondSelected = condIds.length > 0 && condIds.every(id => selectedSkills.includes(id));
   
-  // 한정 그룹 활성화 상태 확인
-  const isAllLimitedSelected = selectedTypes.includes("limited") && selectedTypes.includes("collab");
-
   return (
     <div className="flex flex-col md:flex-row gap-6 px-4 md:px-8 py-6 min-h-screen text-zinc-100 max-w-[1920px] mx-auto w-full">
       
@@ -321,15 +339,19 @@ export default function MyCardsPage() {
                     { id: "target", label: "⭐ 목표" }
                   ].map(status => {
                     const isSelected = selectedStatuses.includes(status.id);
-                    const opacityClass = !isAnyStatusSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100";
+                    // 🌟 비활성 상태 가독성 1000% 상승! (스킬 버튼처럼 하얀 글씨 + 투명도 조절)
+                    const opacityClass = !isAnyStatusSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100 text-white bg-zinc-900";
+                    
+                    // 🌟 유저님의 근본 색상 복구 (보유:초록, 목표:핑크)
+                    const activeClass =
+                      status.id === "target" ? "bg-pink-500/20 text-pink-300 shadow-md border border-pink-500/30 scale-105" :
+                      status.id === "owned" ? "bg-emerald-500/20 text-emerald-300 shadow-md border border-emerald-500/30 scale-105" :
+                      "bg-zinc-700 text-white shadow-md border border-zinc-500 scale-105";
+
                     return (
                       <button key={status.id} onClick={() => toggleFilter(selectedStatuses, setSelectedStatuses, status.id)}
                         className={`py-2 px-1 text-[12px] sm:text-[13px] font-medium tracking-tight rounded-lg transition-all duration-300 text-white ${
-                          isSelected 
-                            ? status.id === "target" ? "bg-pink-500/20 text-pink-300 shadow-md border border-pink-500/30 scale-105"
-                            : status.id === "owned" ? "bg-emerald-500/20 text-emerald-300 shadow-md border border-emerald-500/30 scale-105" 
-                            : "bg-zinc-700 text-white shadow-md border border-zinc-600 scale-105"
-                            : "bg-zinc-900 hover:bg-zinc-800 scale-95 border border-transparent"
+                          isSelected ? activeClass : "bg-zinc-900 hover:bg-zinc-800 border border-transparent scale-95"
                         } ${opacityClass}`}>
                         {status.label}
                       </button>
@@ -337,11 +359,11 @@ export default function MyCardsPage() {
                   })}
                 </div>
 
-                {/* 2층: 가챠 타입 & 헤어 유무 (빅 사이즈 이미지 버튼 4개) */}
+                {/* 2층: 통상 / 한정 / 헤어 O / 헤어 X (빅 사이즈 이미지 버튼) */}
                 <div className="grid grid-cols-4 gap-1.5">
                   {/* 통상 이미지 버튼 */}
                   <button onClick={() => toggleFilter(selectedTypes, setSelectedTypes, "normal")}
-                    className={`relative group aspect-square rounded-full p-1 transition-all duration-300 ${
+                    className={`relative group aspect-square rounded-full p-1 transition-all duration-300 w-full h-full ${
                       selectedTypes.includes("normal") ? "bg-zinc-800 scale-105" : "bg-zinc-900 scale-[0.85] hover:scale-95"
                     } ${!isAnyTypeSelected || selectedTypes.includes("normal") ? "opacity-100" : "opacity-40 hover:opacity-100"}`}>
                     <img src="/icons/status/normal.png" alt="통상" className="w-full h-full object-contain" />
@@ -353,9 +375,9 @@ export default function MyCardsPage() {
                     </div>
                   </button>
 
-                  {/* 한정 이미지 버튼 (누르면 콜라보까지 싹쓸이!) */}
+                  {/* 한정 이미지 버튼 (주석 직관적으로 수정 + 누르면 콜라보 싹쓸이 기능!) */}
                   <button onClick={toggleLimitedGroup}
-                    className={`relative group aspect-square rounded-full p-1 transition-all duration-300 ${
+                    className={`relative group aspect-square rounded-full p-1 transition-all duration-300 w-full h-full ${
                       isAllLimitedSelected ? "bg-zinc-800 scale-105" : "bg-zinc-900 scale-[0.85] hover:scale-95"
                     } ${!isAnyTypeSelected || isAllLimitedSelected ? "opacity-100" : "opacity-40 hover:opacity-100"}`}>
                     <img src="/icons/status/limited.png" alt="한정" className="w-full h-full object-contain" />
@@ -369,7 +391,7 @@ export default function MyCardsPage() {
 
                   {/* 헤어 O 이미지 버튼 */}
                   <button onClick={() => toggleFilter(selectedHairs, setSelectedHairs, "hair_o")}
-                    className={`relative group aspect-square rounded-full p-1 transition-all duration-300 ${
+                    className={`relative group aspect-square rounded-full p-1 transition-all duration-300 w-full h-full ${
                       selectedHairs.includes("hair_o") ? "bg-zinc-800 scale-105" : "bg-zinc-900 scale-[0.85] hover:scale-95"
                     } ${!isAnyHairSelected || selectedHairs.includes("hair_o") ? "opacity-100" : "opacity-40 hover:opacity-100"}`}>
                     <img src="/icons/status/hair_o.png" alt="헤어 O" className="w-full h-full object-contain" />
@@ -383,7 +405,7 @@ export default function MyCardsPage() {
 
                   {/* 헤어 X 이미지 버튼 */}
                   <button onClick={() => toggleFilter(selectedHairs, setSelectedHairs, "hair_x")}
-                    className={`relative group aspect-square rounded-full p-1 transition-all duration-300 ${
+                    className={`relative group aspect-square rounded-full p-1 transition-all duration-300 w-full h-full ${
                       selectedHairs.includes("hair_x") ? "bg-zinc-800 scale-105" : "bg-zinc-900 scale-[0.85] hover:scale-95"
                     } ${!isAnyHairSelected || selectedHairs.includes("hair_x") ? "opacity-100" : "opacity-40 hover:opacity-100"}`}>
                     <img src="/icons/status/hair_x.png" alt="헤어 X" className="w-full h-full object-contain" />
@@ -395,21 +417,38 @@ export default function MyCardsPage() {
                     </div>
                   </button>
                 </div>
+              </div>
+            )}
+          </div>
 
-                {/* 3층: 콜라보 텍스트 버튼 (한정 버튼 바로 밑에 찰떡같이 정렬!) */}
-                <div className="grid grid-cols-4 gap-1.5">
-                  <div className="col-start-2">
-                    <button onClick={() => toggleFilter(selectedTypes, setSelectedTypes, "collab")}
-                      className={`w-full py-2 px-1 text-[12px] sm:text-[13px] font-medium tracking-tight rounded-lg transition-all duration-300 text-white ${
-                        selectedTypes.includes("collab")
-                          ? "bg-amber-500/20 text-amber-300 shadow-md border border-amber-500/30 scale-105"
-                          : "bg-zinc-900 hover:bg-zinc-800 scale-95 border border-transparent"
-                      } ${!isAnyTypeSelected || selectedTypes.includes("collab") ? "opacity-100" : "opacity-40 hover:opacity-100"}`}>
-                      콜라보
+          {/* ✅ 세분화된 콜라보(COLLAB) 전용 구역 */}
+          <div className="space-y-2 pt-2 border-t border-white/5">
+            <button 
+              onClick={() => setIsCollabExpanded(!isCollabExpanded)} 
+              className="w-full flex items-center justify-between group pt-2 pb-1 cursor-pointer"
+            >
+              <span className="text-[11px] font-bold text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-300 transition-colors">COLLAB</span>
+              <span className={`text-[10px] text-zinc-500 transform transition-transform duration-300 ${isCollabExpanded ? 'rotate-0' : '-rotate-90'}`}>▼</span>
+            </button>
+            
+            {isCollabExpanded && (
+              <div className="grid grid-cols-4 gap-1.5 pt-1">
+                {COLLAB_FILTERS.map(collab => {
+                  const isSelected = selectedTypes.includes(collab.id);
+                  // 🌟 콜라보 역시 스킬 뱃지와 같은 비활성 가독성 적용
+                  const opacityClass = !isAnyTypeSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100 text-white bg-zinc-900";
+                  
+                  return (
+                    <button key={collab.id} onClick={() => toggleFilter(selectedTypes, setSelectedTypes, collab.id)}
+                      className={`py-2 px-1 text-[11px] sm:text-[12px] font-bold tracking-tight rounded-lg transition-all duration-300 text-white ${
+                        isSelected 
+                          ? "bg-amber-500/20 text-amber-300 shadow-md border border-amber-500/30 scale-105" 
+                          : "bg-zinc-900 hover:bg-zinc-800 border border-transparent scale-95"
+                      } ${opacityClass}`}>
+                      {collab.name}
                     </button>
-                  </div>
-                </div>
-
+                  )
+                })}
               </div>
             )}
           </div>
@@ -492,13 +531,13 @@ export default function MyCardsPage() {
                 <div className="grid grid-cols-5 gap-1.5 mt-2">
                   {condSubs.map(sub => {
                     const isSelected = selectedSkills.includes(sub.id);
-                    const opacityClass = !isAnySkillSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100";
+                    const opacityClass = !isAnySkillSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100 text-white bg-zinc-900";
                     return (
                       <button key={sub.id} onClick={() => toggleFilter(selectedSkills, setSelectedSkills, sub.id)}
                         className={`py-2 px-1 text-[12px] sm:text-[13px] font-medium tracking-tight rounded-lg transition-all duration-300 text-white ${
                           isSelected 
                             ? "bg-zinc-700 scale-105 shadow-md" 
-                            : "bg-zinc-900 hover:bg-zinc-800 scale-95"
+                            : "bg-zinc-900 hover:bg-zinc-800 scale-95 border border-transparent"
                         } ${opacityClass}`}>
                         {sub.name}
                       </button>
