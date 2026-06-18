@@ -18,7 +18,18 @@ type AttrDef = { id: string; name: string; img: string };
 type SubSkillDef = { id: string; name: string; matchKeys: string[] };
 type SkillDef = { id: string; name: string; img: string; matchKeys?: string[]; subs?: SubSkillDef[] };
 
+// 🌟 VIRTUAL SINGER 그룹을 게임 내 공식 순서대로 최상단(Leo/need 위)으로 끌어올렸습니다!
 const UNIT_FILTERS: UnitDef[] = [
+  { id: "vs", name: "무소속 / VIRTUAL SINGER", logo: "/icons/VS.png",
+    chars: [
+      { id: "miku_0", name: "하츠네 미쿠", img: "/icons/characters/MIKU_0.png", isVirtual: true, matchKeys: ["미쿠"] },
+      { id: "rin_0", name: "카가미네 린", img: "/icons/characters/RIN_0.png", isVirtual: true, matchKeys: ["린"] },
+      { id: "ren_0", name: "카가미네 렌", img: "/icons/characters/REN_0.png", isVirtual: true, matchKeys: ["렌"] },
+      { id: "luka_0", name: "메구리네 루카", img: "/icons/characters/LUKA_0.png", isVirtual: true, matchKeys: ["루카"] },
+      { id: "meiko_0", name: "MEIKO", img: "/icons/characters/MEIKO_0.png", isVirtual: true, matchKeys: ["메이코", "MEIKO"] },
+      { id: "kaito_0", name: "KAITO", img: "/icons/characters/KAITO_0.png", isVirtual: true, matchKeys: ["카이토", "KAITO"] }
+    ]
+  },
   { id: "ln", name: "Leo/need", logo: "/icons/Leoneed.png",
     chars: [
       { id: "ichika", name: "호시노 이치카", img: "/icons/characters/Ichika.png" },
@@ -88,16 +99,6 @@ const UNIT_FILTERS: UnitDef[] = [
       { id: "meiko_n", name: "MEIKO", img: "/icons/characters/MEIKO_n.png", isVirtual: true, matchKeys: ["메이코", "MEIKO"] },
       { id: "kaito_n", name: "KAITO", img: "/icons/characters/KAITO_n.png", isVirtual: true, matchKeys: ["카이토", "KAITO"] }
     ]
-  },
-  { id: "vs", name: "무소속 / VIRTUAL SINGER", logo: "/icons/VS.png",
-    chars: [
-      { id: "miku_0", name: "하츠네 미쿠", img: "/icons/characters/MIKU_0.png", isVirtual: true, matchKeys: ["미쿠"] },
-      { id: "rin_0", name: "카가미네 린", img: "/icons/characters/RIN_0.png", isVirtual: true, matchKeys: ["린"] },
-      { id: "ren_0", name: "카가미네 렌", img: "/icons/characters/REN_0.png", isVirtual: true, matchKeys: ["렌"] },
-      { id: "luka_0", name: "메구리네 루카", img: "/icons/characters/LUKA_0.png", isVirtual: true, matchKeys: ["루카"] },
-      { id: "meiko_0", name: "MEIKO", img: "/icons/characters/MEIKO_0.png", isVirtual: true, matchKeys: ["메이코", "MEIKO"] },
-      { id: "kaito_0", name: "KAITO", img: "/icons/characters/KAITO_0.png", isVirtual: true, matchKeys: ["카이토", "KAITO"] }
-    ]
   }
 ];
 
@@ -135,6 +136,11 @@ export default function MyCardsPage() {
   const [mounted, setMounted] = useState(false);
   const [showPostAwake, setShowPostAwake] = useState(false);
   
+  // 🌟 그룹별 접기/펴기(Collapse) 상태 관리! 처음엔 모두 펴져 있도록(true) 설정합니다.
+  const [isAttrExpanded, setIsAttrExpanded] = useState(true);
+  const [isSkillExpanded, setIsSkillExpanded] = useState(true);
+  const [isCharExpanded, setIsCharExpanded] = useState(true);
+
   const [selectedChars, setSelectedChars] = useState<string[]>([]);
   const [selectedAttrs, setSelectedAttrs] = useState<string[]>([]);
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
@@ -249,120 +255,149 @@ export default function MyCardsPage() {
 
         <div className="space-y-6">
           
-          {/* ✅ 속성 필터 (말풍선 추가) */}
+          {/* ✅ 속성 필터 (아코디언 토글 적용) */}
           <div className="space-y-2">
-            <span className="text-[11px] font-bold text-zinc-500 tracking-widest pl-1">ATTRIBUTE</span>
-            <div className="grid grid-cols-5 gap-1.5">
-              {ATTR_FILTERS.map(attr => {
-                const isSelected = selectedAttrs.includes(attr.id);
-                // 🌟 마우스를 올리면 흐려졌던 것도 다시 선명해지도록 hover:opacity-100 추가
-                const opacityClass = !isAnyAttrSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100";
-                
-                return (
-                <button key={attr.id} onClick={() => toggleFilter(selectedAttrs, setSelectedAttrs, attr.id)} 
-                  className={`relative group aspect-square rounded-full transition-all duration-300 ${
-                    isSelected ? "scale-105" : "scale-[0.85] hover:scale-95"
-                  } ${opacityClass}`}>
-                  <img src={attr.img} alt={attr.name} className="w-full h-full object-contain" />
-                  
-                  {/* 🌟 말풍선(Tooltip) 추가! */}
-                  <div className="pointer-events-none absolute bottom-full mb-2 left-1/2 -translate-x-1/2 opacity-0 transition-all duration-200 group-hover:opacity-100 z-50">
-                    <div className="relative flex flex-col items-center">
-                      <div className="relative z-10 whitespace-nowrap rounded-md border border-zinc-600 bg-zinc-950 px-2.5 py-1.5 text-[11px] font-medium text-zinc-200 shadow-xl">
-                        {attr.name}
-                      </div>
-                      <div className="absolute -bottom-[4px] z-20 h-2 w-2 rotate-45 border-b border-r border-zinc-600 bg-zinc-950"></div>
-                    </div>
-                  </div>
-                </button>
-              )})}
-            </div>
-          </div>
-
-          {/* ✅ 스킬 필터 (말풍선 추가) */}
-          <div className="space-y-2">
-            <span className="text-[11px] font-bold text-zinc-500 tracking-widest pl-1">SKILL</span>
+            <button 
+              onClick={() => setIsAttrExpanded(!isAttrExpanded)} 
+              className="w-full flex items-center justify-between group pb-1 cursor-pointer"
+            >
+              <span className="text-[11px] font-bold text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-300 transition-colors">ATTRIBUTE</span>
+              {/* 🌟 펴졌을 땐 ▼ (rotate-0), 접혔을 땐 ▶ (-rotate-90) 로 부드럽게 회전합니다! */}
+              <span className={`text-[10px] text-zinc-500 transform transition-transform duration-300 ${isAttrExpanded ? 'rotate-0' : '-rotate-90'}`}>▼</span>
+            </button>
             
-            <div className="grid grid-cols-4 gap-1.5">
-              {SKILL_FILTERS.map(skill => {
-                const isCondGroup = skill.id === "condition_group";
-                const isSelected = isCondGroup ? isAllCondSelected : selectedSkills.includes(skill.id);
-                const opacityClass = !isAnySkillSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100";
-                
-                return (
-                  <button key={skill.id} onClick={isCondGroup ? toggleCondSkillGroup : () => toggleFilter(selectedSkills, setSelectedSkills, skill.id)}
-                    className={`relative group aspect-square rounded-full p-1 transition-all duration-300 ${
-                      isSelected ? "bg-zinc-800 scale-105" : "bg-zinc-900 scale-[0.85] hover:scale-95"
+            {isAttrExpanded && (
+              <div className="grid grid-cols-5 gap-1.5 pt-1">
+                {ATTR_FILTERS.map(attr => {
+                  const isSelected = selectedAttrs.includes(attr.id);
+                  const opacityClass = !isAnyAttrSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100";
+                  
+                  return (
+                  <button key={attr.id} onClick={() => toggleFilter(selectedAttrs, setSelectedAttrs, attr.id)} 
+                    className={`relative group aspect-square rounded-full transition-all duration-300 ${
+                      isSelected ? "scale-105" : "scale-[0.85] hover:scale-95"
                     } ${opacityClass}`}>
-                    <img src={skill.img} alt={skill.name} className="w-full h-full object-contain" />
+                    <img src={attr.img} alt={attr.name} className="w-full h-full object-contain" />
                     
-                    {/* 🌟 말풍선(Tooltip) 추가! */}
                     <div className="pointer-events-none absolute bottom-full mb-2 left-1/2 -translate-x-1/2 opacity-0 transition-all duration-200 group-hover:opacity-100 z-50">
                       <div className="relative flex flex-col items-center">
                         <div className="relative z-10 whitespace-nowrap rounded-md border border-zinc-600 bg-zinc-950 px-2.5 py-1.5 text-[11px] font-medium text-zinc-200 shadow-xl">
-                          {skill.name}
+                          {attr.name}
                         </div>
                         <div className="absolute -bottom-[4px] z-20 h-2 w-2 rotate-45 border-b border-r border-zinc-600 bg-zinc-950"></div>
                       </div>
                     </div>
                   </button>
-                );
-              })}
-            </div>
-
-            {/* 🌟 텍스트 뱃지: 글씨체 100% 흰색, 굵기 일정, 크기 확대! */}
-            <div className="grid grid-cols-5 gap-1.5 mt-2">
-              {condSubs.map(sub => {
-                const isSelected = selectedSkills.includes(sub.id);
-                const opacityClass = !isAnySkillSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100";
-                return (
-                  <button key={sub.id} onClick={() => toggleFilter(selectedSkills, setSelectedSkills, sub.id)}
-                    className={`py-2 px-1 text-[12px] sm:text-[13px] font-medium tracking-tight rounded-lg transition-all duration-300 text-white ${
-                      isSelected 
-                        ? "bg-zinc-700 scale-105 shadow-md" 
-                        : "bg-zinc-900 hover:bg-zinc-800 scale-95"
-                    } ${opacityClass}`}>
-                    {sub.name}
-                  </button>
-                )
-              })}
-            </div>
+                )})}
+              </div>
+            )}
           </div>
 
-          <div className="space-y-6 pt-2">
-            <span className="text-[11px] font-bold text-zinc-500 tracking-widest pl-1 border-t border-white/5 pt-4 block">CHARACTER</span>
-            {UNIT_FILTERS.map((unit) => {
-              const isAllSelected = unit.chars.every(c => selectedChars.includes(c.id));
-              const logoOpacityClass = !isAnyCharSelected || isAllSelected ? "opacity-100" : "opacity-40 hover:opacity-100";
-
-              return (
-              <div key={unit.id} className="flex flex-col gap-2">
-                <button 
-                  onClick={() => toggleUnitFilter(unit.chars)} 
-                  className={`w-full h-16 py-1 flex items-center justify-center rounded-xl transition-all duration-300 ${
-                    isAllSelected ? "bg-[#00FFD1]/15 scale-105" : "bg-transparent hover:bg-white/5 scale-95"
-                  } ${logoOpacityClass}`}
-                >
-                  <img src={unit.logo} alt={unit.name} className="h-full w-auto object-contain max-w-[90%]" />
-                </button>
-                
-                <div className="grid grid-cols-4 gap-1.5 mt-1">
-                  {unit.chars.map(char => {
-                    const isSelected = selectedChars.includes(char.id);
-                    const charOpacityClass = !isAnyCharSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100";
+          {/* ✅ 스킬 필터 (아코디언 토글 적용) */}
+          <div className="space-y-2">
+            <button 
+              onClick={() => setIsSkillExpanded(!isSkillExpanded)} 
+              className="w-full flex items-center justify-between group pb-1 cursor-pointer"
+            >
+              <span className="text-[11px] font-bold text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-300 transition-colors">SKILL</span>
+              <span className={`text-[10px] text-zinc-500 transform transition-transform duration-300 ${isSkillExpanded ? 'rotate-0' : '-rotate-90'}`}>▼</span>
+            </button>
+            
+            {isSkillExpanded && (
+              <div className="space-y-2 pt-1">
+                <div className="grid grid-cols-4 gap-1.5">
+                  {SKILL_FILTERS.map(skill => {
+                    const isCondGroup = skill.id === "condition_group";
+                    const isSelected = isCondGroup ? isAllCondSelected : selectedSkills.includes(skill.id);
+                    const opacityClass = !isAnySkillSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100";
                     
                     return (
-                    <button key={char.id} onClick={() => toggleFilter(selectedChars, setSelectedChars, char.id)}
-                      className={`relative aspect-square rounded-full transition-all duration-300 bg-zinc-950 ${
-                        isSelected ? "scale-105" : "scale-[0.80] hover:scale-[0.85]"
-                      } ${charOpacityClass}`}>
-                      <img src={char.img} alt={char.name} className="w-full h-full object-contain" />
-                    </button>
-                  )})}
+                      <button key={skill.id} onClick={isCondGroup ? toggleCondSkillGroup : () => toggleFilter(selectedSkills, setSelectedSkills, skill.id)}
+                        className={`relative group aspect-square rounded-full p-1 transition-all duration-300 ${
+                          isSelected ? "bg-zinc-800 scale-105" : "bg-zinc-900 scale-[0.85] hover:scale-95"
+                        } ${opacityClass}`}>
+                        <img src={skill.img} alt={skill.name} className="w-full h-full object-contain" />
+                        
+                        <div className="pointer-events-none absolute bottom-full mb-2 left-1/2 -translate-x-1/2 opacity-0 transition-all duration-200 group-hover:opacity-100 z-50">
+                          <div className="relative flex flex-col items-center">
+                            <div className="relative z-10 whitespace-nowrap rounded-md border border-zinc-600 bg-zinc-950 px-2.5 py-1.5 text-[11px] font-medium text-zinc-200 shadow-xl">
+                              {skill.name}
+                            </div>
+                            <div className="absolute -bottom-[4px] z-20 h-2 w-2 rotate-45 border-b border-r border-zinc-600 bg-zinc-950"></div>
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="grid grid-cols-5 gap-1.5 mt-2">
+                  {condSubs.map(sub => {
+                    const isSelected = selectedSkills.includes(sub.id);
+                    const opacityClass = !isAnySkillSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100";
+                    return (
+                      <button key={sub.id} onClick={() => toggleFilter(selectedSkills, setSelectedSkills, sub.id)}
+                        className={`py-2 px-1 text-[12px] sm:text-[13px] font-medium tracking-tight rounded-lg transition-all duration-300 text-white ${
+                          isSelected 
+                            ? "bg-zinc-700 scale-105 shadow-md" 
+                            : "bg-zinc-900 hover:bg-zinc-800 scale-95"
+                        } ${opacityClass}`}>
+                        {sub.name}
+                      </button>
+                    )
+                  })}
                 </div>
               </div>
-            )})}
+            )}
           </div>
+
+          {/* ✅ 캐릭터/유닛 필터 (아코디언 토글 적용) */}
+          <div className="pt-2">
+            <button 
+              onClick={() => setIsCharExpanded(!isCharExpanded)} 
+              className="w-full flex items-center justify-between group border-t border-white/5 pt-4 pb-2 cursor-pointer"
+            >
+              <span className="text-[11px] font-bold text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-300 transition-colors">CHARACTER</span>
+              <span className={`text-[10px] text-zinc-500 transform transition-transform duration-300 ${isCharExpanded ? 'rotate-0' : '-rotate-90'}`}>▼</span>
+            </button>
+            
+            {isCharExpanded && (
+              <div className="space-y-6 pt-3">
+                {UNIT_FILTERS.map((unit) => {
+                  const isAllSelected = unit.chars.every(c => selectedChars.includes(c.id));
+                  const logoOpacityClass = !isAnyCharSelected || isAllSelected ? "opacity-100" : "opacity-40 hover:opacity-100";
+
+                  return (
+                  <div key={unit.id} className="flex flex-col gap-2">
+                    <button 
+                      onClick={() => toggleUnitFilter(unit.chars)} 
+                      className={`w-full h-16 py-1 flex items-center justify-center rounded-xl transition-all duration-300 ${
+                        isAllSelected ? "bg-[#00FFD1]/15 scale-105" : "bg-transparent hover:bg-white/5 scale-95"
+                      } ${logoOpacityClass}`}
+                    >
+                      <img src={unit.logo} alt={unit.name} className="h-full w-auto object-contain max-w-[90%]" />
+                    </button>
+                    
+                    <div className="grid grid-cols-4 gap-1.5 mt-1">
+                      {unit.chars.map(char => {
+                        const isSelected = selectedChars.includes(char.id);
+                        const charOpacityClass = !isAnyCharSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100";
+                        
+                        return (
+                        <button key={char.id} onClick={() => toggleFilter(selectedChars, setSelectedChars, char.id)}
+                          className={`relative aspect-square rounded-full transition-all duration-300 bg-zinc-950 ${
+                            isSelected ? "scale-105" : "scale-[0.80] hover:scale-[0.85]"
+                          } ${charOpacityClass}`}>
+                          <img src={char.img} alt={char.name} className="w-full h-full object-contain" />
+                        </button>
+                      )})}
+                    </div>
+                  </div>
+                )})}
+              </div>
+            )}
+          </div>
+
         </div>
       </div>
 
