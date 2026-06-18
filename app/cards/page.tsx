@@ -17,6 +17,8 @@ type UnitDef = { id: string; name: string; logo: string; chars: CharDef[] };
 type AttrDef = { id: string; name: string; img: string };
 type SubSkillDef = { id: string; name: string; matchKeys: string[] };
 type SkillDef = { id: string; name: string; img: string; matchKeys?: string[]; subs?: SubSkillDef[] };
+type TypeFilterDef = { id: string; name: string; img?: string; isText?: boolean };
+type HairFilterDef = { id: string; name: string; img: string };
 
 const UNIT_FILTERS: UnitDef[] = [
   { id: "vs", name: "무소속 / VIRTUAL SINGER", logo: "/icons/VS.png",
@@ -129,6 +131,18 @@ const ALL_SKILL_TARGETS = [
   ...(SKILL_FILTERS.find(s => s.id === "condition_group")?.subs || [])
 ];
 
+// 🌟 [수정 완료] normal.png 스펠링 수정 및 콜라보 버튼 분리!
+const TYPE_FILTERS: TypeFilterDef[] = [
+  { id: "normal", name: "통상", img: "/icons/status/normal.png" },
+  { id: "limited", name: "한정/페스/월링", img: "/icons/status/limited.png" },
+  { id: "collab", name: "콜라보", isText: true }
+];
+
+const HAIR_FILTERS: HairFilterDef[] = [
+  { id: "hair_o", name: "헤어 O", img: "/icons/status/hair_o.png" },
+  { id: "hair_x", name: "헤어 X", img: "/icons/status/hair_x.png" }
+];
+
 export default function MyCardsPage() {
   const [cardStates, setCardStates] = useState<Record<string, UserCardState>>({});
   const [activeModalCard, setActiveModalCard] = useState<FinalCardInfo | null>(null);
@@ -137,12 +151,16 @@ export default function MyCardsPage() {
   
   // 🌟 접기/펴기 상태 관리
   const [isStatusExpanded, setIsStatusExpanded] = useState(true);
+  const [isTypeExpanded, setIsTypeExpanded] = useState(true);
+  const [isHairExpanded, setIsHairExpanded] = useState(true);
   const [isAttrExpanded, setIsAttrExpanded] = useState(true);
   const [isSkillExpanded, setIsSkillExpanded] = useState(true);
   const [isCharExpanded, setIsCharExpanded] = useState(true);
 
   // 🌟 필터 선택 상태 관리
-  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]); // showOnlyOwned 대체!
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]); 
+  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
+  const [selectedHairs, setSelectedHairs] = useState<string[]>([]);
   const [selectedChars, setSelectedChars] = useState<string[]>([]);
   const [selectedAttrs, setSelectedAttrs] = useState<string[]>([]);
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
@@ -177,11 +195,12 @@ export default function MyCardsPage() {
   };
 
   const resetFilters = () => {
-    setSelectedChars([]); setSelectedAttrs([]); setSelectedSkills([]); setSelectedStatuses([]);
+    setSelectedChars([]); setSelectedAttrs([]); setSelectedSkills([]); 
+    setSelectedStatuses([]); setSelectedTypes([]); setSelectedHairs([]);
   };
 
   const filteredCards = ALL_CARDS.filter(card => {
-    // 🌟 1. 상태(STATUS) 필터: 선택된 상태 중 '하나라도' 맞으면 통과 (OR 조건)
+    // 1. 상태(STATUS) 필터 (OR 조건)
     if (selectedStatuses.length > 0) {
       const isOwned = cardStates[card.id]?.isOwned || false;
       const isTarget = cardStates[card.id]?.isTarget || false;
@@ -190,13 +209,28 @@ export default function MyCardsPage() {
       const matchUnowned = selectedStatuses.includes("unowned") && !isOwned;
       const matchTarget = selectedStatuses.includes("target") && isTarget;
 
-      // 셋 중 어느 하나라도 일치하지 않으면 리스트에서 제외
-      if (!(matchOwned || matchUnowned || matchTarget)) {
-        return false;
-      }
+      if (!(matchOwned || matchUnowned || matchTarget)) return false;
+    }
+
+    // 🌟 2. 가챠 타입(TYPE) 필터 (OR 조건)
+    if (selectedTypes.length > 0) {
+      const matchNormal = selectedTypes.includes("normal") && card.gachaType === "통상";
+      // 한정, 페스, 월링 묶어서 필터링! (콜라보는 독립!)
+      const matchLimited = selectedTypes.includes("limited") && ["한정", "페스", "월링"].includes(card.gachaType);
+      const matchCollab = selectedTypes.includes("collab") && card.gachaType === "콜라보";
+      
+      if (!(matchNormal || matchLimited || matchCollab)) return false;
+    }
+
+    // 🌟 3. 헤어 유무(HAIR) 필터 (OR 조건)
+    if (selectedHairs.length > 0) {
+      const matchHairO = selectedHairs.includes("hair_o") && card.hasHair;
+      const matchHairX = selectedHairs.includes("hair_x") && !card.hasHair;
+      
+      if (!(matchHairO || matchHairX)) return false;
     }
     
-    // 2. 캐릭터 필터
+    // 4. 캐릭터 필터
     if (selectedChars.length > 0) {
       const matchesChar = selectedChars.some(selId => {
         const parentUnit = UNIT_FILTERS.find(u => u.chars.some(c => c.id === selId));
@@ -223,7 +257,7 @@ export default function MyCardsPage() {
       if (!matchesChar) return false;
     }
     
-    // 3. 속성 필터
+    // 5. 속성 필터
     if (selectedAttrs.length > 0) {
       const matchesAttr = selectedAttrs.some(selId => {
         const cardAttr = (card.attribute || "").toLowerCase();
@@ -233,7 +267,7 @@ export default function MyCardsPage() {
       if (!matchesAttr) return false;
     }
 
-    // 4. 스킬 필터
+    // 6. 스킬 필터
     if (selectedSkills.length > 0) {
       const matchesSkill = selectedSkills.some(selId => {
         const targetObj = ALL_SKILL_TARGETS.find(t => t.id === selId);
@@ -247,10 +281,12 @@ export default function MyCardsPage() {
 
   if (!mounted) return null;
 
+  const isAnyStatusSelected = selectedStatuses.length > 0;
+  const isAnyTypeSelected = selectedTypes.length > 0;
+  const isAnyHairSelected = selectedHairs.length > 0;
   const isAnyAttrSelected = selectedAttrs.length > 0;
   const isAnySkillSelected = selectedSkills.length > 0;
   const isAnyCharSelected = selectedChars.length > 0;
-  const isAnyStatusSelected = selectedStatuses.length > 0;
 
   const condSubs = SKILL_FILTERS.find(s => s.id === "condition_group")?.subs || [];
   const condIds = condSubs.map(s => s.id);
@@ -268,7 +304,7 @@ export default function MyCardsPage() {
 
         <div className="space-y-6">
           
-          {/* ✅ 대망의 상태(STATUS) 필터 */}
+          {/* ✅ 상태(STATUS) 필터 */}
           <div className="space-y-2">
             <button 
               onClick={() => setIsStatusExpanded(!isStatusExpanded)} 
@@ -297,6 +333,93 @@ export default function MyCardsPage() {
                           : "bg-zinc-900 text-zinc-500 hover:bg-zinc-800 border border-transparent"
                       } ${opacityClass}`}>
                       {status.label}
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* ✅ 가챠 타입(GACHA TYPE) 필터 */}
+          <div className="space-y-2 pt-2 border-t border-white/5">
+            <button 
+              onClick={() => setIsTypeExpanded(!isTypeExpanded)} 
+              className="w-full flex items-center justify-between group pt-2 pb-1 cursor-pointer"
+            >
+              <span className="text-[11px] font-bold text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-300 transition-colors">TYPE</span>
+              <span className={`text-[10px] text-zinc-500 transform transition-transform duration-300 ${isTypeExpanded ? 'rotate-0' : '-rotate-90'}`}>▼</span>
+            </button>
+            
+            {isTypeExpanded && (
+              <div className="flex flex-wrap gap-2 pt-1">
+                {TYPE_FILTERS.map(type => {
+                  const isSelected = selectedTypes.includes(type.id);
+                  const opacityClass = !isAnyTypeSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100";
+                  
+                  if (type.isText) {
+                    return (
+                      <button key={type.id} onClick={() => toggleFilter(selectedTypes, setSelectedTypes, type.id)}
+                        className={`h-10 px-4 text-[13px] font-bold tracking-tight rounded-lg transition-all duration-300 text-white ${
+                          isSelected ? "bg-amber-500/20 text-amber-300 shadow-md border border-amber-500/30 scale-105" : "bg-zinc-900 text-zinc-500 hover:bg-zinc-800 border border-transparent"
+                        } ${opacityClass}`}>
+                        {type.name}
+                      </button>
+                    );
+                  }
+
+                  return (
+                    <button key={type.id} onClick={() => toggleFilter(selectedTypes, setSelectedTypes, type.id)} 
+                      className={`relative group h-10 w-10 aspect-square rounded-full p-0.5 transition-all duration-300 ${
+                        isSelected ? "bg-zinc-800 scale-105" : "bg-transparent scale-[0.85] hover:scale-95"
+                      } ${opacityClass}`}>
+                      <img src={type.img} alt={type.name} className="w-full h-full object-contain" />
+                      
+                      <div className="pointer-events-none absolute bottom-full mb-2 left-1/2 -translate-x-1/2 opacity-0 transition-all duration-200 group-hover:opacity-100 z-50">
+                        <div className="relative flex flex-col items-center">
+                          <div className="relative z-10 whitespace-nowrap rounded-md border border-zinc-600 bg-zinc-950 px-2.5 py-1.5 text-[11px] font-medium text-zinc-200 shadow-xl">
+                            {type.name}
+                          </div>
+                          <div className="absolute -bottom-[4px] z-20 h-2 w-2 rotate-45 border-b border-r border-zinc-600 bg-zinc-950"></div>
+                        </div>
+                      </div>
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* ✅ 헤어 유무(HAIR) 필터 */}
+          <div className="space-y-2 pt-2 border-t border-white/5">
+            <button 
+              onClick={() => setIsHairExpanded(!isHairExpanded)} 
+              className="w-full flex items-center justify-between group pt-2 pb-1 cursor-pointer"
+            >
+              <span className="text-[11px] font-bold text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-300 transition-colors">HAIR</span>
+              <span className={`text-[10px] text-zinc-500 transform transition-transform duration-300 ${isHairExpanded ? 'rotate-0' : '-rotate-90'}`}>▼</span>
+            </button>
+            
+            {isHairExpanded && (
+              <div className="flex gap-2 pt-1">
+                {HAIR_FILTERS.map(hair => {
+                  const isSelected = selectedHairs.includes(hair.id);
+                  const opacityClass = !isAnyHairSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100";
+                  
+                  return (
+                    <button key={hair.id} onClick={() => toggleFilter(selectedHairs, setSelectedHairs, hair.id)} 
+                      className={`relative group h-10 w-10 aspect-square rounded-full p-0.5 transition-all duration-300 ${
+                        isSelected ? "bg-zinc-800 scale-105" : "bg-transparent scale-[0.85] hover:scale-95"
+                      } ${opacityClass}`}>
+                      <img src={hair.img} alt={hair.name} className="w-full h-full object-contain" />
+                      
+                      <div className="pointer-events-none absolute bottom-full mb-2 left-1/2 -translate-x-1/2 opacity-0 transition-all duration-200 group-hover:opacity-100 z-50">
+                        <div className="relative flex flex-col items-center">
+                          <div className="relative z-10 whitespace-nowrap rounded-md border border-zinc-600 bg-zinc-950 px-2.5 py-1.5 text-[11px] font-medium text-zinc-200 shadow-xl">
+                            {hair.name}
+                          </div>
+                          <div className="absolute -bottom-[4px] z-20 h-2 w-2 rotate-45 border-b border-r border-zinc-600 bg-zinc-950"></div>
+                        </div>
+                      </div>
                     </button>
                   )
                 })}
