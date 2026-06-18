@@ -136,8 +136,8 @@ export const IchikaCards = defineCharacterCards(
       skillType: "판강",
 
       // 🖼️ [배너 및 악곡 이미지 경로]
-      gachaBannerPath: "/gachas/23y/banner_23_20.png", 
-      eventBannerPath: "/events/23y/banner_23_20.png", 
+      gachaBannerPath: "/gachas/23y/banner_23_20_l.png", 
+      eventBannerPath: "/events/23y/banner_23_20_l.png", 
       songName: "Peaky Peaky",        
       songJacketPath: "/jacket/23y/Peaky_Peaky.png",  
 
@@ -156,8 +156,8 @@ export const IchikaCards = defineCharacterCards(
       skillType: "스업",
 
       // 🖼️ [배너 및 악곡 이미지 경로]
-      gachaBannerPath: "/gachas/23y/banner_23_26.png", 
-      eventBannerPath: "/events/23y/banner_23_26.png", 
+      gachaBannerPath: "/gachas/23y/banner_23_26_l.png", 
+      eventBannerPath: "/events/23y/banner_23_26_l.png", 
       songName: "오더 메이드",        
       songJacketPath: "/jacket/23y/Made_to_Order.png",  
 
@@ -176,8 +176,8 @@ export const IchikaCards = defineCharacterCards(
       skillType: "판강",
 
       // 🖼️ [배너 및 악곡 이미지 경로]
-      gachaBannerPath: "/gachas/23y/banner_23_35.png", 
-      eventBannerPath: "/events/23y/banner_23_35.png", 
+      gachaBannerPath: "/gachas/23y/banner_23_35_l.png", 
+      eventBannerPath: "/events/23y/banner_23_35_l.png", 
       songName: "번질번질",        
       songJacketPath: "/jacket/23y/SHOW_OFF.png",  
 
@@ -196,8 +196,8 @@ export const IchikaCards = defineCharacterCards(
       skillType: "힐",
 
       // 🖼️ [배너 및 악곡 이미지 경로]
-      gachaBannerPath: "/gachas/23y/banner_23_39.png", 
-      eventBannerPath: "/events/23y/banner_23_39.png", 
+      gachaBannerPath: "/gachas/23y/banner_23_39_l.png", 
+      eventBannerPath: "/events/23y/banner_23_39_l.png", 
       songName: "Voices",        
       songJacketPath: "/jacket/23y/Voices.png",  
 
@@ -219,8 +219,8 @@ export const IchikaCards = defineCharacterCards(
       skillType: "스업",
 
       // 🖼️ [배너 및 악곡 이미지 경로]
-      gachaBannerPath: "/gachas/23y/banner_23_46.png", 
-      eventBannerPath: "/events/23y/banner_23_46.png", 
+      gachaBannerPath: "/gachas/23y/banner_23_46_l.png", 
+      eventBannerPath: "/events/23y/banner_23_46_l.png", 
       songName: "the WALL",        
       songJacketPath: "/jacket/23y/the_WALL.png",  
 
@@ -370,8 +370,8 @@ export const IchikaCards = defineCharacterCards(
       // 🖼️ [배너 및 악곡 이미지 경로]
       gachaBannerPath: "/gachas/25y/banner_25_21_l.png", 
       eventBannerPath: "/events/25y/banner_25_21_l.png", 
-      songName: "",        
-      songJacketPath: "",  
+      songName: "인티그럴",        
+      songJacketPath: "/jacket/24y/Integral.png",  
 
       // 👗 [의상 정보]
       hasCostume: true,
@@ -391,10 +391,10 @@ export const IchikaCards = defineCharacterCards(
       skillType: "퍼스업",
 
       // 🖼️ [배너 및 악곡 이미지 경로]
-      gachaBannerPath: "", 
-      eventBannerPath: "", 
-      songName: "",        
-      songJacketPath: "",  
+      gachaBannerPath: "/gachas/25y/banner_25_27_l.png", 
+      eventBannerPath: "/events/25y/banner_25_27_l.png", 
+      songName: "그럼에도 우리는 노래하기를 그만두지 않아",        
+      songJacketPath: "/jacket/24y/Sore_Uta.png",  
 
       // 👗 [의상 정보]
       hasCostume: true,
@@ -411,10 +411,10 @@ export const IchikaCards = defineCharacterCards(
       skillType: "판강",
 
       // 🖼️ [배너 및 악곡 이미지 경로]
-      gachaBannerPath: "", 
-      eventBannerPath: "", 
-      songName: "",        
-      songJacketPath: "",  
+      gachaBannerPath: "/gachas/25y/banner_25_31_l.png", 
+      eventBannerPath: "/events/25y/banner_25_31_l.png", 
+      songName: "그 소리가 울린다면",        
+      songJacketPath: "/jacket/24y/Sono_Oto_ga_Narunara.png",  
 
       // 👗 [의상 정보]
       hasCostume: true,
