@@ -238,7 +238,6 @@ export default function MyCardsPage() {
   const isAllCondSelected = condIds.length > 0 && condIds.every(id => selectedSkills.includes(id));
 
   return (
-    // 🌟 핵심 변경점: max-w-screen-2xl을 지우고 max-w-[1920px] w-full로 교체! 넓은 모니터 대응 완료!
     <div className="flex flex-col md:flex-row gap-6 px-4 md:px-8 py-6 min-h-screen text-zinc-100 max-w-[1920px] mx-auto w-full">
       
       <div className="w-full md:w-[280px] shrink-0 space-y-8">
@@ -396,7 +395,6 @@ export default function MyCardsPage() {
         </div>
       </div>
 
-      {/* 🌟 1920px 화면을 적극 활용하는 우측 패널 */}
       <div className="flex-1 flex flex-col min-w-0 bg-zinc-900/30 rounded-3xl p-4 md:p-6 border border-white/5">
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
           <div>
@@ -417,16 +415,19 @@ export default function MyCardsPage() {
               const isTarget = cardStates[card.id]?.isTarget;
               
               return (
-                <div key={card.id} onClick={() => setActiveModalCard(card)} className="relative p-1 cursor-pointer transition-all hover:scale-[1.05] flex flex-col items-center text-center group">
-                  <img src={showPostAwake ? card.thumbPostPath : card.thumbPrePath} alt="썸네일" 
-                    className="h-25 w-auto object-contain transition-all duration-300 rounded-lg border border-white/10 group-hover:border-white/30" />
+                /* 🌟 핵심 수정: min-w-0 클래스 추가로 그리드가 100px 밑으로 줄어들지 않던 고집 꺾음! */
+                <div key={card.id} onClick={() => setActiveModalCard(card)} className="relative p-1 cursor-pointer transition-all hover:scale-[1.05] flex flex-col items-center text-center group min-w-0">
                   
-                  <p className={`text-[11px] font-semibold mt-2.5 truncate w-25 transition-colors ${
+                  {/* 🌟 핵심 수정: h-25 같은 가짜 단위 제거하고 h-[100px]와 max-w-full로 강제 고정! */}
+                  <img src={showPostAwake ? card.thumbPostPath : card.thumbPrePath} alt="썸네일" 
+                    className="h-[100px] w-auto max-w-full object-contain transition-all duration-300 rounded-lg border border-white/10 group-hover:border-white/30" />
+                  
+                  <p className={`text-[11px] font-semibold mt-2.5 truncate w-full max-w-[100px] transition-colors ${
                     isOwned ? "text-[#00FFD1]" : isTarget ? "text-pink-400" : "text-zinc-200 group-hover:text-white"
                   }`}>
                     {card.cardName}
                   </p>
-                  <p className="text-[10px] text-zinc-500 mt-0.5">{card.character}</p>
+                  <p className="text-[10px] text-zinc-500 mt-0.5 truncate w-full max-w-[100px]">{card.character}</p>
                 </div>
               );
             })}
