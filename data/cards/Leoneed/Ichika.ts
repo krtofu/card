@@ -500,8 +500,8 @@ export const IchikaCards = defineCharacterCards(
       skillType: "스업",
 
       // 🖼️ [배너 및 악곡 이미지 경로]
-      gachaBannerPath: "/gachas/26y/jbanner_26_29_l.png", 
-      eventBannerPath: "/events/26y/jbanner_26_29_l.png", 
+      gachaBannerPath: "/gachas/26y/jbanner_26_28_l.png", 
+      eventBannerPath: "/events/26y/jbanner_26_28_l.png", 
       songName: "스타",        
       songJacketPath: "/jacket/26y/Star.png",  
 
@@ -520,8 +520,8 @@ export const IchikaCards = defineCharacterCards(
       skillType: "스업",
 
       // 🖼️ [배너 및 악곡 이미지 경로]
-      gachaBannerPath: "/gachas/26y/jbanner_26_34_l.png", 
-      eventBannerPath: "/events/26y/jbanner_26_34_l.png", 
+      gachaBannerPath: "/gachas/26y/jbanner_26_33_l.png", 
+      eventBannerPath: "/events/26y/jbanner_26_33_l.png", 
       songName: "꽃매듭",        
       songJacketPath: "/jacket/26y/Hanamusubi.png",  
 

@@ -18,7 +18,6 @@ type AttrDef = { id: string; name: string; img: string };
 type SubSkillDef = { id: string; name: string; matchKeys: string[] };
 type SkillDef = { id: string; name: string; img: string; matchKeys?: string[]; subs?: SubSkillDef[] };
 
-// 🌟 VIRTUAL SINGER 그룹을 게임 내 공식 순서대로 최상단(Leo/need 위)으로 끌어올렸습니다!
 const UNIT_FILTERS: UnitDef[] = [
   { id: "vs", name: "무소속 / VIRTUAL SINGER", logo: "/icons/VS.png",
     chars: [
@@ -136,7 +135,6 @@ export default function MyCardsPage() {
   const [mounted, setMounted] = useState(false);
   const [showPostAwake, setShowPostAwake] = useState(false);
   
-  // 🌟 그룹별 접기/펴기(Collapse) 상태 관리! 처음엔 모두 펴져 있도록(true) 설정합니다.
   const [isAttrExpanded, setIsAttrExpanded] = useState(true);
   const [isSkillExpanded, setIsSkillExpanded] = useState(true);
   const [isCharExpanded, setIsCharExpanded] = useState(true);
@@ -240,7 +238,8 @@ export default function MyCardsPage() {
   const isAllCondSelected = condIds.length > 0 && condIds.every(id => selectedSkills.includes(id));
 
   return (
-    <div className="flex flex-col md:flex-row gap-6 px-4 py-6 min-h-screen text-zinc-100 max-w-screen-2xl mx-auto">
+    // 🌟 핵심 변경점: max-w-screen-2xl을 지우고 max-w-[1920px] w-full로 교체! 넓은 모니터 대응 완료!
+    <div className="flex flex-col md:flex-row gap-6 px-4 md:px-8 py-6 min-h-screen text-zinc-100 max-w-[1920px] mx-auto w-full">
       
       <div className="w-full md:w-[280px] shrink-0 space-y-8">
         <div className="flex items-center justify-between border-b border-white/10 pb-3">
@@ -255,14 +254,12 @@ export default function MyCardsPage() {
 
         <div className="space-y-6">
           
-          {/* ✅ 속성 필터 (아코디언 토글 적용) */}
           <div className="space-y-2">
             <button 
               onClick={() => setIsAttrExpanded(!isAttrExpanded)} 
               className="w-full flex items-center justify-between group pb-1 cursor-pointer"
             >
               <span className="text-[11px] font-bold text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-300 transition-colors">ATTRIBUTE</span>
-              {/* 🌟 펴졌을 땐 ▼ (rotate-0), 접혔을 땐 ▶ (-rotate-90) 로 부드럽게 회전합니다! */}
               <span className={`text-[10px] text-zinc-500 transform transition-transform duration-300 ${isAttrExpanded ? 'rotate-0' : '-rotate-90'}`}>▼</span>
             </button>
             
@@ -293,7 +290,6 @@ export default function MyCardsPage() {
             )}
           </div>
 
-          {/* ✅ 스킬 필터 (아코디언 토글 적용) */}
           <div className="space-y-2">
             <button 
               onClick={() => setIsSkillExpanded(!isSkillExpanded)} 
@@ -351,7 +347,6 @@ export default function MyCardsPage() {
             )}
           </div>
 
-          {/* ✅ 캐릭터/유닛 필터 (아코디언 토글 적용) */}
           <div className="pt-2">
             <button 
               onClick={() => setIsCharExpanded(!isCharExpanded)} 
@@ -401,6 +396,7 @@ export default function MyCardsPage() {
         </div>
       </div>
 
+      {/* 🌟 1920px 화면을 적극 활용하는 우측 패널 */}
       <div className="flex-1 flex flex-col min-w-0 bg-zinc-900/30 rounded-3xl p-4 md:p-6 border border-white/5">
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
           <div>
