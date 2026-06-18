@@ -155,9 +155,8 @@ export default function MyCardsPage() {
   const [mounted, setMounted] = useState(false);
   const [showPostAwake, setShowPostAwake] = useState(false);
   
-  // 🌟 정렬 & 드롭다운 상태 관리 추가
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
-  const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false); // 미니 필터(드롭다운) 열림 여부
+  const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
   
   const [isStatusExpanded, setIsStatusExpanded] = useState(true);
   const [isCollabExpanded, setIsCollabExpanded] = useState(true);
@@ -614,51 +613,49 @@ export default function MyCardsPage() {
 
       {/* 🗂️ 우측: 카드 리스트 구역 */}
       <div className="flex-1 flex flex-col min-w-0 bg-zinc-900/30 rounded-3xl p-4 md:p-6 border border-white/5">
-        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6 relative">
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6 relative z-50">
           <div>
             <h1 className="text-xl font-bold tracking-tight">카드 목록</h1>
             <p className="text-xs text-zinc-400 mt-1">검색된 카드: <strong className="text-white">{sortedCards.length}</strong>장</p>
           </div>
 
-          {/* 🌟 우측 상단 컨트롤 패널 (정렬 드롭다운 + 썸네일 스위치) */}
-          <div className="flex items-center gap-2 self-start sm:self-auto relative z-10">
+          <div className="flex items-center gap-2 self-start sm:self-auto relative">
             
-            {/* 정렬 드롭다운 미니 필터 */}
+            {/* 🌟 캡슐 벗겨낸 텍스트형 정렬 드롭다운 (폰트 사이즈 업!) */}
             <div className="relative">
               <button 
                 onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
-                className="flex items-center justify-center gap-1.5 px-3 h-[34px] rounded-full bg-zinc-800/80 border border-white/10 text-[11px] font-bold text-zinc-300 hover:text-white hover:bg-zinc-700 transition-all shadow-sm"
+                className="flex items-center justify-center gap-1 h-[34px] px-2 text-[14px] font-bold text-zinc-300 hover:text-white transition-colors"
               >
-                {sortOrder === "newest" ? "🔽 최신순" : "🔼 출시순"}
+                ⇅ 정렬 ▾
               </button>
 
-              {/* 드롭다운 열렸을 때 나오는 메뉴 */}
               {isSortDropdownOpen && (
                 <>
-                  {/* 메뉴 바깥 클릭 시 닫히도록 화면 전체에 투명 오버레이 깔기 */}
                   <div 
-                    className="fixed inset-0 z-20" 
+                    className="fixed inset-0 z-30" 
                     onClick={() => setIsSortDropdownOpen(false)} 
                   />
-                  <div className="absolute right-0 top-full mt-2 w-24 bg-zinc-800 border border-white/10 rounded-xl shadow-2xl z-30 overflow-hidden flex flex-col p-1.5 animate-fade-in origin-top-right">
+                  {/* 🌟 글씨 크기가 커진 만큼 메뉴 너비도 넓혔습니다 */}
+                  <div className="absolute right-0 top-full mt-1 w-28 bg-zinc-800 border border-white/10 rounded-xl shadow-2xl z-40 overflow-hidden flex flex-col p-1.5 animate-fade-in origin-top-right">
                     <button 
                       onClick={() => { setSortOrder("newest"); setIsSortDropdownOpen(false); }}
-                      className={`px-3 py-2 text-[11px] font-bold text-left rounded-lg transition-colors ${sortOrder === "newest" ? "bg-zinc-700 text-white" : "text-zinc-400 hover:bg-zinc-700/50 hover:text-zinc-200"}`}
+                      className={`px-3 py-2 text-[13px] font-bold text-left rounded-lg transition-colors ${sortOrder === "newest" ? "bg-zinc-700 text-white" : "text-zinc-400 hover:bg-zinc-700/50 hover:text-zinc-200"}`}
                     >
-                      🔽 최신순
+                      ↓ 최신순
                     </button>
                     <button 
                       onClick={() => { setSortOrder("oldest"); setIsSortDropdownOpen(false); }}
-                      className={`px-3 py-2 text-[11px] font-bold text-left rounded-lg transition-colors mt-0.5 ${sortOrder === "oldest" ? "bg-zinc-700 text-white" : "text-zinc-400 hover:bg-zinc-700/50 hover:text-zinc-200"}`}
+                      className={`px-3 py-2 text-[13px] font-bold text-left rounded-lg transition-colors mt-0.5 ${sortOrder === "oldest" ? "bg-zinc-700 text-white" : "text-zinc-400 hover:bg-zinc-700/50 hover:text-zinc-200"}`}
                     >
-                      🔼 출시순
+                      ↑ 출시순
                     </button>
                   </div>
                 </>
               )}
             </div>
 
-            {/* 썸네일 전환 버튼 (원래 위치인 가장 우측으로 복구!) */}
+            {/* 썸네일 전환 버튼 */}
             <button onClick={() => setShowPostAwake(!showPostAwake)} className="p-1 rounded-full bg-zinc-900 border border-white/10 shrink-0" aria-label="썸네일 전환">
               <img src={showPostAwake ? "/icons/post_star.png" : "/icons/pre_star.png"} alt="스위치" className="h-8 w-auto object-contain block" />
             </button>
