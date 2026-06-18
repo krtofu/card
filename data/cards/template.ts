@@ -2,25 +2,36 @@ import type { UnitName, CharacterName } from "@/lib/colors";
 import type { Attr } from "@/lib/gachaNote";
 import type { GachaType } from "@/lib/types";
 
-// 1. 입력받는 카드 데이터 타입 (hasHair만 남김!)
-export type RawCardInput = {
+// 🌟 [카드 내부 조각화 입력 양식 정의]
+export type CardInfoGroup = {
   id: string;               
   cardName: string;         
   attribute: Attr;          
   gachaType: GachaType;     
   gachaPoolName: string;    
-  eventName: string;        
+  eventName?: string;        // 페스 등 없을 수 있으므로 옵션화
   skillType: string;        
+};
 
-  costumeName?: string;     
-  hasCostume?: boolean;     
-  hasHair?: boolean;        // 👈 필터용 꼬리표 (hairLimitedOrder 삭제됨)
-
+export type CardMediaGroup = {
   gachaBannerPath?: string; 
   eventBannerPath?: string; 
   songName?: string;        
   songJacketPath?: string;  
 };
+
+export type CardCostumeGroup = {
+  hasCostume?: boolean;     
+  costumeName?: string;
+  hasHair?: boolean;        // 월링 돌연변이 및 통상 유연성 확보!
+};
+
+// 🌟 [방별 입력 양식 통합]
+export type NormalCardInput = { info: CardInfoGroup; media?: CardMediaGroup; costume?: CardCostumeGroup; };
+export type LimitedCardInput = { info: CardInfoGroup; media?: CardMediaGroup; costume?: CardCostumeGroup; };
+export type FesCardInput = { info: CardInfoGroup; media?: CardMediaGroup; costume?: CardCostumeGroup; };
+
+export type RawCardInput = NormalCardInput | LimitedCardInput | FesCardInput;
 
 export type CostumeSetPaths = {
   key: string;   
@@ -29,7 +40,7 @@ export type CostumeSetPaths = {
   back: string;  
 };
 
-// 2. 최종 완성되는 카드 데이터 타입 (hair 객체 대신 boolean만 남김!)
+// 🌟 [앱 전체가 사용하는 최종 완성형 데이터 뼈대] (수정 없음)
 export type FinalCardInfo = {
   id: string;
   unit: UnitName;           
@@ -57,29 +68,39 @@ export type FinalCardInfo = {
     sets: CostumeSetPaths[]; 
   };
 
-  hasHair: boolean;         // 👈 필터에서 써먹을 수 있게 true/false 값만 저장!
+  hasHair: boolean;         
 };
 
-// 3. 카드 데이터를 생성해주는 함수 (여기를 덮어쓰기 해주세요!)
+// 🌟 [하이브리드 데이터 조립 통합 엔진] 
 export function defineCharacterCards(
   unit: UnitName,
   character: CharacterName,
   unitFolder: string,       
   characterFolder: string,  
-  cards: RawCardInput[]
+  cardGroups: {
+    normal?: NormalCardInput[];
+    limited?: LimitedCardInput[];
+    fes?: FesCardInput[];
+  }
 ): FinalCardInfo[] {
-  return cards.map((card) => {
-    const folderBase = `/cards/${unitFolder}/${characterFolder}/${card.id}`;
+  const allInputs: RawCardInput[] = [
+    ...(cardGroups.normal || []),
+    ...(cardGroups.limited || []),
+    ...(cardGroups.fes || []),
+  ];
 
+  return allInputs.map((card) => {
+    const { info, media, costume } = card;
+    const folderBase = `/cards/${unitFolder}/${characterFolder}/${info.id}`;
+
+    // 이미지 경로 자동 빌드
     const thumbPrePath = `${folderBase}/thumb_pre.png`;
     const thumbPostPath = `${folderBase}/thumb_post.png`;
     const preAwakePath = `${folderBase}/pre.png`;
     const postAwakePath = `${folderBase}/post.png`;
 
-    // 🌟 [뿌리 개조] 여기서 캐릭터 얼굴 아이콘을 확정 지어버립니다!
-    let finalIconPath = `${folderBase}/icon.png`; // 기본값
-    
-    // 혹시 모를 띄어쓰기를 전부 제거(.trim)하고 검사합니다
+    // 캐릭터 얼굴 아이콘 매핑
+    let finalIconPath = `${folderBase}/icon.png`;
     const cleanCharName = character.trim(); 
     const cleanUnitName = unit.trim().toLowerCase();
 
@@ -92,12 +113,8 @@ export function defineCharacterCards(
     };
 
     const vsMap: Record<string, string> = {
-      "하츠네 미쿠": "MIKU", "미쿠": "MIKU",
-      "카가미네 린": "RIN", "린": "RIN",
-      "카가미네 렌": "REN", "렌": "REN",
-      "메구리네 루카": "LUKA", "루카": "LUKA",
-      "MEIKO": "MEIKO", "메이코": "MEIKO",
-      "KAITO": "KAITO", "카이토": "KAITO"
+      "하츠네 미쿠": "MIKU", "미쿠": "MIKU", "카가미네 린": "RIN", "린": "RIN", "카가미네 렌": "REN", "렌": "REN",
+      "메구리네 루카": "LUKA", "루카": "LUKA", "MEIKO": "MEIKO", "메이코": "MEIKO", "KAITO": "KAITO", "카이토": "KAITO"
     };
 
     if (originalMap[cleanCharName]) {
@@ -113,9 +130,9 @@ export function defineCharacterCards(
       finalIconPath = `/icons/characters/${vsBase}${suffix}.png`;
     }
 
-    // 👗 의상 경로 처리
+    // 3D 의상 데이터 세트 자동 생성
     let costumeData = undefined;
-    if (card.hasCostume && card.costumeName) {
+    if (costume?.hasCostume && costume.costumeName) {
       const labels = ["기본", "어나더 1", "어나더 2", "어나더 3"];
       const sets: CostumeSetPaths[] = labels.map((label, index) => ({
         key: index === 0 ? "base" : `another${index}`,
@@ -123,37 +140,33 @@ export function defineCharacterCards(
         front: `${folderBase}/c_front_${index}.png`,
         back: `${folderBase}/c_back_${index}.png`,
       }));
-
-      costumeData = {
-        name: card.costumeName,
-        sets,
-      };
+      costumeData = { name: costume.costumeName, sets };
     }
 
     return {
-      id: card.id,
+      id: info.id,
       unit,
       character,
-      cardName: card.cardName,
-      attribute: card.attribute,
-      gachaType: card.gachaType,
-      gachaPoolName: card.gachaPoolName,
-      eventName: card.eventName,
-      skillType: card.skillType,
+      cardName: info.cardName,
+      attribute: info.attribute,
+      gachaType: info.gachaType,
+      gachaPoolName: info.gachaPoolName,
+      eventName: info.eventName || "",
+      skillType: info.skillType,
       
       thumbPrePath,  
       thumbPostPath, 
       preAwakePath,
       postAwakePath,
-      iconPath: finalIconPath, // 👈 이제 앱 어디서든 무조건 '얼굴 아이콘 경로'가 나갑니다!
+      iconPath: finalIconPath,
       
-      gachaBannerPath: card.gachaBannerPath,
-      eventBannerPath: card.eventBannerPath,
-      songName: card.songName,
-      songJacketPath: card.songJacketPath,
+      gachaBannerPath: media?.gachaBannerPath,
+      eventBannerPath: media?.eventBannerPath,
+      songName: media?.songName,
+      songJacketPath: media?.songJacketPath,
       
       costume: costumeData,
-      hasHair: !!card.hasHair, 
+      hasHair: !!costume?.hasHair, 
     };
   });
 }
