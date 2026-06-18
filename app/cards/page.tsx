@@ -642,13 +642,13 @@ export default function MyCardsPage() {
                       onClick={() => { setSortOrder("newest"); setIsSortDropdownOpen(false); }}
                       className={`px-3 py-2 text-[13px] font-bold text-left rounded-lg transition-colors ${sortOrder === "newest" ? "bg-zinc-700 text-white" : "text-zinc-400 hover:bg-zinc-700/50 hover:text-zinc-200"}`}
                     >
-                      ↓ 최신순
+                      ↑ 최신순
                     </button>
                     <button 
                       onClick={() => { setSortOrder("oldest"); setIsSortDropdownOpen(false); }}
                       className={`px-3 py-2 text-[13px] font-bold text-left rounded-lg transition-colors mt-0.5 ${sortOrder === "oldest" ? "bg-zinc-700 text-white" : "text-zinc-400 hover:bg-zinc-700/50 hover:text-zinc-200"}`}
                     >
-                      ↑ 출시순
+                      ↓ 출시순
                     </button>
                   </div>
                 </>
