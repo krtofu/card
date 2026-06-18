@@ -394,7 +394,7 @@ export const IchikaCards = defineCharacterCards(
       gachaBannerPath: "/gachas/25y/banner_25_27_l.png", 
       eventBannerPath: "/events/25y/banner_25_27_l.png", 
       songName: "그럼에도 우리는 노래하기를 그만두지 않아",        
-      songJacketPath: "/jacket/24y/Sore_Uta.png",  
+      songJacketPath: "/jacket/25y/Sore_Uta.png",  
 
       // 👗 [의상 정보]
       hasCostume: true,
