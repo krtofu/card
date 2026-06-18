@@ -155,8 +155,9 @@ export default function MyCardsPage() {
   const [mounted, setMounted] = useState(false);
   const [showPostAwake, setShowPostAwake] = useState(false);
   
-  // 🌟 정렬 상태 관리 (최신순이 기본값!)
+  // 🌟 정렬 & 드롭다운 상태 관리 추가
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
+  const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false); // 미니 필터(드롭다운) 열림 여부
   
   const [isStatusExpanded, setIsStatusExpanded] = useState(true);
   const [isCollabExpanded, setIsCollabExpanded] = useState(true);
@@ -298,16 +299,14 @@ export default function MyCardsPage() {
     return true; 
   });
 
-  // 🌟 [추가됨] 출시일(releaseDate) 기준 정렬 로직 적용
   const sortedCards = [...filteredCards].sort((a, b) => {
-    // 날짜 데이터가 혹시라도 누락되었을 경우를 대비한 안전 장치
     const dateA = a.releaseDate || "1970-01-01";
     const dateB = b.releaseDate || "1970-01-01";
     
     if (sortOrder === "newest") {
-      return dateB.localeCompare(dateA); // 최신순 (내림차순)
+      return dateB.localeCompare(dateA); 
     } else {
-      return dateA.localeCompare(dateB); // 출시순 (오름차순)
+      return dateA.localeCompare(dateB); 
     }
   });
 
@@ -379,7 +378,7 @@ export default function MyCardsPage() {
                   })}
                 </div>
 
-                {/* 2층: 통상 / 한정 / 헤어 O / 헤어 X */}
+                {/* 2층: 통상 / 한정 / 헤어 O / 헤어 X (빅 사이즈 이미지 버튼) */}
                 <div className="grid grid-cols-4 gap-1.5">
                   <button onClick={() => toggleFilter(selectedTypes, setSelectedTypes, "normal")}
                     className={`relative group aspect-square rounded-full p-1 transition-all duration-300 w-full h-full ${
@@ -615,23 +614,55 @@ export default function MyCardsPage() {
 
       {/* 🗂️ 우측: 카드 리스트 구역 */}
       <div className="flex-1 flex flex-col min-w-0 bg-zinc-900/30 rounded-3xl p-4 md:p-6 border border-white/5">
-        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6 relative">
           <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-xl font-bold tracking-tight">카드 목록</h1>
-              {/* 🌟 [최신순 / 출시순] 토글 스위치 장착! */}
+            <h1 className="text-xl font-bold tracking-tight">카드 목록</h1>
+            <p className="text-xs text-zinc-400 mt-1">검색된 카드: <strong className="text-white">{sortedCards.length}</strong>장</p>
+          </div>
+
+          {/* 🌟 우측 상단 컨트롤 패널 (정렬 드롭다운 + 썸네일 스위치) */}
+          <div className="flex items-center gap-2 self-start sm:self-auto relative z-10">
+            
+            {/* 정렬 드롭다운 미니 필터 */}
+            <div className="relative">
               <button 
-                onClick={() => setSortOrder(prev => prev === "newest" ? "oldest" : "newest")}
-                className="flex items-center justify-center px-2.5 py-1 rounded-lg bg-zinc-800/80 border border-white/10 text-[11px] font-bold text-zinc-300 hover:text-white hover:bg-zinc-700 transition-all shadow-sm"
+                onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
+                className="flex items-center justify-center gap-1.5 px-3 h-[34px] rounded-full bg-zinc-800/80 border border-white/10 text-[11px] font-bold text-zinc-300 hover:text-white hover:bg-zinc-700 transition-all shadow-sm"
               >
                 {sortOrder === "newest" ? "🔽 최신순" : "🔼 출시순"}
               </button>
+
+              {/* 드롭다운 열렸을 때 나오는 메뉴 */}
+              {isSortDropdownOpen && (
+                <>
+                  {/* 메뉴 바깥 클릭 시 닫히도록 화면 전체에 투명 오버레이 깔기 */}
+                  <div 
+                    className="fixed inset-0 z-20" 
+                    onClick={() => setIsSortDropdownOpen(false)} 
+                  />
+                  <div className="absolute right-0 top-full mt-2 w-24 bg-zinc-800 border border-white/10 rounded-xl shadow-2xl z-30 overflow-hidden flex flex-col p-1.5 animate-fade-in origin-top-right">
+                    <button 
+                      onClick={() => { setSortOrder("newest"); setIsSortDropdownOpen(false); }}
+                      className={`px-3 py-2 text-[11px] font-bold text-left rounded-lg transition-colors ${sortOrder === "newest" ? "bg-zinc-700 text-white" : "text-zinc-400 hover:bg-zinc-700/50 hover:text-zinc-200"}`}
+                    >
+                      🔽 최신순
+                    </button>
+                    <button 
+                      onClick={() => { setSortOrder("oldest"); setIsSortDropdownOpen(false); }}
+                      className={`px-3 py-2 text-[11px] font-bold text-left rounded-lg transition-colors mt-0.5 ${sortOrder === "oldest" ? "bg-zinc-700 text-white" : "text-zinc-400 hover:bg-zinc-700/50 hover:text-zinc-200"}`}
+                    >
+                      🔼 출시순
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
-            <p className="text-xs text-zinc-400 mt-1">검색된 카드: <strong className="text-white">{sortedCards.length}</strong>장</p>
+
+            {/* 썸네일 전환 버튼 (원래 위치인 가장 우측으로 복구!) */}
+            <button onClick={() => setShowPostAwake(!showPostAwake)} className="p-1 rounded-full bg-zinc-900 border border-white/10 shrink-0" aria-label="썸네일 전환">
+              <img src={showPostAwake ? "/icons/post_star.png" : "/icons/pre_star.png"} alt="스위치" className="h-8 w-auto object-contain block" />
+            </button>
           </div>
-          <button onClick={() => setShowPostAwake(!showPostAwake)} className="self-start sm:self-auto p-1 rounded-full bg-zinc-900 border border-white/10" aria-label="썸네일 전환">
-            <img src={showPostAwake ? "/icons/post_star.png" : "/icons/pre_star.png"} alt="스위치" className="h-8 w-auto object-contain block" />
-          </button>
         </div>
 
         {sortedCards.length === 0 ? (
