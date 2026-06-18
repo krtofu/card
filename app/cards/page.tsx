@@ -17,8 +17,6 @@ type UnitDef = { id: string; name: string; logo: string; chars: CharDef[] };
 type AttrDef = { id: string; name: string; img: string };
 type SubSkillDef = { id: string; name: string; matchKeys: string[] };
 type SkillDef = { id: string; name: string; img: string; matchKeys?: string[]; subs?: SubSkillDef[] };
-type TypeFilterDef = { id: string; name: string; img?: string; isText?: boolean };
-type HairFilterDef = { id: string; name: string; img: string };
 
 const UNIT_FILTERS: UnitDef[] = [
   { id: "vs", name: "무소속 / VIRTUAL SINGER", logo: "/icons/VS.png",
@@ -131,28 +129,14 @@ const ALL_SKILL_TARGETS = [
   ...(SKILL_FILTERS.find(s => s.id === "condition_group")?.subs || [])
 ];
 
-// 🌟 [수정 완료] normal.png 스펠링 수정 및 콜라보 버튼 분리!
-const TYPE_FILTERS: TypeFilterDef[] = [
-  { id: "normal", name: "통상", img: "/icons/status/normal.png" },
-  { id: "limited", name: "한정/페스/월링", img: "/icons/status/limited.png" },
-  { id: "collab", name: "콜라보", isText: true }
-];
-
-const HAIR_FILTERS: HairFilterDef[] = [
-  { id: "hair_o", name: "헤어 O", img: "/icons/status/hair_o.png" },
-  { id: "hair_x", name: "헤어 X", img: "/icons/status/hair_x.png" }
-];
-
 export default function MyCardsPage() {
   const [cardStates, setCardStates] = useState<Record<string, UserCardState>>({});
   const [activeModalCard, setActiveModalCard] = useState<FinalCardInfo | null>(null);
   const [mounted, setMounted] = useState(false);
   const [showPostAwake, setShowPostAwake] = useState(false);
   
-  // 🌟 접기/펴기 상태 관리
+  // 🌟 접기/펴기 상태 관리 (구역이 3개로 깔끔하게 정리됨!)
   const [isStatusExpanded, setIsStatusExpanded] = useState(true);
-  const [isTypeExpanded, setIsTypeExpanded] = useState(true);
-  const [isHairExpanded, setIsHairExpanded] = useState(true);
   const [isAttrExpanded, setIsAttrExpanded] = useState(true);
   const [isSkillExpanded, setIsSkillExpanded] = useState(true);
   const [isCharExpanded, setIsCharExpanded] = useState(true);
@@ -194,13 +178,23 @@ export default function MyCardsPage() {
     setSelectedSkills(isAllSelected ? selectedSkills.filter(id => !condIds.includes(id)) : [...new Set([...selectedSkills, ...condIds])]);
   };
 
+  // 🌟 한정 버튼 누르면 콜라보까지 싹 다 잡히도록 스마트 토글 기능 추가
+  const toggleLimitedGroup = () => {
+    const isAllLimitedSelected = selectedTypes.includes("limited") && selectedTypes.includes("collab");
+    if (isAllLimitedSelected) {
+      setSelectedTypes(selectedTypes.filter(id => id !== "limited" && id !== "collab"));
+    } else {
+      setSelectedTypes([...new Set([...selectedTypes, "limited", "collab"])]);
+    }
+  };
+
   const resetFilters = () => {
     setSelectedChars([]); setSelectedAttrs([]); setSelectedSkills([]); 
     setSelectedStatuses([]); setSelectedTypes([]); setSelectedHairs([]);
   };
 
   const filteredCards = ALL_CARDS.filter(card => {
-    // 1. 상태(STATUS) 필터 (OR 조건)
+    // 1. 보유 상태 필터
     if (selectedStatuses.length > 0) {
       const isOwned = cardStates[card.id]?.isOwned || false;
       const isTarget = cardStates[card.id]?.isTarget || false;
@@ -212,17 +206,16 @@ export default function MyCardsPage() {
       if (!(matchOwned || matchUnowned || matchTarget)) return false;
     }
 
-    // 🌟 2. 가챠 타입(TYPE) 필터 (OR 조건)
+    // 2. 가챠 타입 필터
     if (selectedTypes.length > 0) {
       const matchNormal = selectedTypes.includes("normal") && card.gachaType === "통상";
-      // 한정, 페스, 월링 묶어서 필터링! (콜라보는 독립!)
       const matchLimited = selectedTypes.includes("limited") && ["한정", "페스", "월링"].includes(card.gachaType);
       const matchCollab = selectedTypes.includes("collab") && card.gachaType === "콜라보";
       
       if (!(matchNormal || matchLimited || matchCollab)) return false;
     }
 
-    // 🌟 3. 헤어 유무(HAIR) 필터 (OR 조건)
+    // 3. 헤어 유무 필터
     if (selectedHairs.length > 0) {
       const matchHairO = selectedHairs.includes("hair_o") && card.hasHair;
       const matchHairX = selectedHairs.includes("hair_x") && !card.hasHair;
@@ -291,6 +284,9 @@ export default function MyCardsPage() {
   const condSubs = SKILL_FILTERS.find(s => s.id === "condition_group")?.subs || [];
   const condIds = condSubs.map(s => s.id);
   const isAllCondSelected = condIds.length > 0 && condIds.every(id => selectedSkills.includes(id));
+  
+  // 한정 그룹 활성화 상태 확인
+  const isAllLimitedSelected = selectedTypes.includes("limited") && selectedTypes.includes("collab");
 
   return (
     <div className="flex flex-col md:flex-row gap-6 px-4 md:px-8 py-6 min-h-screen text-zinc-100 max-w-[1920px] mx-auto w-full">
@@ -304,7 +300,7 @@ export default function MyCardsPage() {
 
         <div className="space-y-6">
           
-          {/* ✅ 상태(STATUS) 필터 */}
+          {/* ✅ 상태(STATUS) 대통합 필터 구역 */}
           <div className="space-y-2">
             <button 
               onClick={() => setIsStatusExpanded(!isStatusExpanded)} 
@@ -315,114 +311,105 @@ export default function MyCardsPage() {
             </button>
             
             {isStatusExpanded && (
-              <div className="grid grid-cols-3 gap-1.5 pt-1">
-                {[
-                  { id: "owned", label: "✓ 보유" },
-                  { id: "unowned", label: "❌ 미보유" },
-                  { id: "target", label: "⭐ 목표" }
-                ].map(status => {
-                  const isSelected = selectedStatuses.includes(status.id);
-                  const opacityClass = !isAnyStatusSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100";
-                  return (
-                    <button key={status.id} onClick={() => toggleFilter(selectedStatuses, setSelectedStatuses, status.id)}
-                      className={`py-2 px-1 text-[12px] font-bold tracking-tight rounded-lg transition-all duration-300 ${
-                        isSelected 
-                          ? status.id === "target" ? "bg-pink-500/20 text-pink-300 shadow-md border border-pink-500/30"
-                          : status.id === "owned" ? "bg-emerald-500/20 text-emerald-300 shadow-md border border-emerald-500/30" 
-                          : "bg-zinc-700 text-white shadow-md border border-zinc-600"
-                          : "bg-zinc-900 text-zinc-500 hover:bg-zinc-800 border border-transparent"
-                      } ${opacityClass}`}>
-                      {status.label}
-                    </button>
-                  )
-                })}
-              </div>
-            )}
-          </div>
-
-          {/* ✅ 가챠 타입(GACHA TYPE) 필터 */}
-          <div className="space-y-2 pt-2 border-t border-white/5">
-            <button 
-              onClick={() => setIsTypeExpanded(!isTypeExpanded)} 
-              className="w-full flex items-center justify-between group pt-2 pb-1 cursor-pointer"
-            >
-              <span className="text-[11px] font-bold text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-300 transition-colors">TYPE</span>
-              <span className={`text-[10px] text-zinc-500 transform transition-transform duration-300 ${isTypeExpanded ? 'rotate-0' : '-rotate-90'}`}>▼</span>
-            </button>
-            
-            {isTypeExpanded && (
-              <div className="flex flex-wrap gap-2 pt-1">
-                {TYPE_FILTERS.map(type => {
-                  const isSelected = selectedTypes.includes(type.id);
-                  const opacityClass = !isAnyTypeSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100";
-                  
-                  if (type.isText) {
+              <div className="space-y-3 pt-1">
+                
+                {/* 1층: 보유 / 미보유 / 목표 (텍스트 버튼) */}
+                <div className="grid grid-cols-3 gap-1.5">
+                  {[
+                    { id: "owned", label: "✓ 보유" },
+                    { id: "unowned", label: "❌ 미보유" },
+                    { id: "target", label: "⭐ 목표" }
+                  ].map(status => {
+                    const isSelected = selectedStatuses.includes(status.id);
+                    const opacityClass = !isAnyStatusSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100";
                     return (
-                      <button key={type.id} onClick={() => toggleFilter(selectedTypes, setSelectedTypes, type.id)}
-                        className={`h-10 px-4 text-[13px] font-bold tracking-tight rounded-lg transition-all duration-300 text-white ${
-                          isSelected ? "bg-amber-500/20 text-amber-300 shadow-md border border-amber-500/30 scale-105" : "bg-zinc-900 text-zinc-500 hover:bg-zinc-800 border border-transparent"
+                      <button key={status.id} onClick={() => toggleFilter(selectedStatuses, setSelectedStatuses, status.id)}
+                        className={`py-2 px-1 text-[12px] sm:text-[13px] font-medium tracking-tight rounded-lg transition-all duration-300 text-white ${
+                          isSelected 
+                            ? status.id === "target" ? "bg-pink-500/20 text-pink-300 shadow-md border border-pink-500/30 scale-105"
+                            : status.id === "owned" ? "bg-emerald-500/20 text-emerald-300 shadow-md border border-emerald-500/30 scale-105" 
+                            : "bg-zinc-700 text-white shadow-md border border-zinc-600 scale-105"
+                            : "bg-zinc-900 hover:bg-zinc-800 scale-95 border border-transparent"
                         } ${opacityClass}`}>
-                        {type.name}
+                        {status.label}
                       </button>
-                    );
-                  }
+                    )
+                  })}
+                </div>
 
-                  return (
-                    <button key={type.id} onClick={() => toggleFilter(selectedTypes, setSelectedTypes, type.id)} 
-                      className={`relative group h-10 w-10 aspect-square rounded-full p-0.5 transition-all duration-300 ${
-                        isSelected ? "bg-zinc-800 scale-105" : "bg-transparent scale-[0.85] hover:scale-95"
-                      } ${opacityClass}`}>
-                      <img src={type.img} alt={type.name} className="w-full h-full object-contain" />
-                      
-                      <div className="pointer-events-none absolute bottom-full mb-2 left-1/2 -translate-x-1/2 opacity-0 transition-all duration-200 group-hover:opacity-100 z-50">
-                        <div className="relative flex flex-col items-center">
-                          <div className="relative z-10 whitespace-nowrap rounded-md border border-zinc-600 bg-zinc-950 px-2.5 py-1.5 text-[11px] font-medium text-zinc-200 shadow-xl">
-                            {type.name}
-                          </div>
-                          <div className="absolute -bottom-[4px] z-20 h-2 w-2 rotate-45 border-b border-r border-zinc-600 bg-zinc-950"></div>
-                        </div>
+                {/* 2층: 가챠 타입 & 헤어 유무 (빅 사이즈 이미지 버튼 4개) */}
+                <div className="grid grid-cols-4 gap-1.5">
+                  {/* 통상 이미지 버튼 */}
+                  <button onClick={() => toggleFilter(selectedTypes, setSelectedTypes, "normal")}
+                    className={`relative group aspect-square rounded-full p-1 transition-all duration-300 ${
+                      selectedTypes.includes("normal") ? "bg-zinc-800 scale-105" : "bg-zinc-900 scale-[0.85] hover:scale-95"
+                    } ${!isAnyTypeSelected || selectedTypes.includes("normal") ? "opacity-100" : "opacity-40 hover:opacity-100"}`}>
+                    <img src="/icons/status/normal.png" alt="통상" className="w-full h-full object-contain" />
+                    <div className="pointer-events-none absolute bottom-full mb-2 left-1/2 -translate-x-1/2 opacity-0 transition-all duration-200 group-hover:opacity-100 z-50">
+                      <div className="relative flex flex-col items-center">
+                        <div className="relative z-10 whitespace-nowrap rounded-md border border-zinc-600 bg-zinc-950 px-2.5 py-1.5 text-[11px] font-medium text-zinc-200 shadow-xl">통상</div>
+                        <div className="absolute -bottom-[4px] z-20 h-2 w-2 rotate-45 border-b border-r border-zinc-600 bg-zinc-950"></div>
                       </div>
-                    </button>
-                  )
-                })}
-              </div>
-            )}
-          </div>
+                    </div>
+                  </button>
 
-          {/* ✅ 헤어 유무(HAIR) 필터 */}
-          <div className="space-y-2 pt-2 border-t border-white/5">
-            <button 
-              onClick={() => setIsHairExpanded(!isHairExpanded)} 
-              className="w-full flex items-center justify-between group pt-2 pb-1 cursor-pointer"
-            >
-              <span className="text-[11px] font-bold text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-300 transition-colors">HAIR</span>
-              <span className={`text-[10px] text-zinc-500 transform transition-transform duration-300 ${isHairExpanded ? 'rotate-0' : '-rotate-90'}`}>▼</span>
-            </button>
-            
-            {isHairExpanded && (
-              <div className="flex gap-2 pt-1">
-                {HAIR_FILTERS.map(hair => {
-                  const isSelected = selectedHairs.includes(hair.id);
-                  const opacityClass = !isAnyHairSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100";
-                  
-                  return (
-                    <button key={hair.id} onClick={() => toggleFilter(selectedHairs, setSelectedHairs, hair.id)} 
-                      className={`relative group h-10 w-10 aspect-square rounded-full p-0.5 transition-all duration-300 ${
-                        isSelected ? "bg-zinc-800 scale-105" : "bg-transparent scale-[0.85] hover:scale-95"
-                      } ${opacityClass}`}>
-                      <img src={hair.img} alt={hair.name} className="w-full h-full object-contain" />
-                      
-                      <div className="pointer-events-none absolute bottom-full mb-2 left-1/2 -translate-x-1/2 opacity-0 transition-all duration-200 group-hover:opacity-100 z-50">
-                        <div className="relative flex flex-col items-center">
-                          <div className="relative z-10 whitespace-nowrap rounded-md border border-zinc-600 bg-zinc-950 px-2.5 py-1.5 text-[11px] font-medium text-zinc-200 shadow-xl">
-                            {hair.name}
-                          </div>
-                          <div className="absolute -bottom-[4px] z-20 h-2 w-2 rotate-45 border-b border-r border-zinc-600 bg-zinc-950"></div>
-                        </div>
+                  {/* 한정 이미지 버튼 (누르면 콜라보까지 싹쓸이!) */}
+                  <button onClick={toggleLimitedGroup}
+                    className={`relative group aspect-square rounded-full p-1 transition-all duration-300 ${
+                      isAllLimitedSelected ? "bg-zinc-800 scale-105" : "bg-zinc-900 scale-[0.85] hover:scale-95"
+                    } ${!isAnyTypeSelected || isAllLimitedSelected ? "opacity-100" : "opacity-40 hover:opacity-100"}`}>
+                    <img src="/icons/status/limited.png" alt="한정" className="w-full h-full object-contain" />
+                    <div className="pointer-events-none absolute bottom-full mb-2 left-1/2 -translate-x-1/2 opacity-0 transition-all duration-200 group-hover:opacity-100 z-50">
+                      <div className="relative flex flex-col items-center">
+                        <div className="relative z-10 whitespace-nowrap rounded-md border border-zinc-600 bg-zinc-950 px-2.5 py-1.5 text-[11px] font-medium text-zinc-200 shadow-xl">한정</div>
+                        <div className="absolute -bottom-[4px] z-20 h-2 w-2 rotate-45 border-b border-r border-zinc-600 bg-zinc-950"></div>
                       </div>
+                    </div>
+                  </button>
+
+                  {/* 헤어 O 이미지 버튼 */}
+                  <button onClick={() => toggleFilter(selectedHairs, setSelectedHairs, "hair_o")}
+                    className={`relative group aspect-square rounded-full p-1 transition-all duration-300 ${
+                      selectedHairs.includes("hair_o") ? "bg-zinc-800 scale-105" : "bg-zinc-900 scale-[0.85] hover:scale-95"
+                    } ${!isAnyHairSelected || selectedHairs.includes("hair_o") ? "opacity-100" : "opacity-40 hover:opacity-100"}`}>
+                    <img src="/icons/status/hair_o.png" alt="헤어 O" className="w-full h-full object-contain" />
+                    <div className="pointer-events-none absolute bottom-full mb-2 left-1/2 -translate-x-1/2 opacity-0 transition-all duration-200 group-hover:opacity-100 z-50">
+                      <div className="relative flex flex-col items-center">
+                        <div className="relative z-10 whitespace-nowrap rounded-md border border-zinc-600 bg-zinc-950 px-2.5 py-1.5 text-[11px] font-medium text-zinc-200 shadow-xl">헤어 O</div>
+                        <div className="absolute -bottom-[4px] z-20 h-2 w-2 rotate-45 border-b border-r border-zinc-600 bg-zinc-950"></div>
+                      </div>
+                    </div>
+                  </button>
+
+                  {/* 헤어 X 이미지 버튼 */}
+                  <button onClick={() => toggleFilter(selectedHairs, setSelectedHairs, "hair_x")}
+                    className={`relative group aspect-square rounded-full p-1 transition-all duration-300 ${
+                      selectedHairs.includes("hair_x") ? "bg-zinc-800 scale-105" : "bg-zinc-900 scale-[0.85] hover:scale-95"
+                    } ${!isAnyHairSelected || selectedHairs.includes("hair_x") ? "opacity-100" : "opacity-40 hover:opacity-100"}`}>
+                    <img src="/icons/status/hair_x.png" alt="헤어 X" className="w-full h-full object-contain" />
+                    <div className="pointer-events-none absolute bottom-full mb-2 left-1/2 -translate-x-1/2 opacity-0 transition-all duration-200 group-hover:opacity-100 z-50">
+                      <div className="relative flex flex-col items-center">
+                        <div className="relative z-10 whitespace-nowrap rounded-md border border-zinc-600 bg-zinc-950 px-2.5 py-1.5 text-[11px] font-medium text-zinc-200 shadow-xl">헤어 X</div>
+                        <div className="absolute -bottom-[4px] z-20 h-2 w-2 rotate-45 border-b border-r border-zinc-600 bg-zinc-950"></div>
+                      </div>
+                    </div>
+                  </button>
+                </div>
+
+                {/* 3층: 콜라보 텍스트 버튼 (한정 버튼 바로 밑에 찰떡같이 정렬!) */}
+                <div className="grid grid-cols-4 gap-1.5">
+                  <div className="col-start-2">
+                    <button onClick={() => toggleFilter(selectedTypes, setSelectedTypes, "collab")}
+                      className={`w-full py-2 px-1 text-[12px] sm:text-[13px] font-medium tracking-tight rounded-lg transition-all duration-300 text-white ${
+                        selectedTypes.includes("collab")
+                          ? "bg-amber-500/20 text-amber-300 shadow-md border border-amber-500/30 scale-105"
+                          : "bg-zinc-900 hover:bg-zinc-800 scale-95 border border-transparent"
+                      } ${!isAnyTypeSelected || selectedTypes.includes("collab") ? "opacity-100" : "opacity-40 hover:opacity-100"}`}>
+                      콜라보
                     </button>
-                  )
-                })}
+                  </div>
+                </div>
+
               </div>
             )}
           </div>
