@@ -315,7 +315,12 @@ export default function MyCardsPage() {
       <div className="w-full md:w-[280px] shrink-0 space-y-8">
         <div className="flex items-center justify-between border-b border-white/10 pb-3">
           <h2 className="text-sm font-bold text-zinc-300 tracking-wider uppercase">🔍 필터</h2>
-          <button onClick={resetFilters} className="text-[11px] font-bold text-zinc-500 hover:text-white transition-colors bg-zinc-900 px-2.5 py-1 rounded-md border border-white/5">초기화 ↺</button>
+          {/* 🌟 텍스트 없이 깔끔한 동그라미 아이콘 버튼으로 교체 완료! */}
+          <button onClick={resetFilters} 
+            className="w-7 h-7 flex items-center justify-center rounded-full bg-zinc-900 border border-white/5 text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all text-sm shadow-sm" 
+            title="필터 초기화">
+            <span className="leading-none -mt-[1px]">↺</span>
+          </button>
         </div>
 
         <div className="space-y-6">
@@ -343,7 +348,6 @@ export default function MyCardsPage() {
                     const isSelected = selectedStatuses.includes(status.id);
                     const opacityClass = !isAnyStatusSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100 text-white bg-zinc-900";
                     
-                    // 🌟 유저님의 디테일 반영: '미보유'는 텅 빈 느낌의 무채색을 유지합니다!
                     const activeClass =
                       status.id === "target" ? "bg-pink-500/20 text-pink-300 border border-pink-400/50 shadow-[0_0_10px_rgba(236,72,153,0.15)] scale-105" :
                       status.id === "owned" ? "bg-emerald-500/20 text-emerald-300 border border-emerald-400/50 shadow-[0_0_10px_rgba(52,211,153,0.15)] scale-105" :
@@ -598,7 +602,8 @@ export default function MyCardsPage() {
       <div className="flex-1 flex flex-col min-w-0 bg-zinc-900/30 rounded-3xl p-4 md:p-6 border border-white/5">
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-xl font-bold tracking-tight">내 4성 체크리스트</h1>
+            {/* 🌟 기존 '내 4성 체크리스트'에서 '카드 목록'으로 깔끔하게 변경 완료! */}
+            <h1 className="text-xl font-bold tracking-tight">카드 목록</h1>
             <p className="text-xs text-zinc-400 mt-1">검색된 카드: <strong className="text-white">{filteredCards.length}</strong>장</p>
           </div>
           <button onClick={() => setShowPostAwake(!showPostAwake)} className="self-start sm:self-auto p-1 rounded-full bg-zinc-900 border border-white/10" aria-label="썸네일 전환">
@@ -616,8 +621,18 @@ export default function MyCardsPage() {
               
               return (
                 <div key={card.id} onClick={() => setActiveModalCard(card)} className="relative p-1 cursor-pointer transition-all hover:scale-[1.05] flex flex-col items-center text-center group min-w-0">
-                  <img src={showPostAwake ? card.thumbPostPath : card.thumbPrePath} alt="썸네일" 
-                    className="h-[100px] w-auto max-w-full object-contain transition-all duration-300 rounded-lg border border-white/10 group-hover:border-white/30" />
+                  <div className="relative h-[100px] w-fit flex justify-center">
+                    <img 
+                      src={showPostAwake ? card.thumbPostPath : card.thumbPrePath} 
+                      alt="썸네일 기본" 
+                      className="relative h-[100px] w-auto max-w-full object-contain transition-opacity duration-300 ease-in-out opacity-100 group-hover:opacity-0 rounded-lg border border-white/10 group-hover:border-white/30 z-10" 
+                    />
+                    <img 
+                      src={showPostAwake ? card.thumbPrePath : card.thumbPostPath} 
+                      alt="썸네일 호버" 
+                      className="absolute top-0 h-[100px] w-auto max-w-full object-contain transition-opacity duration-300 ease-in-out opacity-0 group-hover:opacity-100 rounded-lg border border-white/10 group-hover:border-white/30 z-20" 
+                    />
+                  </div>
                   
                   <p className={`text-[11px] font-semibold mt-2.5 truncate w-full max-w-[100px] transition-colors ${
                     isOwned ? "text-[#00FFD1]" : isTarget ? "text-pink-400" : "text-zinc-200 group-hover:text-white"
