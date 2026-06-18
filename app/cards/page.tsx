@@ -17,6 +17,8 @@ type UnitDef = { id: string; name: string; logo: string; chars: CharDef[] };
 type AttrDef = { id: string; name: string; img: string };
 type SubSkillDef = { id: string; name: string; matchKeys: string[] };
 type SkillDef = { id: string; name: string; img: string; matchKeys?: string[]; subs?: SubSkillDef[] };
+type TypeFilterDef = { id: string; name: string; img?: string; isText?: boolean };
+type HairFilterDef = { id: string; name: string; img: string };
 
 const UNIT_FILTERS: UnitDef[] = [
   { id: "vs", name: "무소속 / VIRTUAL SINGER", logo: "/icons/VS.png",
@@ -129,7 +131,17 @@ const ALL_SKILL_TARGETS = [
   ...(SKILL_FILTERS.find(s => s.id === "condition_group")?.subs || [])
 ];
 
-// 🌟 [추가됨] 세분화된 콜라보 필터 목록 및 인식 키워드 설정!
+const TYPE_FILTERS: TypeFilterDef[] = [
+  { id: "normal", name: "통상", img: "/icons/status/normal.png" },
+  { id: "limited", name: "한정/페스/월링", img: "/icons/status/limited.png" },
+  { id: "collab", name: "콜라보", isText: true }
+];
+
+const HAIR_FILTERS: HairFilterDef[] = [
+  { id: "hair_o", name: "헤어 O", img: "/icons/status/hair_o.png" },
+  { id: "hair_x", name: "헤어 X", img: "/icons/status/hair_x.png" }
+];
+
 const COLLAB_FILTERS = [
   { id: "collab_evil", name: "에빌", matchKeys: ["에빌", "악의", "대죄", "evillious"] },
   { id: "collab_sanrio", name: "산리오", matchKeys: ["산리오", "sanrio"] },
@@ -143,14 +155,12 @@ export default function MyCardsPage() {
   const [mounted, setMounted] = useState(false);
   const [showPostAwake, setShowPostAwake] = useState(false);
   
-  // 🌟 접기/펴기 상태 관리
   const [isStatusExpanded, setIsStatusExpanded] = useState(true);
   const [isCollabExpanded, setIsCollabExpanded] = useState(true);
   const [isAttrExpanded, setIsAttrExpanded] = useState(true);
   const [isSkillExpanded, setIsSkillExpanded] = useState(true);
   const [isCharExpanded, setIsCharExpanded] = useState(true);
 
-  // 🌟 필터 선택 상태 관리
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]); 
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedHairs, setSelectedHairs] = useState<string[]>([]);
@@ -187,7 +197,6 @@ export default function MyCardsPage() {
     setSelectedSkills(isAllSelected ? selectedSkills.filter(id => !condIds.includes(id)) : [...new Set([...selectedSkills, ...condIds])]);
   };
 
-  // 🌟 한정 버튼 누르면 콜라보(에빌,산리오,앙스타,다마고치)까지 싹 다 잡히도록 로직 강화!
   const collabIds = COLLAB_FILTERS.map(c => c.id);
   const limitedGroup = ["limited", ...collabIds];
   const isAllLimitedSelected = limitedGroup.every(id => selectedTypes.includes(id));
@@ -206,7 +215,6 @@ export default function MyCardsPage() {
   };
 
   const filteredCards = ALL_CARDS.filter(card => {
-    // 1. 보유 상태 필터
     if (selectedStatuses.length > 0) {
       const isOwned = cardStates[card.id]?.isOwned || false;
       const isTarget = cardStates[card.id]?.isTarget || false;
@@ -218,7 +226,6 @@ export default function MyCardsPage() {
       if (!(matchOwned || matchUnowned || matchTarget)) return false;
     }
 
-    // 🌟 2. 가챠 타입 & 세분화된 콜라보 필터
     if (selectedTypes.length > 0) {
       const matchNormal = selectedTypes.includes("normal") && card.gachaType === "통상";
       const matchLimited = selectedTypes.includes("limited") && ["한정", "페스", "월링"].includes(card.gachaType);
@@ -227,7 +234,6 @@ export default function MyCardsPage() {
       if (card.gachaType === "콜라보") {
         matchCollab = COLLAB_FILTERS.some(collab => {
           if (!selectedTypes.includes(collab.id)) return false;
-          // 콜라보 카드일 경우 gachaPoolName이나 eventName에서 키워드를 찾아 매칭합니다.
           const searchStr = (card.gachaPoolName + " " + card.eventName).toLowerCase();
           return collab.matchKeys.some(key => searchStr.includes(key.toLowerCase()));
         });
@@ -236,7 +242,6 @@ export default function MyCardsPage() {
       if (!(matchNormal || matchLimited || matchCollab)) return false;
     }
 
-    // 3. 헤어 유무 필터
     if (selectedHairs.length > 0) {
       const matchHairO = selectedHairs.includes("hair_o") && card.hasHair;
       const matchHairX = selectedHairs.includes("hair_x") && !card.hasHair;
@@ -244,7 +249,6 @@ export default function MyCardsPage() {
       if (!(matchHairO || matchHairX)) return false;
     }
     
-    // 4. 캐릭터 필터
     if (selectedChars.length > 0) {
       const matchesChar = selectedChars.some(selId => {
         const parentUnit = UNIT_FILTERS.find(u => u.chars.some(c => c.id === selId));
@@ -271,7 +275,6 @@ export default function MyCardsPage() {
       if (!matchesChar) return false;
     }
     
-    // 5. 속성 필터
     if (selectedAttrs.length > 0) {
       const matchesAttr = selectedAttrs.some(selId => {
         const cardAttr = (card.attribute || "").toLowerCase();
@@ -281,7 +284,6 @@ export default function MyCardsPage() {
       if (!matchesAttr) return false;
     }
 
-    // 6. 스킬 필터
     if (selectedSkills.length > 0) {
       const matchesSkill = selectedSkills.some(selId => {
         const targetObj = ALL_SKILL_TARGETS.find(t => t.id === selId);
@@ -339,18 +341,17 @@ export default function MyCardsPage() {
                     { id: "target", label: "⭐ 목표" }
                   ].map(status => {
                     const isSelected = selectedStatuses.includes(status.id);
-                    // 🌟 비활성 상태 가독성 1000% 상승! (스킬 버튼처럼 하얀 글씨 + 투명도 조절)
                     const opacityClass = !isAnyStatusSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100 text-white bg-zinc-900";
                     
-                    // 🌟 유저님의 근본 색상 복구 (보유:초록, 목표:핑크)
+                    // 🌟 유저님의 디테일 반영: '미보유'는 텅 빈 느낌의 무채색을 유지합니다!
                     const activeClass =
-                      status.id === "target" ? "bg-pink-500/20 text-pink-300 shadow-md border border-pink-500/30 scale-105" :
-                      status.id === "owned" ? "bg-emerald-500/20 text-emerald-300 shadow-md border border-emerald-500/30 scale-105" :
-                      "bg-zinc-700 text-white shadow-md border border-zinc-500 scale-105";
+                      status.id === "target" ? "bg-pink-500/20 text-pink-300 border border-pink-400/50 shadow-[0_0_10px_rgba(236,72,153,0.15)] scale-105" :
+                      status.id === "owned" ? "bg-emerald-500/20 text-emerald-300 border border-emerald-400/50 shadow-[0_0_10px_rgba(52,211,153,0.15)] scale-105" :
+                      "bg-zinc-700 text-zinc-100 border border-zinc-500 shadow-md scale-105";
 
                     return (
                       <button key={status.id} onClick={() => toggleFilter(selectedStatuses, setSelectedStatuses, status.id)}
-                        className={`py-2 px-1 text-[12px] sm:text-[13px] font-medium tracking-tight rounded-lg transition-all duration-300 text-white ${
+                        className={`py-2 px-1 text-[12px] sm:text-[13px] font-bold tracking-tight rounded-lg transition-all duration-300 text-white ${
                           isSelected ? activeClass : "bg-zinc-900 hover:bg-zinc-800 border border-transparent scale-95"
                         } ${opacityClass}`}>
                         {status.label}
@@ -361,7 +362,6 @@ export default function MyCardsPage() {
 
                 {/* 2층: 통상 / 한정 / 헤어 O / 헤어 X (빅 사이즈 이미지 버튼) */}
                 <div className="grid grid-cols-4 gap-1.5">
-                  {/* 통상 이미지 버튼 */}
                   <button onClick={() => toggleFilter(selectedTypes, setSelectedTypes, "normal")}
                     className={`relative group aspect-square rounded-full p-1 transition-all duration-300 w-full h-full ${
                       selectedTypes.includes("normal") ? "bg-zinc-800 scale-105" : "bg-zinc-900 scale-[0.85] hover:scale-95"
@@ -375,7 +375,6 @@ export default function MyCardsPage() {
                     </div>
                   </button>
 
-                  {/* 한정 이미지 버튼 (주석 직관적으로 수정 + 누르면 콜라보 싹쓸이 기능!) */}
                   <button onClick={toggleLimitedGroup}
                     className={`relative group aspect-square rounded-full p-1 transition-all duration-300 w-full h-full ${
                       isAllLimitedSelected ? "bg-zinc-800 scale-105" : "bg-zinc-900 scale-[0.85] hover:scale-95"
@@ -389,7 +388,6 @@ export default function MyCardsPage() {
                     </div>
                   </button>
 
-                  {/* 헤어 O 이미지 버튼 */}
                   <button onClick={() => toggleFilter(selectedHairs, setSelectedHairs, "hair_o")}
                     className={`relative group aspect-square rounded-full p-1 transition-all duration-300 w-full h-full ${
                       selectedHairs.includes("hair_o") ? "bg-zinc-800 scale-105" : "bg-zinc-900 scale-[0.85] hover:scale-95"
@@ -403,7 +401,6 @@ export default function MyCardsPage() {
                     </div>
                   </button>
 
-                  {/* 헤어 X 이미지 버튼 */}
                   <button onClick={() => toggleFilter(selectedHairs, setSelectedHairs, "hair_x")}
                     className={`relative group aspect-square rounded-full p-1 transition-all duration-300 w-full h-full ${
                       selectedHairs.includes("hair_x") ? "bg-zinc-800 scale-105" : "bg-zinc-900 scale-[0.85] hover:scale-95"
@@ -435,7 +432,6 @@ export default function MyCardsPage() {
               <div className="grid grid-cols-4 gap-1.5 pt-1">
                 {COLLAB_FILTERS.map(collab => {
                   const isSelected = selectedTypes.includes(collab.id);
-                  // 🌟 콜라보 역시 스킬 뱃지와 같은 비활성 가독성 적용
                   const opacityClass = !isAnyTypeSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100 text-white bg-zinc-900";
                   
                   return (
