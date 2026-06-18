@@ -414,7 +414,7 @@ export const IchikaCards = defineCharacterCards(
       gachaBannerPath: "/gachas/25y/banner_25_31_l.png", 
       eventBannerPath: "/events/25y/banner_25_31_l.png", 
       songName: "그 소리가 울린다면",        
-      songJacketPath: "/jacket/24y/Sono_Oto_ga_Narunara.png",  
+      songJacketPath: "/jacket/25y/Sono_Oto_ga_Narunara.png",  
 
       // 👗 [의상 정보]
       hasCostume: true,
