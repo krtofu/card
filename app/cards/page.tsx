@@ -135,14 +135,17 @@ export default function MyCardsPage() {
   const [mounted, setMounted] = useState(false);
   const [showPostAwake, setShowPostAwake] = useState(false);
   
+  // 🌟 접기/펴기 상태 관리
+  const [isStatusExpanded, setIsStatusExpanded] = useState(true);
   const [isAttrExpanded, setIsAttrExpanded] = useState(true);
   const [isSkillExpanded, setIsSkillExpanded] = useState(true);
   const [isCharExpanded, setIsCharExpanded] = useState(true);
 
+  // 🌟 필터 선택 상태 관리
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]); // showOnlyOwned 대체!
   const [selectedChars, setSelectedChars] = useState<string[]>([]);
   const [selectedAttrs, setSelectedAttrs] = useState<string[]>([]);
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
-  const [showOnlyOwned, setShowOnlyOwned] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -170,17 +173,30 @@ export default function MyCardsPage() {
     const condSubs = SKILL_FILTERS.find(s => s.id === "condition_group")?.subs || [];
     const condIds = condSubs.map(s => s.id);
     const isAllSelected = condIds.every(id => selectedSkills.includes(id));
-    
     setSelectedSkills(isAllSelected ? selectedSkills.filter(id => !condIds.includes(id)) : [...new Set([...selectedSkills, ...condIds])]);
   };
 
   const resetFilters = () => {
-    setSelectedChars([]); setSelectedAttrs([]); setSelectedSkills([]); setShowOnlyOwned(false);
+    setSelectedChars([]); setSelectedAttrs([]); setSelectedSkills([]); setSelectedStatuses([]);
   };
 
   const filteredCards = ALL_CARDS.filter(card => {
-    if (showOnlyOwned && !cardStates[card.id]?.isOwned) return false;
+    // 🌟 1. 상태(STATUS) 필터: 선택된 상태 중 '하나라도' 맞으면 통과 (OR 조건)
+    if (selectedStatuses.length > 0) {
+      const isOwned = cardStates[card.id]?.isOwned || false;
+      const isTarget = cardStates[card.id]?.isTarget || false;
+
+      const matchOwned = selectedStatuses.includes("owned") && isOwned;
+      const matchUnowned = selectedStatuses.includes("unowned") && !isOwned;
+      const matchTarget = selectedStatuses.includes("target") && isTarget;
+
+      // 셋 중 어느 하나라도 일치하지 않으면 리스트에서 제외
+      if (!(matchOwned || matchUnowned || matchTarget)) {
+        return false;
+      }
+    }
     
+    // 2. 캐릭터 필터
     if (selectedChars.length > 0) {
       const matchesChar = selectedChars.some(selId => {
         const parentUnit = UNIT_FILTERS.find(u => u.chars.some(c => c.id === selId));
@@ -207,6 +223,7 @@ export default function MyCardsPage() {
       if (!matchesChar) return false;
     }
     
+    // 3. 속성 필터
     if (selectedAttrs.length > 0) {
       const matchesAttr = selectedAttrs.some(selId => {
         const cardAttr = (card.attribute || "").toLowerCase();
@@ -216,6 +233,7 @@ export default function MyCardsPage() {
       if (!matchesAttr) return false;
     }
 
+    // 4. 스킬 필터
     if (selectedSkills.length > 0) {
       const matchesSkill = selectedSkills.some(selId => {
         const targetObj = ALL_SKILL_TARGETS.find(t => t.id === selId);
@@ -232,6 +250,7 @@ export default function MyCardsPage() {
   const isAnyAttrSelected = selectedAttrs.length > 0;
   const isAnySkillSelected = selectedSkills.length > 0;
   const isAnyCharSelected = selectedChars.length > 0;
+  const isAnyStatusSelected = selectedStatuses.length > 0;
 
   const condSubs = SKILL_FILTERS.find(s => s.id === "condition_group")?.subs || [];
   const condIds = condSubs.map(s => s.id);
@@ -240,23 +259,56 @@ export default function MyCardsPage() {
   return (
     <div className="flex flex-col md:flex-row gap-6 px-4 md:px-8 py-6 min-h-screen text-zinc-100 max-w-[1920px] mx-auto w-full">
       
+      {/* 🎛️ 왼쪽 필터 사이드바 */}
       <div className="w-full md:w-[280px] shrink-0 space-y-8">
         <div className="flex items-center justify-between border-b border-white/10 pb-3">
           <h2 className="text-sm font-bold text-zinc-300 tracking-wider uppercase">🔍 필터</h2>
           <button onClick={resetFilters} className="text-[11px] font-bold text-zinc-500 hover:text-white transition-colors bg-zinc-900 px-2.5 py-1 rounded-md border border-white/5">초기화 ↺</button>
         </div>
 
-        <button onClick={() => setShowOnlyOwned(!showOnlyOwned)} className={`w-full flex items-center justify-between p-3 rounded-xl transition-all ${showOnlyOwned ? "bg-[#00FFD1]/10 text-[#00FFD1]" : "bg-zinc-900 text-zinc-400 hover:bg-zinc-800"}`}>
-          <span className="text-xs font-bold tracking-wide">내 보유 카드만 보기</span>
-          <span className="text-sm">{showOnlyOwned ? "✓" : "○"}</span>
-        </button>
-
         <div className="space-y-6">
           
+          {/* ✅ 대망의 상태(STATUS) 필터 */}
           <div className="space-y-2">
             <button 
-              onClick={() => setIsAttrExpanded(!isAttrExpanded)} 
+              onClick={() => setIsStatusExpanded(!isStatusExpanded)} 
               className="w-full flex items-center justify-between group pb-1 cursor-pointer"
+            >
+              <span className="text-[11px] font-bold text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-300 transition-colors">STATUS</span>
+              <span className={`text-[10px] text-zinc-500 transform transition-transform duration-300 ${isStatusExpanded ? 'rotate-0' : '-rotate-90'}`}>▼</span>
+            </button>
+            
+            {isStatusExpanded && (
+              <div className="grid grid-cols-3 gap-1.5 pt-1">
+                {[
+                  { id: "owned", label: "✓ 보유" },
+                  { id: "unowned", label: "❌ 미보유" },
+                  { id: "target", label: "⭐ 목표" }
+                ].map(status => {
+                  const isSelected = selectedStatuses.includes(status.id);
+                  const opacityClass = !isAnyStatusSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100";
+                  return (
+                    <button key={status.id} onClick={() => toggleFilter(selectedStatuses, setSelectedStatuses, status.id)}
+                      className={`py-2 px-1 text-[12px] font-bold tracking-tight rounded-lg transition-all duration-300 ${
+                        isSelected 
+                          ? status.id === "target" ? "bg-pink-500/20 text-pink-300 shadow-md border border-pink-500/30"
+                          : status.id === "owned" ? "bg-emerald-500/20 text-emerald-300 shadow-md border border-emerald-500/30" 
+                          : "bg-zinc-700 text-white shadow-md border border-zinc-600"
+                          : "bg-zinc-900 text-zinc-500 hover:bg-zinc-800 border border-transparent"
+                      } ${opacityClass}`}>
+                      {status.label}
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* ✅ 속성 필터 */}
+          <div className="space-y-2 pt-2 border-t border-white/5">
+            <button 
+              onClick={() => setIsAttrExpanded(!isAttrExpanded)} 
+              className="w-full flex items-center justify-between group pt-2 pb-1 cursor-pointer"
             >
               <span className="text-[11px] font-bold text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-300 transition-colors">ATTRIBUTE</span>
               <span className={`text-[10px] text-zinc-500 transform transition-transform duration-300 ${isAttrExpanded ? 'rotate-0' : '-rotate-90'}`}>▼</span>
@@ -289,10 +341,11 @@ export default function MyCardsPage() {
             )}
           </div>
 
-          <div className="space-y-2">
+          {/* ✅ 스킬 필터 */}
+          <div className="space-y-2 pt-2 border-t border-white/5">
             <button 
               onClick={() => setIsSkillExpanded(!isSkillExpanded)} 
-              className="w-full flex items-center justify-between group pb-1 cursor-pointer"
+              className="w-full flex items-center justify-between group pt-2 pb-1 cursor-pointer"
             >
               <span className="text-[11px] font-bold text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-300 transition-colors">SKILL</span>
               <span className={`text-[10px] text-zinc-500 transform transition-transform duration-300 ${isSkillExpanded ? 'rotate-0' : '-rotate-90'}`}>▼</span>
@@ -346,6 +399,7 @@ export default function MyCardsPage() {
             )}
           </div>
 
+          {/* ✅ 캐릭터 필터 */}
           <div className="pt-2">
             <button 
               onClick={() => setIsCharExpanded(!isCharExpanded)} 
@@ -395,6 +449,7 @@ export default function MyCardsPage() {
         </div>
       </div>
 
+      {/* 🗂️ 우측: 카드 리스트 구역 */}
       <div className="flex-1 flex flex-col min-w-0 bg-zinc-900/30 rounded-3xl p-4 md:p-6 border border-white/5">
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
           <div>
@@ -415,10 +470,7 @@ export default function MyCardsPage() {
               const isTarget = cardStates[card.id]?.isTarget;
               
               return (
-                /* 🌟 핵심 수정: min-w-0 클래스 추가로 그리드가 100px 밑으로 줄어들지 않던 고집 꺾음! */
                 <div key={card.id} onClick={() => setActiveModalCard(card)} className="relative p-1 cursor-pointer transition-all hover:scale-[1.05] flex flex-col items-center text-center group min-w-0">
-                  
-                  {/* 🌟 핵심 수정: h-25 같은 가짜 단위 제거하고 h-[100px]와 max-w-full로 강제 고정! */}
                   <img src={showPostAwake ? card.thumbPostPath : card.thumbPrePath} alt="썸네일" 
                     className="h-[100px] w-auto max-w-full object-contain transition-all duration-300 rounded-lg border border-white/10 group-hover:border-white/30" />
                   
