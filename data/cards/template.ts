@@ -9,8 +9,9 @@ export type CardInfoGroup = {
   attribute: Attr;          
   gachaType: GachaType;     
   gachaPoolName: string;    
-  eventName?: string;        // 페스 등 없을 수 있으므로 옵션화
+  eventName?: string;        
   skillType: string;        
+  releaseDate: string;      // 👈 [추가됨!] 출시일 (예: "2020-09-30")
 };
 
 export type CardMediaGroup = {
@@ -23,7 +24,7 @@ export type CardMediaGroup = {
 export type CardCostumeGroup = {
   hasCostume?: boolean;     
   costumeName?: string;
-  hasHair?: boolean;        // 월링 돌연변이 및 통상 유연성 확보!
+  hasHair?: boolean;        
 };
 
 // 🌟 [방별 입력 양식 통합]
@@ -40,7 +41,7 @@ export type CostumeSetPaths = {
   back: string;  
 };
 
-// 🌟 [앱 전체가 사용하는 최종 완성형 데이터 뼈대] (수정 없음)
+// 🌟 [앱 전체가 사용하는 최종 완성형 데이터 뼈대]
 export type FinalCardInfo = {
   id: string;
   unit: UnitName;           
@@ -51,6 +52,7 @@ export type FinalCardInfo = {
   gachaPoolName: string;
   eventName: string;
   skillType: string;        
+  releaseDate: string;      // 👈 [추가됨!] 최종 데이터에도 출시일 보관
 
   thumbPrePath: string;     
   thumbPostPath: string;    
@@ -93,13 +95,11 @@ export function defineCharacterCards(
     const { info, media, costume } = card;
     const folderBase = `/cards/${unitFolder}/${characterFolder}/${info.id}`;
 
-    // 이미지 경로 자동 빌드
     const thumbPrePath = `${folderBase}/thumb_pre.png`;
     const thumbPostPath = `${folderBase}/thumb_post.png`;
     const preAwakePath = `${folderBase}/pre.png`;
     const postAwakePath = `${folderBase}/post.png`;
 
-    // 캐릭터 얼굴 아이콘 매핑
     let finalIconPath = `${folderBase}/icon.png`;
     const cleanCharName = character.trim(); 
     const cleanUnitName = unit.trim().toLowerCase();
@@ -126,11 +126,10 @@ export function defineCharacterCards(
       else if (cleanUnitName.includes("모모점") || cleanUnitName.includes("more") || cleanUnitName === "mmj") suffix = "_m";
       else if (cleanUnitName.includes("비배스") || cleanUnitName.includes("vivid") || cleanUnitName === "vbs") suffix = "_v";
       else if (cleanUnitName.includes("원더쇼") || cleanUnitName.includes("wonder") || cleanUnitName === "wxs") suffix = "_w";
-      else if (cleanUnitName.includes("니고") || cleanUnitName.includes("25") || cleanUnitName === "niigo") suffix = "_n";
+      else if (cleanUnitName.includes("니고") || cleanUnitName.includes("25") || cleanUnitName === "nigo") suffix = "_n";
       finalIconPath = `/icons/characters/${vsBase}${suffix}.png`;
     }
 
-    // 3D 의상 데이터 세트 자동 생성
     let costumeData = undefined;
     if (costume?.hasCostume && costume.costumeName) {
       const labels = ["기본", "어나더 1", "어나더 2", "어나더 3"];
@@ -153,6 +152,7 @@ export function defineCharacterCards(
       gachaPoolName: info.gachaPoolName,
       eventName: info.eventName || "",
       skillType: info.skillType,
+      releaseDate: info.releaseDate, // 👈 [추가됨!]
       
       thumbPrePath,  
       thumbPostPath, 

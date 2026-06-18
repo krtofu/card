@@ -155,6 +155,9 @@ export default function MyCardsPage() {
   const [mounted, setMounted] = useState(false);
   const [showPostAwake, setShowPostAwake] = useState(false);
   
+  // 🌟 정렬 상태 관리 (최신순이 기본값!)
+  const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
+  
   const [isStatusExpanded, setIsStatusExpanded] = useState(true);
   const [isCollabExpanded, setIsCollabExpanded] = useState(true);
   const [isAttrExpanded, setIsAttrExpanded] = useState(true);
@@ -295,6 +298,19 @@ export default function MyCardsPage() {
     return true; 
   });
 
+  // 🌟 [추가됨] 출시일(releaseDate) 기준 정렬 로직 적용
+  const sortedCards = [...filteredCards].sort((a, b) => {
+    // 날짜 데이터가 혹시라도 누락되었을 경우를 대비한 안전 장치
+    const dateA = a.releaseDate || "1970-01-01";
+    const dateB = b.releaseDate || "1970-01-01";
+    
+    if (sortOrder === "newest") {
+      return dateB.localeCompare(dateA); // 최신순 (내림차순)
+    } else {
+      return dateA.localeCompare(dateB); // 출시순 (오름차순)
+    }
+  });
+
   if (!mounted) return null;
 
   const isAnyStatusSelected = selectedStatuses.length > 0;
@@ -315,7 +331,6 @@ export default function MyCardsPage() {
       <div className="w-full md:w-[280px] shrink-0 space-y-8">
         <div className="flex items-center justify-between border-b border-white/10 pb-3">
           <h2 className="text-sm font-bold text-zinc-300 tracking-wider uppercase">🔍 필터</h2>
-          {/* 🌟 텍스트 없이 깔끔한 동그라미 아이콘 버튼으로 교체 완료! */}
           <button onClick={resetFilters} 
             className="w-7 h-7 flex items-center justify-center rounded-full bg-zinc-900 border border-white/5 text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all text-sm shadow-sm" 
             title="필터 초기화">
@@ -338,7 +353,7 @@ export default function MyCardsPage() {
             {isStatusExpanded && (
               <div className="space-y-3 pt-1">
                 
-                {/* 1층: 보유 / 미보유 / 목표 (텍스트 버튼) */}
+                {/* 1층: 보유 / 미보유 / 목표 */}
                 <div className="grid grid-cols-3 gap-1.5">
                   {[
                     { id: "owned", label: "✓ 보유" },
@@ -364,7 +379,7 @@ export default function MyCardsPage() {
                   })}
                 </div>
 
-                {/* 2층: 통상 / 한정 / 헤어 O / 헤어 X (빅 사이즈 이미지 버튼) */}
+                {/* 2층: 통상 / 한정 / 헤어 O / 헤어 X */}
                 <div className="grid grid-cols-4 gap-1.5">
                   <button onClick={() => toggleFilter(selectedTypes, setSelectedTypes, "normal")}
                     className={`relative group aspect-square rounded-full p-1 transition-all duration-300 w-full h-full ${
@@ -602,20 +617,28 @@ export default function MyCardsPage() {
       <div className="flex-1 flex flex-col min-w-0 bg-zinc-900/30 rounded-3xl p-4 md:p-6 border border-white/5">
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
           <div>
-            {/* 🌟 기존 '내 4성 체크리스트'에서 '카드 목록'으로 깔끔하게 변경 완료! */}
-            <h1 className="text-xl font-bold tracking-tight">카드 목록</h1>
-            <p className="text-xs text-zinc-400 mt-1">검색된 카드: <strong className="text-white">{filteredCards.length}</strong>장</p>
+            <div className="flex items-center gap-3">
+              <h1 className="text-xl font-bold tracking-tight">카드 목록</h1>
+              {/* 🌟 [최신순 / 출시순] 토글 스위치 장착! */}
+              <button 
+                onClick={() => setSortOrder(prev => prev === "newest" ? "oldest" : "newest")}
+                className="flex items-center justify-center px-2.5 py-1 rounded-lg bg-zinc-800/80 border border-white/10 text-[11px] font-bold text-zinc-300 hover:text-white hover:bg-zinc-700 transition-all shadow-sm"
+              >
+                {sortOrder === "newest" ? "🔽 최신순" : "🔼 출시순"}
+              </button>
+            </div>
+            <p className="text-xs text-zinc-400 mt-1">검색된 카드: <strong className="text-white">{sortedCards.length}</strong>장</p>
           </div>
           <button onClick={() => setShowPostAwake(!showPostAwake)} className="self-start sm:self-auto p-1 rounded-full bg-zinc-900 border border-white/10" aria-label="썸네일 전환">
             <img src={showPostAwake ? "/icons/post_star.png" : "/icons/pre_star.png"} alt="스위치" className="h-8 w-auto object-contain block" />
           </button>
         </div>
 
-        {filteredCards.length === 0 ? (
+        {sortedCards.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-zinc-500"><p>선택한 조건에 맞는 카드가 없습니다.</p></div>
         ) : (
           <div className="grid grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-y-6 gap-x-4 w-full">
-            {filteredCards.map((card) => {
+            {sortedCards.map((card) => {
               const isOwned = cardStates[card.id]?.isOwned;
               const isTarget = cardStates[card.id]?.isTarget;
               

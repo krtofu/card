@@ -17,6 +17,7 @@ export const IchikaCards = defineCharacterCards(
           gachaPoolName: "서비스 시작 기념 뽑기",
           eventName: "",
           skillType: "힐",
+          releaseDate: "2022-05-20",
         },
         media: {
           gachaBannerPath: "/gachas/22y/banner_22_01.png",
@@ -35,6 +36,7 @@ export const IchikaCards = defineCharacterCards(
           gachaPoolName: "작은 용기, 커다란 한 걸음 뽑기",
           eventName: "흔들리는 채로, 그래도 넌 앞으로",
           skillType: "퍼스업",
+          releaseDate: "2022-08-01",
         },
         media: {
           gachaBannerPath: "/gachas/22y/banner_22_11_l.png",
@@ -52,6 +54,7 @@ export const IchikaCards = defineCharacterCards(
           gachaPoolName: "너와 만나는 벚꽃길 뽑기",
           eventName: "너와 노래해, 벚꽃 흩날리는 세상에서",
           skillType: "스업",
+          releaseDate: "2022-10-03",
         },
         media: {
           gachaBannerPath: "/gachas/22y/banner_22_19.png",
@@ -71,6 +74,7 @@ export const IchikaCards = defineCharacterCards(
           gachaPoolName: "망설임을 끊어내는 풀 메탈 뽑기",
           eventName: "Knock the Future!!",
           skillType: "판강",
+          releaseDate: "2023-01-23",
         },
         media: {
           gachaBannerPath: "/gachas/23y/banner_23_04_l.png",
@@ -92,6 +96,7 @@ export const IchikaCards = defineCharacterCards(
           gachaPoolName: "Journey with U 뽑기",
           eventName: "그날, 하늘은 멀리 있었다",
           skillType: "판강",
+          releaseDate: "2023-05-15",
         },
         media: {
           gachaBannerPath: "/gachas/23y/banner_23_20_l.png",
@@ -113,6 +118,7 @@ export const IchikaCards = defineCharacterCards(
           gachaPoolName: "반짝이는 은하의 별무리 뽑기",
           eventName: "Live with memories",
           skillType: "스업",
+          releaseDate: "2023-06-26",
         },
         media: {
           gachaBannerPath: "/gachas/23y/banner_23_26_l.png",
@@ -134,6 +140,7 @@ export const IchikaCards = defineCharacterCards(
           gachaPoolName: "점점 가라앉는 adolescence 뽑기",
           eventName: "No seek No find",
           skillType: "판강",
+          releaseDate: "2023-08-28",
         },
         media: {
           gachaBannerPath: "/gachas/23y/banner_23_35_l.png",
@@ -155,6 +162,7 @@ export const IchikaCards = defineCharacterCards(
           gachaPoolName: "NEON universe 뽑기",
           eventName: "Echo my melody",
           skillType: "스업",
+          releaseDate: "2023-11-13",
         },
         media: {
           gachaBannerPath: "/gachas/23y/banner_23_46_l.png",
@@ -176,6 +184,7 @@ export const IchikaCards = defineCharacterCards(
           gachaPoolName: "출항과 유대의 본 보야지 뽑기",
           eventName: "출항 전의 원데이 트립",
           skillType: "힐",
+          releaseDate: "2024-05-11",
         },
         media: {
           gachaBannerPath: "/gachas/24y/banner_24_14.png",
@@ -195,6 +204,7 @@ export const IchikaCards = defineCharacterCards(
           gachaPoolName: "마음을 실어, Shooting Star!! 뽑기",
           eventName: "이어지는, 별의 노래",
           skillType: "판강",
+          releaseDate: "2024-07-21",
         },
         media: {
           gachaBannerPath: "/gachas/24y/banner_24_21_l.png",
@@ -216,6 +226,7 @@ export const IchikaCards = defineCharacterCards(
           gachaPoolName: "눈동자, 높은 곳을 목표로 뽑기",
           eventName: "이끄는 용기, 다정함을 가슴에",
           skillType: "퍼스업",
+          releaseDate: "2025-02-10",
         },
         media: {
           gachaBannerPath: "/gachas/25y/banner_25_05_l.png",
@@ -237,6 +248,7 @@ export const IchikaCards = defineCharacterCards(
           gachaPoolName: "Me and my diva 뽑기",
           eventName: "This moment with you!",
           skillType: "퍼스업",
+          releaseDate: "2025-09-20",
         },
         media: {
           gachaBannerPath: "/gachas/25y/banner_25_27_l.png",
@@ -258,6 +270,7 @@ export const IchikaCards = defineCharacterCards(
           gachaPoolName: "Seeking my way 뽑기",
           eventName: "Unsteady, still steady step",
           skillType: "퍼스업",
+          releaseDate: "2026-07-15",
         },
         media: {
           gachaBannerPath: "/gachas/26y/jbanner_26_20_l.png",
@@ -279,6 +292,7 @@ export const IchikaCards = defineCharacterCards(
           gachaPoolName: "Follow my heart 뽑기",
           eventName: "너와 잇는 Heart Beat",
           skillType: "스업",
+          releaseDate: "2026-10-11",
         },
         media: {
           gachaBannerPath: "/gachas/26y/jbanner_26_28_l.png",
@@ -304,6 +318,7 @@ export const IchikaCards = defineCharacterCards(
           gachaPoolName: "겹치는 마음 Words Snow 뽑기",
           eventName: "교차하는 선율 빛을 밝히는 온기",
           skillType: "스업",
+          releaseDate: "2023-03-20",
         },
         media: {
           gachaBannerPath: "/gachas/23y/banner_23_12.png",
@@ -324,6 +339,7 @@ export const IchikaCards = defineCharacterCards(
           gachaPoolName: "Before the storm 뽑기",
           eventName: "Don't lose faith!",
           skillType: "힐",
+          releaseDate: "2023-09-25",
         },
         media: {
           gachaBannerPath: "/gachas/23y/banner_23_39_l.png",
@@ -346,6 +362,7 @@ export const IchikaCards = defineCharacterCards(
           gachaPoolName: "Sweet Cute Valentine! 뽑기",
           eventName: "캔들 향기는 추억과 함께",
           skillType: "힐",
+          releaseDate: "2024-01-31",
         },
         media: {
           gachaBannerPath: "/gachas/24y/banner_24_04.png",
@@ -366,6 +383,7 @@ export const IchikaCards = defineCharacterCards(
           gachaPoolName: "Grow up with me! 뽑기",
           eventName: "헬로 굿 데이!",
           skillType: "판강",
+          releaseDate: "2024-09-30",
         },
         media: {
           gachaBannerPath: "/gachas/24y/banner_24_28.png",
@@ -388,6 +406,7 @@ export const IchikaCards = defineCharacterCards(
           gachaPoolName: "싸움 끝에 기다리는 것은 뽑기",
           eventName: "릴랙스 티타임",
           skillType: "힐",
+          releaseDate: "2025-02-28",
         },
         media: {
           gachaBannerPath: "/gachas/25y/banner_25_07.png",
@@ -408,6 +427,7 @@ export const IchikaCards = defineCharacterCards(
           gachaPoolName: "청춘 어셈블! 뽑기",
           eventName: "그날 본 밤하늘은 언젠가의 미래로",
           skillType: "스업",
+          releaseDate: "2025-07-17",
         },
         media: {
           gachaBannerPath: "/gachas/25y/banner_25_21_l.png",
@@ -430,6 +450,7 @@ export const IchikaCards = defineCharacterCards(
           gachaPoolName: "음악이 울리는 길목에서 뽑기",
           eventName: "Happy Enjoy Music!",
           skillType: "판강",
+          releaseDate: "2025-10-31",
         },
         media: {
           gachaBannerPath: "/gachas/25y/banner_25_31_l.png",
@@ -452,6 +473,7 @@ export const IchikaCards = defineCharacterCards(
           gachaPoolName: "Living With Music 뽑기",
           eventName: "Find the dream view",
           skillType: "스업",
+          releaseDate: "2026-03-30",
         },
         media: {
           gachaBannerPath: "/gachas/26y/banner_26_10_l.png",
@@ -474,6 +496,7 @@ export const IchikaCards = defineCharacterCards(
           gachaPoolName: "Another sparkle Stars 뽑기",
           eventName: "ordinary,yet special us",
           skillType: "스업",
+          releaseDate: "2026-06-23",
         },
         media: {
           gachaBannerPath: "/gachas/26y/jbanner_26_18_l.png",
@@ -496,6 +519,7 @@ export const IchikaCards = defineCharacterCards(
           gachaPoolName: "그리움의 별을 좇는 이 뽑기",
           eventName: "올려다본 밤하늘에, 별은 뒤섞여",
           skillType: "스업",
+          releaseDate: "2026-11-30",
         },
         media: {
           gachaBannerPath: "/gachas/26y/jbanner_26_33_l.png",
@@ -518,6 +542,7 @@ export const IchikaCards = defineCharacterCards(
           gachaPoolName: "YELL of Messengers 뽑기",
           eventName: "약속의 Passerelle",
           skillType: "스업",
+          releaseDate: "2027-04-18",
         },
         media: {
           gachaBannerPath: "/gachas/27y/jbanner_27_12.png",
@@ -543,6 +568,7 @@ export const IchikaCards = defineCharacterCards(
           gachaType: "페스",
           gachaPoolName: "컬러풀 페스티벌 뽑기",
           skillType: "굿스업",
+          releaseDate: "2023-02-06",
         },
         media: {
           gachaBannerPath: "/gachas/23y/banner_23_f03.png",
