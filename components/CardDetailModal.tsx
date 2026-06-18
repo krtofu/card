@@ -148,31 +148,39 @@ export default function CardDetailModal({
           ✕
         </button>
 
-        {/* 🌌 상단 배너 (크로스페이드 호버 버전) */}
-        <div className="relative -mx-6 -mt-6 h-64 md:h-[360px] shrink-0 overflow-hidden border-b border-white/10 bg-zinc-900 group">
+        {/* 🌌 상단 배너 (스플릿 & 스르륵 확장 + 어두워짐 효과) */}
+        {/* group/banner를 설정해서 전체 배너에 마우스가 올라갔는지 감지합니다 */}
+        <div className="relative -mx-6 -mt-6 h-64 md:h-[360px] shrink-0 flex overflow-hidden border-b border-white/10 bg-zinc-900 group/banner">
           
-          {/* 1. 특훈 전 일러스트 (평소엔 보이고, 마우스 올리면 투명해짐) */}
-          <img 
-            src={preIllustration} 
-            alt="특훈 전 일러스트" 
-            className="absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-500 ease-in-out opacity-100 group-hover:opacity-0 z-10" 
-          />
-          
-          {/* 2. 특훈 후 일러스트 (평소엔 투명하고, 마우스 올리면 스르륵 나타남) */}
-          <img 
-            src={postIllustration} 
-            alt="특훈 후 일러스트" 
-            className="absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-500 ease-in-out opacity-0 group-hover:opacity-100 z-20" 
-          />
-
-          {/* 🏷️ 좌측 하단 라벨 (마우스 올리면 글씨도 '특훈 후'로 부드럽게 교체됨) */}
-          <div className="absolute bottom-4 left-5 z-30 pointer-events-none h-6 w-16">
-            <span className="absolute left-0 bottom-0 transition-opacity duration-500 opacity-100 group-hover:opacity-0 inline-flex items-center rounded-full border border-white/20 bg-black/60 px-2.5 py-1 text-[10px] font-semibold text-zinc-100 backdrop-blur-md shadow-md whitespace-nowrap">
+          {/* 1. 왼쪽: 특훈 전 */}
+          {/* 평소엔 flex-1(50%), 마우스 올리면 flex-[3](75%)으로 부드럽게 늘어납니다 */}
+          <div className="relative h-full flex-1 hover:flex-[3] transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] overflow-hidden z-10 hover:z-20">
+            <img 
+              src={preIllustration} 
+              alt="특훈 전 일러스트" 
+              className="absolute inset-0 w-full h-full object-cover" 
+            />
+            {/* 🌟 마법의 암막: 전체 배너가 호버되면 50% 어두워지지만, '지금 마우스가 올라간 나 자신'은 투명(0%)해집니다! */}
+            <div className="absolute inset-0 bg-black/0 group-hover/banner:bg-black/50 hover:!bg-transparent transition-colors duration-500 z-10 pointer-events-none" />
+            
+            <div className="absolute bottom-4 left-5 z-20 inline-flex items-center rounded-full border border-white/20 bg-black/60 px-2.5 py-1 text-[10px] font-semibold text-zinc-100 backdrop-blur-md pointer-events-none tracking-wider shadow-md">
               특훈 전
-            </span>
-            <span className="absolute left-0 bottom-0 transition-opacity duration-500 opacity-0 group-hover:opacity-100 inline-flex items-center rounded-full border border-cyan-400/20 bg-black/60 px-2.5 py-1 text-[10px] font-semibold text-cyan-300 backdrop-blur-md shadow-md whitespace-nowrap">
+            </div>
+          </div>
+
+          {/* 2. 오른쪽: 특훈 후 */}
+          <div className="relative h-full flex-1 hover:flex-[3] transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] overflow-hidden z-10 hover:z-20 border-l border-white/10">
+            <img 
+              src={postIllustration} 
+              alt="특훈 후 일러스트" 
+              className="absolute inset-0 w-full h-full object-cover" 
+            />
+            {/* 🌟 마법의 암막 */}
+            <div className="absolute inset-0 bg-black/0 group-hover/banner:bg-black/50 hover:!bg-transparent transition-colors duration-500 z-10 pointer-events-none" />
+            
+            <div className="absolute bottom-4 right-5 z-20 inline-flex items-center rounded-full border border-cyan-400/20 bg-black/60 px-2.5 py-1 text-[10px] font-semibold text-cyan-300 backdrop-blur-md pointer-events-none tracking-wider shadow-md">
               특훈 후
-            </span>
+            </div>
           </div>
         </div>
 
