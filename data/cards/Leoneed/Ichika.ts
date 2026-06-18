@@ -457,8 +457,8 @@ export const IchikaCards = defineCharacterCards(
       skillType: "스업",
 
       // 🖼️ [배너 및 악곡 이미지 경로]
-      gachaBannerPath: "/gachas/26y/banner_26_18_l.png", 
-      eventBannerPath: "/events/26y/banner_26_18_l.png", 
+      gachaBannerPath: "/gachas/26y/jbanner_26_18_l.png", 
+      eventBannerPath: "/events/26y/jbanner_26_18_l.png", 
       songName: "the WALL",        
       songJacketPath: "/jacket/23y/the_WALL.png",  
 
@@ -480,8 +480,8 @@ export const IchikaCards = defineCharacterCards(
       skillType: "퍼스업",
 
       // 🖼️ [배너 및 악곡 이미지 경로]
-      gachaBannerPath: "/gachas/26y/banner_26_20_l.png", 
-      eventBannerPath: "/events/26y/banner_26_20_l.png", 
+      gachaBannerPath: "/gachas/26y/jbanner_26_20_l.png", 
+      eventBannerPath: "/events/26y/jbanner_26_20_l.png", 
       songName: "투명한 팔레트",        
       songJacketPath: "/jacket/26y/Transparent_Palette.png",  
 
@@ -500,8 +500,8 @@ export const IchikaCards = defineCharacterCards(
       skillType: "스업",
 
       // 🖼️ [배너 및 악곡 이미지 경로]
-      gachaBannerPath: "/gachas/26y/banner_26_29_l.png", 
-      eventBannerPath: "/events/26y/banner_26_29_l.png", 
+      gachaBannerPath: "/gachas/26y/jbanner_26_29_l.png", 
+      eventBannerPath: "/events/26y/jbanner_26_29_l.png", 
       songName: "스타",        
       songJacketPath: "/jacket/26y/Star.png",  
 
@@ -520,8 +520,8 @@ export const IchikaCards = defineCharacterCards(
       skillType: "스업",
 
       // 🖼️ [배너 및 악곡 이미지 경로]
-      gachaBannerPath: "/gachas/26y/banner_26_34_l.png", 
-      eventBannerPath: "/events/26y/banner_26_34_l.png", 
+      gachaBannerPath: "/gachas/26y/jbanner_26_34_l.png", 
+      eventBannerPath: "/events/26y/jbanner_26_34_l.png", 
       songName: "꽃매듭",        
       songJacketPath: "/jacket/26y/Hanamusubi.png",  
 
@@ -543,8 +543,8 @@ export const IchikaCards = defineCharacterCards(
       skillType: "스업",
 
       // 🖼️ [배너 및 악곡 이미지 경로]
-      gachaBannerPath: "/gachas/27y/banner_27_12.png", 
-      eventBannerPath: "/events/27y/banner_27_12.png", 
+      gachaBannerPath: "/gachas/27y/jbanner_27_12.png", 
+      eventBannerPath: "/events/27y/jbanner_27_12.png", 
       songName: "세상을 걷는 법",        
       songJacketPath: "/jacket/27y/Sekai_no_Arukikata.png",  
 
