@@ -558,7 +558,7 @@ export default function MyCardsPage() {
                       ⇪ 스업 수치순 (%)
                     </button>
                     <button onClick={() => { setSortOrder("bonus"); setIsSortDropdownOpen(false); }} className={`px-3 py-2 text-[12px] font-bold text-left rounded-lg transition-colors mt-0.5 ${sortOrder === "bonus" ? "bg-zinc-700 text-pink-300" : "text-zinc-400 hover:bg-zinc-700/50 hover:text-zinc-200"}`}>
-                      ✦ 이벤트 보너스순 (%)
+                      ✦ 이벤포순 (%)
                     </button>
                   </div>
                 </>
