@@ -115,6 +115,9 @@ export default function MyCardsPage() {
   const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
   const [refSkillLevel, setRefSkillLevel] = useState<number>(1);
   
+  // 🌟 모바일 필터 열림 상태 추가!
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+  
   const [isStatusExpanded, setIsStatusExpanded] = useState(true);
   const [isCollabExpanded, setIsCollabExpanded] = useState(true);
   const [isAttrExpanded, setIsAttrExpanded] = useState(true);
@@ -133,6 +136,16 @@ export default function MyCardsPage() {
     const saved = localStorage.getItem("sekard_user_card_states");
     if (saved) try { setCardStates(JSON.parse(saved)); } catch (e) { console.error(e); }
   }, []);
+
+  // 🌟 모바일 필터창 열려있을 때 뒷배경 카드 스크롤 방지 로직
+  useEffect(() => {
+    if (isMobileFilterOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+    return () => { document.body.style.overflow = "auto"; };
+  }, [isMobileFilterOpen]);
 
   const handleUpdateCardState = (id: string, newState: Partial<UserCardState>) => {
     const updated = { ...cardStates, [id]: { ...(cardStates[id] || { isOwned: false, isTarget: false, masterRank: 0, skillLevel: 1 }), ...newState } };
@@ -300,21 +313,34 @@ export default function MyCardsPage() {
   return (
     <div className="flex flex-col md:flex-row gap-6 px-4 md:px-8 py-6 min-h-screen text-zinc-100 max-w-[1920px] mx-auto w-full">
       
-      {/* 🎛️ 왼쪽 필터 사이드바 */}
-      <div className="w-full md:w-[280px] shrink-0 space-y-8">
-        <div className="flex items-center justify-between border-b border-white/10 pb-3">
-          <h2 className="text-sm font-bold text-zinc-300 tracking-wider uppercase">🔍 필터</h2>
-          <button onClick={resetFilters} 
-            className="w-7 h-7 flex items-center justify-center rounded-full bg-zinc-900 border border-white/5 text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all text-sm shadow-sm" 
-            title="필터 초기화">
-            <span className="leading-none -mt-[1px]">↺</span>
-          </button>
+      {/* 🎛️ 필터 사이드바: PC에서는 좌측 고정, 모바일에서는 전체화면 팝업(Drawer)으로 변신! */}
+      <div className={`
+        flex flex-col shrink-0 
+        md:w-[280px] md:relative md:block md:bg-transparent md:p-0 md:h-auto md:z-0
+        ${isMobileFilterOpen ? 'fixed inset-0 z-[100] bg-zinc-950 p-6 overflow-y-auto' : 'hidden'}
+      `}>
+        <div className="flex items-center justify-between border-b border-white/10 pb-3 mb-6 md:mb-0">
+          <h2 className="text-lg md:text-sm font-bold text-zinc-300 tracking-wider uppercase">🔍 필터</h2>
+          <div className="flex items-center gap-3">
+            <button onClick={resetFilters} 
+              className="w-8 h-8 md:w-7 md:h-7 flex items-center justify-center rounded-full bg-zinc-900 border border-white/5 text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all text-sm md:text-sm shadow-sm" 
+              title="필터 초기화">
+              <span className="leading-none -mt-[1px]">↺</span>
+            </button>
+            {/* 모바일에서만 보이는 필터 닫기 버튼 */}
+            <button 
+              onClick={() => setIsMobileFilterOpen(false)} 
+              className="md:hidden w-8 h-8 flex items-center justify-center rounded-full bg-zinc-800 text-white font-bold"
+            >
+              ✕
+            </button>
+          </div>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-6 md:mt-6">
           <div className="space-y-2">
             <button onClick={() => setIsStatusExpanded(!isStatusExpanded)} className="w-full flex items-center justify-between group pb-1 cursor-pointer">
-              <span className="text-[11px] font-bold text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-300 transition-colors">STATUS</span>
+              <span className="text-[12px] md:text-[11px] font-bold text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-300 transition-colors">STATUS</span>
               <span className={`text-[10px] text-zinc-500 transform transition-transform duration-300 ${isStatusExpanded ? 'rotate-0' : '-rotate-90'}`}>▼</span>
             </button>
             
@@ -327,7 +353,7 @@ export default function MyCardsPage() {
                     const activeClass = status.id === "target" ? "bg-pink-500/20 text-pink-300 border border-pink-400/50 shadow-[0_0_10px_rgba(236,72,153,0.15)] scale-105" : status.id === "owned" ? "bg-emerald-500/20 text-emerald-300 border border-emerald-400/50 shadow-[0_0_10px_rgba(52,211,153,0.15)] scale-105" : "bg-zinc-700 text-zinc-100 border border-zinc-500 shadow-md scale-105";
                     return (
                       <button key={status.id} onClick={() => toggleFilter(selectedStatuses, setSelectedStatuses, status.id)}
-                        className={`py-2 px-1 text-[12px] sm:text-[13px] font-bold tracking-tight rounded-lg transition-all duration-300 text-white ${isSelected ? activeClass : "bg-zinc-900 hover:bg-zinc-800 border border-transparent scale-95"} ${opacityClass}`}>
+                        className={`py-2.5 md:py-2 px-1 text-[13px] md:text-[12px] font-bold tracking-tight rounded-lg transition-all duration-300 text-white ${isSelected ? activeClass : "bg-zinc-900 hover:bg-zinc-800 border border-transparent scale-95"} ${opacityClass}`}>
                         {status.label}
                       </button>
                     )
@@ -385,7 +411,7 @@ export default function MyCardsPage() {
 
           <div className="space-y-2 pt-2 border-t border-white/5">
             <button onClick={() => setIsCollabExpanded(!isCollabExpanded)} className="w-full flex items-center justify-between group pt-2 pb-1 cursor-pointer">
-              <span className="text-[11px] font-bold text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-300 transition-colors">COLLAB</span>
+              <span className="text-[12px] md:text-[11px] font-bold text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-300 transition-colors">COLLAB</span>
               <span className={`text-[10px] text-zinc-500 transform transition-transform duration-300 ${isCollabExpanded ? 'rotate-0' : '-rotate-90'}`}>▼</span>
             </button>
             {isCollabExpanded && (
@@ -395,7 +421,7 @@ export default function MyCardsPage() {
                   const opacityClass = !isAnyTypeSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100 text-white bg-zinc-900";
                   return (
                     <button key={collab.id} onClick={() => toggleFilter(selectedTypes, setSelectedTypes, collab.id)}
-                      className={`py-2 px-1 text-[11px] sm:text-[12px] font-bold tracking-tight rounded-lg transition-all duration-300 text-white ${isSelected ? "bg-amber-500/20 text-amber-300 shadow-md border border-amber-500/30 scale-105" : "bg-zinc-900 hover:bg-zinc-800 border border-transparent scale-95"} ${opacityClass}`}>
+                      className={`py-2.5 md:py-2 px-1 text-[12px] font-bold tracking-tight rounded-lg transition-all duration-300 text-white ${isSelected ? "bg-amber-500/20 text-amber-300 shadow-md border border-amber-500/30 scale-105" : "bg-zinc-900 hover:bg-zinc-800 border border-transparent scale-95"} ${opacityClass}`}>
                       {collab.name}
                     </button>
                   )
@@ -406,7 +432,7 @@ export default function MyCardsPage() {
 
           <div className="space-y-2 pt-2 border-t border-white/5">
             <button onClick={() => setIsAttrExpanded(!isAttrExpanded)} className="w-full flex items-center justify-between group pt-2 pb-1 cursor-pointer">
-              <span className="text-[11px] font-bold text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-300 transition-colors">ATTRIBUTE</span>
+              <span className="text-[12px] md:text-[11px] font-bold text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-300 transition-colors">ATTRIBUTE</span>
               <span className={`text-[10px] text-zinc-500 transform transition-transform duration-300 ${isAttrExpanded ? 'rotate-0' : '-rotate-90'}`}>▼</span>
             </button>
             {isAttrExpanded && (
@@ -432,7 +458,7 @@ export default function MyCardsPage() {
 
           <div className="space-y-2 pt-2 border-t border-white/5">
             <button onClick={() => setIsSkillExpanded(!isSkillExpanded)} className="w-full flex items-center justify-between group pt-2 pb-1 cursor-pointer">
-              <span className="text-[11px] font-bold text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-300 transition-colors">SKILL</span>
+              <span className="text-[12px] md:text-[11px] font-bold text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-300 transition-colors">SKILL</span>
               <span className={`text-[10px] text-zinc-500 transform transition-transform duration-300 ${isSkillExpanded ? 'rotate-0' : '-rotate-90'}`}>▼</span>
             </button>
             {isSkillExpanded && (
@@ -462,7 +488,7 @@ export default function MyCardsPage() {
                     const opacityClass = !isAnySkillSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100 text-white bg-zinc-900";
                     return (
                       <button key={sub.id} onClick={() => toggleFilter(selectedSkills, setSelectedSkills, sub.id)}
-                        className={`py-2 px-1 text-[12px] sm:text-[13px] font-medium tracking-tight rounded-lg transition-all duration-300 text-white ${isSelected ? "bg-zinc-700 scale-105 shadow-md" : "bg-zinc-900 hover:bg-zinc-800 scale-95 border border-transparent"} ${opacityClass}`}>
+                        className={`py-2.5 md:py-2 px-1 text-[12px] font-medium tracking-tight rounded-lg transition-all duration-300 text-white ${isSelected ? "bg-zinc-700 scale-105 shadow-md" : "bg-zinc-900 hover:bg-zinc-800 scale-95 border border-transparent"} ${opacityClass}`}>
                         {sub.name}
                       </button>
                     )
@@ -472,9 +498,9 @@ export default function MyCardsPage() {
             )}
           </div>
 
-          <div className="pt-2">
+          <div className="pt-2 pb-10 md:pb-0">
             <button onClick={() => setIsCharExpanded(!isCharExpanded)} className="w-full flex items-center justify-between group border-t border-white/5 pt-4 pb-2 cursor-pointer">
-              <span className="text-[11px] font-bold text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-300 transition-colors">CHARACTER</span>
+              <span className="text-[12px] md:text-[11px] font-bold text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-300 transition-colors">CHARACTER</span>
               <span className={`text-[10px] text-zinc-500 transform transition-transform duration-300 ${isCharExpanded ? 'rotate-0' : '-rotate-90'}`}>▼</span>
             </button>
             {isCharExpanded && (
@@ -509,23 +535,34 @@ export default function MyCardsPage() {
 
       {/* 🗂️ 우측: 카드 리스트 구역 */}
       <div className="flex-1 flex flex-col min-w-0 bg-zinc-900/30 rounded-3xl p-4 md:p-6 border border-white/5">
-        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6 relative z-50">
+        
+        {/* 🌟 모바일에서도 안 깨지는 상단 컨트롤 패널 (flex-wrap 적용) */}
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6 relative z-40">
           <div>
             <h1 className="text-xl font-bold tracking-tight">카드 목록</h1>
             <p className="text-xs text-zinc-400 mt-1">검색된 카드: <strong className="text-white">{sortedCards.length}</strong>장</p>
           </div>
 
-          <div className="flex items-center gap-2 self-start sm:self-auto relative">
+          <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto relative w-full sm:w-auto">
             
+            {/* 🌟 모바일 전용 필터 팝업 열기 버튼 (화면 작을 때만 보임) */}
+            <button 
+              onClick={() => setIsMobileFilterOpen(true)}
+              className="md:hidden flex items-center justify-center gap-1.5 h-[34px] px-3 rounded-full bg-zinc-800/80 border border-white/10 text-[12px] font-bold text-zinc-300 hover:text-white transition-colors shadow-sm"
+            >
+              🔍 필터
+            </button>
+
             {sortOrder === "score" && (
-              <div className="flex items-center bg-zinc-800 border border-white/10 rounded-full p-1 animate-fade-in mr-1 shadow-sm">
-                <span className="text-[10px] text-zinc-500 font-bold px-2 whitespace-nowrap">기준 Lv</span>
+              <div className="flex items-center bg-zinc-800 border border-white/10 rounded-full p-1 animate-fade-in shadow-sm">
+                <span className="text-[10px] text-zinc-500 font-bold px-2 whitespace-nowrap hidden sm:inline-block">기준 Lv</span>
+                <span className="text-[10px] text-zinc-500 font-bold pl-2 pr-1 whitespace-nowrap sm:hidden">Lv</span>
                 <div className="flex gap-0.5 pr-0.5">
                   {[1, 2, 3, 4].map(lv => (
                     <button
                       key={lv}
                       onClick={() => setRefSkillLevel(lv)}
-                      className={`w-[22px] h-[22px] flex items-center justify-center rounded-full text-[11px] font-bold transition-all ${
+                      className={`w-[24px] h-[24px] flex items-center justify-center rounded-full text-[12px] font-bold transition-all ${
                         refSkillLevel === lv ? 'bg-sky-500/20 text-sky-300 border border-sky-400/50 scale-105' : 'text-zinc-400 hover:bg-zinc-700 hover:text-zinc-200'
                       }`}
                     >
@@ -539,15 +576,15 @@ export default function MyCardsPage() {
             <div className="relative">
               <button 
                 onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
-                className="flex items-center justify-center gap-1 h-[34px] px-2 text-[14px] font-bold text-zinc-300 hover:text-white transition-colors"
+                className="flex items-center justify-center gap-1 h-[34px] px-2 text-[13px] md:text-[14px] font-bold text-zinc-300 hover:text-white transition-colors"
               >
                 ⇅ 정렬 ▾
               </button>
 
               {isSortDropdownOpen && (
                 <>
-                  <div className="fixed inset-0 z-30" onClick={() => setIsSortDropdownOpen(false)} />
-                  <div className="absolute right-0 top-full mt-1 w-[130px] bg-zinc-800 border border-white/10 rounded-xl shadow-2xl z-40 overflow-hidden flex flex-col p-1.5 animate-fade-in origin-top-right">
+                  <div className="fixed inset-0 z-40" onClick={() => setIsSortDropdownOpen(false)} />
+                  <div className="absolute right-0 top-full mt-1 w-[130px] bg-zinc-800 border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden flex flex-col p-1.5 animate-fade-in origin-top-right">
                     <button onClick={() => { setSortOrder("newest"); setIsSortDropdownOpen(false); }} className={`px-3 py-2 text-[12px] font-bold text-left rounded-lg transition-colors ${sortOrder === "newest" ? "bg-zinc-700 text-white" : "text-zinc-400 hover:bg-zinc-700/50 hover:text-zinc-200"}`}>
                       ↓ 최신순
                     </button>
@@ -590,7 +627,6 @@ export default function MyCardsPage() {
                     <img src={showPostAwake ? card.thumbPrePath : card.thumbPostPath} alt="썸네일 호버" className="absolute top-0 h-[100px] w-auto max-w-full object-contain transition-opacity duration-300 ease-in-out opacity-0 group-hover:opacity-100 rounded-lg border border-white/10 group-hover:border-white/30 z-20" />
                   </div>
                   
-                  {/* 🌟 다이내믹 정보 렌더링 컨테이너: 보유/목표 상태에 따라 네온 테두리 적용 완료! */}
                   <div className="mt-2.5 h-[36px] flex flex-col items-center justify-start w-full px-1">
                     {sortOrder === "score" ? (
                       <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md shadow-sm mt-1 transition-all ${
