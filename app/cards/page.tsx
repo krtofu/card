@@ -77,9 +77,8 @@ const getSkillIconPath = (skill: string) => {
   return "";
 };
 
-// 🌟 [핵심 시스템] 유저님이 주신 데이터를 기반으로 만든 완벽한 '스킬 퍼센트 자동 계산 엔진'
 const getSkillBonusPercentage = (skillType: string, level: number, unit: string) => {
-  const safeLevel = Math.max(1, Math.min(4, level)); // 에러 방지용 (무조건 1~4 보정)
+  const safeLevel = Math.max(1, Math.min(4, level)); 
   const idx = safeLevel - 1;
   
   switch(skillType) {
@@ -89,9 +88,8 @@ const getSkillBonusPercentage = (skillType: string, level: number, unit: string)
     case "체스업": return [120, 125, 130, 140][idx];
     case "판강": return [80, 85, 90, 100][idx];
     case "힐": return [80, 85, 90, 100][idx];
-    case "팀스업": return [130, 135, 140, 150][idx]; // 최대치 기준
+    case "팀스업": return [130, 135, 140, 150][idx]; 
     case "블페": 
-      // 버싱인지 확인 (unit 변수에 버싱 관련 키워드가 들어가면 VS로 판정)
       const isVS = unit === "무소속 / VIRTUAL SINGER" || unit.includes("버싱") || unit.includes("VS") || unit.toLowerCase().includes("virtual");
       if (isVS) return [130, 135, 140, 150][idx];
       return [120, 130, 140, 150][idx];
@@ -115,8 +113,6 @@ export default function MyCardsPage() {
   
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest" | "score" | "bonus">("newest");
   const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
-  
-  // 🌟 미보유 카드를 위한 고급 설정: '기준 레벨' 상태 관리 (기본값 Lv.1)
   const [refSkillLevel, setRefSkillLevel] = useState<number>(1);
   
   const [isStatusExpanded, setIsStatusExpanded] = useState(true);
@@ -271,14 +267,12 @@ export default function MyCardsPage() {
       return dateA.localeCompare(dateB); 
     }
     else if (sortOrder === "score") {
-      // 🌟 스킬 엔진 정렬 적용 (보유면 자기 레벨, 미보유면 기준 레벨(refSkillLevel) 반영)
       const levelA = cardStates[a.id]?.isOwned ? (cardStates[a.id].skillLevel || 1) : refSkillLevel;
       const levelB = cardStates[b.id]?.isOwned ? (cardStates[b.id].skillLevel || 1) : refSkillLevel;
       const scoreA = getSkillBonusPercentage(a.skillType, levelA, a.unit);
       const scoreB = getSkillBonusPercentage(b.skillType, levelB, b.unit);
       
       if (scoreB !== scoreA) return scoreB - scoreA;
-      // 동점일 경우 최신순으로 정렬
       return (b.releaseDate || "1970-01-01").localeCompare(a.releaseDate || "1970-01-01");
     }
     else if (sortOrder === "bonus") {
@@ -523,7 +517,6 @@ export default function MyCardsPage() {
 
           <div className="flex items-center gap-2 self-start sm:self-auto relative">
             
-            {/* 🌟 '스업 정렬' 상태일 때만 옆구리에 뿅! 나타나는 기준 레벨 고급 설정 버튼 */}
             {sortOrder === "score" && (
               <div className="flex items-center bg-zinc-800 border border-white/10 rounded-full p-1 animate-fade-in mr-1 shadow-sm">
                 <span className="text-[10px] text-zinc-500 font-bold px-2 whitespace-nowrap">기준 Lv</span>
@@ -587,7 +580,6 @@ export default function MyCardsPage() {
               const isOwned = userState?.isOwned;
               const isTarget = userState?.isTarget;
               
-              // 🌟 현재 카드의 레벨 확인 (보유 시 본인 레벨 / 미보유 시 기준 설정 레벨)
               const levelToUse = isOwned ? (userState?.skillLevel || 1) : refSkillLevel;
               const currentScoreBonus = getSkillBonusPercentage(card.skillType, levelToUse, card.unit);
               
@@ -598,15 +590,23 @@ export default function MyCardsPage() {
                     <img src={showPostAwake ? card.thumbPrePath : card.thumbPostPath} alt="썸네일 호버" className="absolute top-0 h-[100px] w-auto max-w-full object-contain transition-opacity duration-300 ease-in-out opacity-0 group-hover:opacity-100 rounded-lg border border-white/10 group-hover:border-white/30 z-20" />
                   </div>
                   
-                  {/* 🌟 다이내믹 정보 렌더링 컨테이너 */}
+                  {/* 🌟 다이내믹 정보 렌더링 컨테이너: 보유/목표 상태에 따라 네온 테두리 적용 완료! */}
                   <div className="mt-2.5 h-[36px] flex flex-col items-center justify-start w-full px-1">
                     {sortOrder === "score" ? (
-                      <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-zinc-900/80 border border-white/5 shadow-sm mt-1">
+                      <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md shadow-sm mt-1 transition-all ${
+                        isOwned ? "bg-zinc-900/90 border border-[#00FFD1]/70 shadow-[0_0_8px_rgba(0,255,209,0.25)]" : 
+                        isTarget ? "bg-zinc-900/90 border border-pink-400/70 shadow-[0_0_8px_rgba(244,114,182,0.25)]" : 
+                        "bg-zinc-900/80 border border-white/5"
+                      }`}>
                         <img src={getSkillIconPath(card.skillType)} className="w-[14px] h-[14px] object-contain drop-shadow-sm" alt="스킬" />
                         <span className="text-[12px] font-bold text-sky-300 tracking-tight">{currentScoreBonus}%</span>
                       </div>
                     ) : sortOrder === "bonus" ? (
-                      <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-pink-950/30 border border-pink-500/20 shadow-sm mt-1">
+                      <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md shadow-sm mt-1 transition-all ${
+                        isOwned ? "bg-pink-950/40 border border-[#00FFD1]/70 shadow-[0_0_8px_rgba(0,255,209,0.25)]" : 
+                        isTarget ? "bg-pink-950/40 border border-pink-400/70 shadow-[0_0_8px_rgba(244,114,182,0.25)]" : 
+                        "bg-pink-950/30 border border-pink-500/20"
+                      }`}>
                         <span className="text-[11px] drop-shadow-sm">🌟</span>
                         <span className="text-[12px] font-bold text-pink-300 tracking-tight">{getMockEventBonus(card)}%</span>
                       </div>
