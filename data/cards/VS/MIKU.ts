@@ -107,8 +107,8 @@ const MikuLeoneed = defineCharacterCards("레오니", "하츠네 미쿠", "VS", 
           releaseDate: "2024-04-04",
         },
         media: {
-          gachaBannerPath: "/gachas/23y/banner_24_10.png",
-          eventBannerPath: "/events/23y/banner_24_10.png",
+          gachaBannerPath: "/gachas/24y/banner_24_10.png",
+          eventBannerPath: "/events/24y/banner_24_10.png",
         },
         costume: {
           hasCostume: true,
