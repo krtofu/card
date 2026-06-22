@@ -25,6 +25,7 @@ export type CardCostumeGroup = {
   hasCostume?: boolean;     
   costumeName?: string;
   hasHair?: boolean;        
+  isMovieStyle?: boolean;
 };
 
 // 🌟 [방별 입력 양식 통합]

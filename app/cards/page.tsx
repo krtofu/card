@@ -64,7 +64,7 @@ const HAIR_FILTERS: HairFilterDef[] = [
 
 const COLLAB_FILTERS = [
   { id: "collab_evil", name: "에빌", matchKeys: ["에빌", "악의", "대죄", "evillious"] },
-  { id: "collab_sanrio", name: "산리오", matchKeys: ["산리오", "sanrio"] },
+  { id: "collab_sanrio", name: "산리오", matchKeys: ["산리오", "sanrio", "SEKAI에서 Hello♡ 멋진 만남"] },
   { id: "collab_enstar", name: "앙스타", matchKeys: ["앙스타", "앙상블", "ensemble"] },
   { id: "collab_tamagotchi", name: "다마고치", matchKeys: ["다마고치", "tamagotchi"] }
 ];

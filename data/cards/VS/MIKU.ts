@@ -4,7 +4,148 @@ import { defineCharacterCards } from "../template";
 // -> 얼굴 아이콘: MIKU_0.png 자동 매핑
 const MikuOriginal = defineCharacterCards("버싱", "하츠네 미쿠", "VS", "MIKU", {
   normal: [],
-  limited: [],
+  limited: [
+        {
+          info: {
+            id: "VS_MIKU_017",
+            cardName: "[feat. 헬로키티]",
+            attribute: "mysterious",
+            gachaType: "콜라보",
+            gachaPoolName: "SEKAI에서 Hello♡ 멋진 만남 뽑기",
+            skillType: "스업",
+            releaseDate: "2024-12-05",
+          },
+          media: {
+            gachaBannerPath: "/gachas/collab/banner_c2.png",
+          },
+          costume: {
+            hasCostume: true,
+            costumeName: "애플 피크닉 코디",
+          }
+        },
+            {
+              info: {
+                id: "VS_MIKU_020",
+                cardName: "[마음을 맡기고]",
+                attribute: "cool",
+                gachaType: "월링",
+                gachaPoolName: "Melody of Wishes 뽑기",
+                eventName: "너와 세카이의 시작에서",
+                skillType: "스업",
+                releaseDate: "2025-08-17",
+              },
+              media: {
+                gachaBannerPath: "/gachas/25y/25_24_0.png",
+                eventBannerPath: "/events/25y/25_24_0.png",
+                songName: "아임 마인",
+                songJacketPath: "/jacket/24y/Im_Mine.png",
+              },
+              costume: {
+                hasCostume: true,
+                costumeName: "피처 컴퍼스",
+              }
+            },
+            {
+              info: {
+                id: "VS_MIKU_022",
+                cardName: "[창의 세카이에서]",
+                attribute: "cool",
+                gachaType: "콜라보",
+                gachaPoolName: "",
+                skillType: "스업",
+                releaseDate: "2025-05-29",
+              },
+              media: {
+                songName: "Hello, SEKAI",
+                songJacketPath: "/jacket/25y/Hello_SEKAI.png",
+              },
+              costume: {
+                hasCostume: true,
+                costumeName: "클로즈드 크로스 블루종 / 오픈드 미츠 드레스",
+                hasHair: true,
+                isMovieStyle: true
+              }
+            },
+            {
+              info: {
+                id: "VS_MIKU_024",
+                cardName: "[뒤섞이는 경계]",
+                attribute: "happy",
+                gachaType: "콜라보",
+                gachaPoolName: "[프로세카×동방 project 컬래버레이션 제2탄 기념] 환상향 컬렉션 뽑기",
+                eventName: "",
+                skillType: "스업",
+                releaseDate: "2025-11-20",
+              },
+              media: {
+                songName: "초 나이트 오브 나이츠",
+                songJacketPath: "/jacket/25y/Cho-Night_of_Knights.png",
+              },
+            },
+      {
+        info: {
+          id: "VS_MIKU_026",
+          cardName: "[약속을 가슴에]",
+          attribute: "happy",
+          gachaType: "월링",
+          gachaPoolName: "Velvet Afternoon 뽑기",
+          eventName: "Link the Beats!",
+          skillType: "스업",
+          releaseDate: "2025-09-06",
+        },
+        media: {
+          gachaBannerPath: "/gachas/26y/banner_26_26_0.png",
+          eventBannerPath: "/events/26y/banner_26_26_0.png",
+          songName: "후회한다 쓰고 미래",
+          songJacketPath: "/jacket/22y/Kuyamu_to_Kaite_Mirai.png",
+        },
+        costume: {
+          hasCostume: true,
+          costumeName: "Classical Perfume",
+        }
+      },
+      {
+        info: {
+          id: "VS_MIKU_027",
+          cardName: "[인도하는 노래]",
+          attribute: "cool",
+          gachaType: "콜라보",
+          gachaPoolName: "모두가 다마고치 친구! 드림~ 뽑기",
+          skillType: "힐",
+          releaseDate: "2026-05-22",
+        },
+        media: {
+          gachaBannerPath: "/gachas/26y/banner_c4.png",
+        },
+        costume: {
+          hasCostume: true,
+          costumeName: "마메치풍 도트 재킷",
+        }
+      },
+      {
+        info: {
+          id: "VS_MIKU_029",
+          cardName: "[힘이 될 수 있는 기쁨]",
+          attribute: "happy",
+          gachaType: "한정",
+          gachaPoolName: "YELL of Messengers 뽑기",
+          eventName: "약속의 Passerelle",
+          skillType: "스업",
+          releaseDate: "2027-04-18",
+        },
+        media: {
+          gachaBannerPath: "/gachas/27y/banner_27_12.png",
+          eventBannerPath: "/events/27y/banner_27_12.png",
+          songName: "세상을 걷는 법",
+          songJacketPath: "/jacket/27y/Sekai_no_Arukikata.png",
+        },
+        costume: {
+          hasCostume: true,
+          costumeName: "Wish Cheer",
+          hasHair: true,
+        }
+      },
+  ],
   fes: [
       {
         info: {
@@ -116,6 +257,29 @@ const MikuLeoneed = defineCharacterCards("레오니", "하츠네 미쿠", "VS", 
           hasHair: true,
         },
       },
+      {
+        info: {
+          id: "VS_MIKU_023",
+          cardName: "[울려 퍼지는 마음에 감싸여]",
+          attribute: "cool",
+          gachaType: "한정",
+          gachaPoolName: "Living With Music 뽑기",
+          eventName: "Find the dream view",
+          skillType: "팀스업",
+          releaseDate: "2026-04-04",
+        },
+        media: {
+          gachaBannerPath: "/gachas/26y/banner_26_10_l.png",
+          eventBannerPath: "/events/26y/banner_26_10_l.png",
+          songName: "Sympathy",
+          songJacketPath: "/jacket/26y/Sympathy.png",
+        },
+        costume: {
+          hasCostume: true,
+          costumeName: "raise hearts voice",
+          hasHair: true,
+        }
+      },
     ],
   fes: []
 });
@@ -185,6 +349,50 @@ const MikuMmj = defineCharacterCards("모모점", "하츠네 미쿠", "VS", "MIK
           costumeName: "세일러 어프렌티스",
         },
       },
+          {
+            info: {
+              id: "VS_MIKU_018",
+              cardName: "[궤적이 느껴지는 상흔]",
+              attribute: "pure",
+              gachaType: "통상",
+              gachaPoolName: "하늘에 그리는 무지개 마법 뽑기",
+              eventName: "새겨진 상처는 이윽고",
+              skillType: "힐",
+              releaseDate: "2025-02-20",
+            },
+            media: {
+              gachaBannerPath: "/gachas/25y/banner_25_06_m.png",
+              eventBannerPath: "/events/25y/banner_25_06_m.png",
+              songName: "JUMPIN’ OVER !",
+              songJacketPath: "/jacket/25y/JUMPIN-OVER.png",
+            },
+            costume: {
+              hasCostume: true,
+              costumeName: "CLOUDY magician",
+            }
+          },
+            {
+              info: {
+                id: "VS_MIKU_021",
+                cardName: "[마음으로 느낀 눈빛]",
+                attribute: "happy",
+                gachaType: "통상",
+                gachaPoolName: "high-flapping hope 뽑기",
+                eventName: "Grow glorious glow",
+                skillType: "힐",
+                releaseDate: "2025-12-11",
+              },
+              media: {
+                gachaBannerPath: "/gachas/25y/banner_25_35_m.png",
+                eventBannerPath: "/events/25y/banner_25_35_m.png",
+                songName: "달려라! 저 멀리! 닿아라!",
+                songJacketPath: "/jacket/25y/Hashiru_Tooku_Todoku.png",
+              },
+              costume: {
+                hasCostume: true,
+                costumeName: "조력의 페더",
+              }
+            },
   ],
   limited: [],
   fes: []
@@ -233,7 +441,54 @@ const MikuVbs = defineCharacterCards("비배스", "하츠네 미쿠", "VS", "MIK
         },
       },
     ],
-  limited: [],
+  limited: [
+        {
+          info: {
+            id: "VS_MIKU_019",
+            cardName: "[문 너머로]",
+            attribute: "mysterious",
+            gachaType: "한정",
+            gachaPoolName: "The Party Of Blast!! 뽑기",
+            eventName: "OVER RAD SQUAD!!",
+            skillType: "팀스업",
+            releaseDate: "2025-07-04",
+          },
+          media: {
+            gachaBannerPath: "/gachas/25y/banner_25_19_v.png",
+            eventBannerPath: "/events/25y/banner_25_19_v.png",
+            songName: "ULTRA C",
+            songJacketPath: "/jacket/25y/ULTRA_C.png",
+          },
+          costume: {
+            hasCostume: true,
+            costumeName: "Stunning lady",
+            hasHair: true,
+          }
+        },
+      {
+        info: {
+          id: "VS_MIKU_025",
+          cardName: "[갑작스러운 위기]",
+          attribute: "cute",
+          gachaType: "한정",
+          gachaPoolName: "광망이 비치는 여명 뽑기",
+          eventName: "Aim higher and higher!",
+          skillType: "팀스업",
+          releaseDate: "2026-05-30",
+        },
+        media: {
+          gachaBannerPath: "/gachas/26y/banner_26_16_v.png",
+          eventBannerPath: "/events/26y/banner_26_16_v.png",
+          songName: "광선가",
+          songJacketPath: "/jacket/26y/Kousenka.png",
+        },
+        costume: {
+          hasCostume: true,
+          costumeName: "새벽빛을 우러러보는 붉은 불꽃",
+          hasHair: true,
+        }
+      },
+  ],
   fes: []
 });
 
@@ -343,6 +598,28 @@ const MikuNigo = defineCharacterCards("니고", "하츠네 미쿠", "VS", "MIKU"
           gachaBannerPath: "/gachas/23y/banner_23_12.png",
           eventBannerPath: "/events/23y/banner_23_12.png",
         },
+      },
+      {
+        info: {
+          id: "VS_MIKU_028",
+          cardName: "[마음에 드는 옷]",
+          attribute: "cute",
+          gachaType: "통상",
+          gachaPoolName: "우리들의 밤이 깨어나기 전에 뽑기",
+          eventName: "Amid the Wavering Light",
+          skillType: "스업",
+          releaseDate: "2027-03-20",
+        },
+        media: {
+          gachaBannerPath: "/gachas/27y/banner_27_9.png",
+          eventBannerPath: "/events/27y/banner_27_9.png",
+          songName: "고백",
+          songJacketPath: "/jacket/27y/Kokuhaku.png",
+        },
+        costume: {
+          hasCostume: true,
+          costumeName: "Awaiting Coat",
+        }
       },
   ],
   limited: [

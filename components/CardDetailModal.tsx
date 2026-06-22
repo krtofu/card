@@ -34,6 +34,7 @@ export default function CardDetailModal({
   const hasSong = !!songName || !!songJacket;
   
   const hasEvent = !!card.eventName;
+  
 
   const costumePreviewData = hasCostume && card.costume ? {
     title: card.cardName,
