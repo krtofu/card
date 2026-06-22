@@ -35,8 +35,8 @@ const MikuOriginal = defineCharacterCards("버싱", "하츠네 미쿠", "VS", "M
                 releaseDate: "2025-08-17",
               },
               media: {
-                gachaBannerPath: "/gachas/25y/25_24_0.png",
-                eventBannerPath: "/events/25y/25_24_0.png",
+                gachaBannerPath: "/gachas/25y/banner_25_24_0.png",
+                eventBannerPath: "/events/25y/banner_25_24_0.png",
                 songName: "아임 마인",
                 songJacketPath: "/jacket/24y/Im_Mine.png",
               },
