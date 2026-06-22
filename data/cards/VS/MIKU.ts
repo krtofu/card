@@ -126,7 +126,7 @@ const MikuOriginal = defineCharacterCards("버싱", "하츠네 미쿠", "VS", "M
         info: {
           id: "VS_MIKU_029",
           cardName: "[힘이 될 수 있는 기쁨]",
-          attribute: "happy",
+          attribute: "cute",
           gachaType: "한정",
           gachaPoolName: "YELL of Messengers 뽑기",
           eventName: "약속의 Passerelle",
