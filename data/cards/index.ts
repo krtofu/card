@@ -1,11 +1,11 @@
 import type { FinalCardInfo } from "./template";
 
 // ==========================================
-// 🎵 1. VIRTUAL SINGER (버싱)
+// 🎵 1. VIRTUAL SINGER (VS)
 // ==========================================
 import { MikuCards } from "./VS/MIKU";
 // import { RinCards } from "./VS/RIN";
-// import { LenCards } from "./VS/REN";
+// import { RenCards } from "./VS/REN";
 // import { LukaCards } from "./VS/LUKA";
 // import { MeikoCards } from "./VS/MEIKO";
 // import { KaitoCards } from "./VS/KAITO";
@@ -13,14 +13,14 @@ import { MikuCards } from "./VS/MIKU";
 const VS_CARDS = [
   ...MikuCards,
   // ...RinCards,
-  // ...LenCards,
+  // ...RenCards,
   // ...LukaCards,
   // ...MeikoCards,
   // ...KaitoCards,
 ];
 
 // ==========================================
-// 🎸 2. Leo/need (레오니)
+// 🎸 2. Leo/need (Leoneed)
 // ==========================================
 import { IchikaCards } from "./Leoneed/Ichika";
 // import { SakiCards } from "./Leoneed/Saki";
@@ -35,7 +35,7 @@ const Leoneed_CARDS = [
 ];
 
 // ==========================================
-// ☘️ 3. MORE MORE JUMP! (모모점)
+// ☘️ 3. MORE MORE JUMP! (MMJ)
 // ==========================================
 // import { MinoriCards } from "./MMJ/Minori";
 // import { HarukaCards } from "./MMJ/Haruka";
@@ -50,7 +50,7 @@ const MMJ_CARDS = [
 ];
 
 // ==========================================
-// 🎤 4. Vivid BAD SQUAD (비배스)
+// 🎤 4. Vivid BAD SQUAD (VBS)
 // ==========================================
 // import { KohaneCards } from "./VBS/Kohane";
 // import { AnCards } from "./VBS/An";
@@ -65,14 +65,14 @@ const VBS_CARDS = [
 ];
 
 // ==========================================
-// 🎪 5. Wonderlands×Showtime (원더쇼)
+// 🎪 5. Wonderlands×Showtime (Wds)
 // ==========================================
-// import { TsukasaCards } from "./WXs/Tsukasa";
-// import { EmuCards } from "./WXs/Emu";
-// import { NeneCards } from "./WXs/Nene";
-// import { RuiCards } from "./WXs/Rui";
+// import { TsukasaCards } from "./Wds/Tsukasa";
+// import { EmuCards } from "./Wds/Emu";
+// import { NeneCards } from "./Wds/Nene";
+// import { RuiCards } from "./Wds/Rui";
 
-const WXs_CARDS = [
+const Wds_CARDS = [
   // ...TsukasaCards,
   // ...EmuCards,
   // ...NeneCards,
@@ -80,12 +80,12 @@ const WXs_CARDS = [
 ];
 
 // ==========================================
-// 🎧 6. 25시, 나이트코드에서. (니고)
+// 🎧 6. 25시, 나이트코드에서. (Niigo)
 // ==========================================
-// import { KanadeCards } from "./25/Kanade";
-// import { MafuyuCards } from "./25/Mafuyu";
-// import { EnaCards } from "./25/Ena";
-// import { MizukiCards } from "./25/Mizuki";
+// import { KanadeCards } from "./Niigo/Kanade"; // 👈 폴더 경로도 완벽하게 Niigo로 동기화!
+// import { MafuyuCards } from "./Niigo/Mafuyu";
+// import { EnaCards } from "./Niigo/Ena";
+// import { MizukiCards } from "./Niigo/Mizuki";
 
 const Niigo_CARDS = [
   // ...KanadeCards,
@@ -102,6 +102,6 @@ export const ALL_CARDS: FinalCardInfo[] = [
   ...Leoneed_CARDS,
   ...MMJ_CARDS,
   ...VBS_CARDS,
-  ...WXs_CARDS,
+  ...Wds_CARDS,
   ...Niigo_CARDS,
 ];
