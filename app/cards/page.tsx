@@ -189,7 +189,6 @@ export default function MyCardsPage() {
     else setSelectedChars([...new Set([...selectedChars, ...allVsCharIds])]);
   };
 
-  // 🌟 개별 버싱 일괄 선택 토글 로직
   const toggleSpecificVS = (matchKey: string) => {
     const specificIds = UNIT_FILTERS.flatMap(u => u.chars).filter(c => c.isVirtual && c.matchKeys?.includes(matchKey)).map(c => c.id);
     const isAllSpecificSelected = specificIds.length > 0 && specificIds.every(id => selectedChars.includes(id));
@@ -340,7 +339,6 @@ export default function MyCardsPage() {
         </div>
 
         <div className="space-y-6 md:mt-6">
-          {/* 상태, 콜라보, 속성, 스킬 필터 생략 없이 그대로 */}
           <div className="space-y-2">
             <button onClick={() => setIsStatusExpanded(!isStatusExpanded)} className="w-full flex items-center justify-between group pb-1 cursor-pointer">
               <span className="text-[12px] md:text-[11px] font-bold text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-300 transition-colors">STATUS</span>
@@ -468,7 +466,6 @@ export default function MyCardsPage() {
             {isCharExpanded && (
               <div className="space-y-6 pt-3">
                 
-                {/* 🌟 버츄얼 싱어 일괄 선택 (전체 + 개별 6명) 통합 박스 */}
                 <div className="bg-zinc-900/50 p-2 rounded-2xl border border-white/5">
                   <button 
                     onClick={toggleAllVirtualSingers}
@@ -482,14 +479,15 @@ export default function MyCardsPage() {
                     <span>버추얼 싱어 전체 선택</span>
                   </button>
 
+                  {/* 🌟 버싱 6인방 퍼스널 컬러 적용! */}
                   <div className="grid grid-cols-3 gap-1.5 mt-2">
                     {[
-                      { label: "미쿠", key: "미쿠" },
-                      { label: "린", key: "린" },
-                      { label: "렌", key: "렌" },
-                      { label: "루카", key: "루카" },
-                      { label: "MEIKO", key: "MEIKO" },
-                      { label: "KAITO", key: "KAITO" }
+                      { label: "미쿠", key: "미쿠", activeClass: "bg-teal-500/20 text-teal-300 border-teal-400/30 shadow-[0_0_6px_rgba(45,212,191,0.2)] scale-100" },
+                      { label: "린", key: "린", activeClass: "bg-amber-500/20 text-amber-300 border-amber-400/30 shadow-[0_0_6px_rgba(251,191,36,0.2)] scale-100" },
+                      { label: "렌", key: "렌", activeClass: "bg-yellow-500/20 text-yellow-300 border-yellow-400/30 shadow-[0_0_6px_rgba(250,204,21,0.2)] scale-100" },
+                      { label: "루카", key: "루카", activeClass: "bg-pink-500/20 text-pink-300 border-pink-400/30 shadow-[0_0_6px_rgba(244,114,182,0.2)] scale-100" },
+                      { label: "MEIKO", key: "MEIKO", activeClass: "bg-red-500/20 text-red-400 border-red-400/30 shadow-[0_0_6px_rgba(248,113,113,0.2)] scale-100" },
+                      { label: "KAITO", key: "KAITO", activeClass: "bg-blue-500/20 text-blue-300 border-blue-400/30 shadow-[0_0_6px_rgba(96,165,250,0.2)] scale-100" }
                     ].map(vs => {
                       const specificIds = UNIT_FILTERS.flatMap(u => u.chars).filter(c => c.isVirtual && c.matchKeys?.includes(vs.key)).map(c => c.id);
                       const isAllSpecificSelected = specificIds.length > 0 && specificIds.every(id => selectedChars.includes(id));
@@ -499,7 +497,7 @@ export default function MyCardsPage() {
                           onClick={() => toggleSpecificVS(vs.key)}
                           className={`py-1.5 rounded-lg text-[11px] font-bold transition-all duration-300 border ${
                             isAllSpecificSelected 
-                              ? "bg-sky-500/20 text-sky-300 border-sky-400/30 shadow-sm scale-100" 
+                              ? vs.activeClass
                               : "bg-zinc-900/80 border-white/5 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800"
                           }`}
                         >
@@ -538,7 +536,6 @@ export default function MyCardsPage() {
         </div>
       </div>
 
-      {/* 🗂️ 우측: 카드 리스트 구역 */}
       <div className="flex-1 flex flex-col min-w-0 bg-zinc-900/30 rounded-3xl p-4 md:p-6 border border-white/5">
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6 relative z-40">
           <div>
