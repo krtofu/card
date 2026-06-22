@@ -26,7 +26,7 @@ const UNIT_FILTERS: UnitDef[] = [
   { id: "mmj", name: "MORE MORE JUMP!", logo: "/icons/MMJ.png", chars: [ { id: "minori", name: "하나사토 미노리", img: "/icons/characters/Minori.png" }, { id: "haruka", name: "키리타니 하루카", img: "/icons/characters/Haruka.png" }, { id: "airi", name: "모모이 아이리", img: "/icons/characters/Airi.png" }, { id: "shizuku", name: "히노모리 시즈쿠", img: "/icons/characters/Shizuku.png" }, { id: "miku_m", name: "하츠네 미쿠", img: "/icons/characters/MIKU_m.png", isVirtual: true, matchKeys: ["미쿠"] }, { id: "rin_m", name: "카가미네 린", img: "/icons/characters/RIN_m.png", isVirtual: true, matchKeys: ["린"] }, { id: "ren_m", name: "카가미네 렌", img: "/icons/characters/REN_m.png", isVirtual: true, matchKeys: ["렌"] }, { id: "luka_m", name: "메구리네 루카", img: "/icons/characters/LUKA_m.png", isVirtual: true, matchKeys: ["루카"] }, { id: "meiko_m", name: "MEIKO", img: "/icons/characters/MEIKO_m.png", isVirtual: true, matchKeys: ["메이코", "MEIKO"] }, { id: "kaito_m", name: "KAITO", img: "/icons/characters/KAITO_m.png", isVirtual: true, matchKeys: ["카이토", "KAITO"] } ] },
   { id: "vbs", name: "Vivid BAD SQUAD", logo: "/icons/VBS.png", chars: [ { id: "kohane", name: "아즈사와 코하네", img: "/icons/characters/Kohane.png" }, { id: "an", name: "시라이시 안", img: "/icons/characters/An.png" }, { id: "akito", name: "시노노메 아키토", img: "/icons/characters/Akito.png" }, { id: "toya", name: "아오야기 토우야", img: "/icons/characters/Toya.png" }, { id: "miku_v", name: "하츠네 미쿠", img: "/icons/characters/MIKU_v.png", isVirtual: true, matchKeys: ["미쿠"] }, { id: "rin_v", name: "카가미네 린", img: "/icons/characters/RIN_v.png", isVirtual: true, matchKeys: ["린"] }, { id: "ren_v", name: "카가미네 렌", img: "/icons/characters/REN_v.png", isVirtual: true, matchKeys: ["렌"] }, { id: "luka_v", name: "메구리네 루카", img: "/icons/characters/LUKA_v.png", isVirtual: true, matchKeys: ["루카"] }, { id: "meiko_v", name: "MEIKO", img: "/icons/characters/MEIKO_v.png", isVirtual: true, matchKeys: ["메이코", "MEIKO"] }, { id: "kaito_v", name: "KAITO", img: "/icons/characters/KAITO_v.png", isVirtual: true, matchKeys: ["카이토", "KAITO"] } ] },
   { id: "wxs", name: "Wonderlands×Showtime", logo: "/icons/Wds.png", chars: [ { id: "tsukasa", name: "텐마 츠카사", img: "/icons/characters/Tsukasa.png" }, { id: "emu", name: "오토리 에무", img: "/icons/characters/Emu.png" }, { id: "nene", name: "쿠사나기 네네", img: "/icons/characters/Nene.png" }, { id: "rui", name: "카미시로 루이", img: "/icons/characters/Rui.png" }, { id: "miku_w", name: "하츠네 미쿠", img: "/icons/characters/MIKU_w.png", isVirtual: true, matchKeys: ["미쿠"] }, { id: "rin_w", name: "카가미네 린", img: "/icons/characters/RIN_w.png", isVirtual: true, matchKeys: ["린"] }, { id: "ren_w", name: "카가미네 렌", img: "/icons/characters/REN_w.png", isVirtual: true, matchKeys: ["렌"] }, { id: "luka_w", name: "메구리네 루카", img: "/icons/characters/LUKA_w.png", isVirtual: true, matchKeys: ["루카"] }, { id: "meiko_w", name: "MEIKO", img: "/icons/characters/MEIKO_w.png", isVirtual: true, matchKeys: ["메이코", "MEIKO"] }, { id: "kaito_w", name: "KAITO", img: "/icons/characters/KAITO_w.png", isVirtual: true, matchKeys: ["카이토", "KAITO"] } ] },
-  { id: "n25", name: "25시, 나이트코드에서.", logo: "/icons/Niigo.png", chars: [ { id: "kanade", name: "요이사키 카나데", img: "/icons/characters/Kanade.png" }, { id: "mafuyu", name: "아사히나 마후유", img: "/icons/characters/Mafuyu.png" }, { id: "ena", name: "시노노메 에나", img: "/icons/characters/Ena.png" }, { id: "mizuki", name: "아키야마 미즈키", img: "/icons/characters/Mizuki.png" }, { id: "miku_n", name: "하츠네 미쿠", img: "/icons/characters/MIKU_n.png", isVirtual: true, matchKeys: ["미쿠"] }, { id: "rin_n", name: "카가미네 린", img: "/icons/characters/RIN_n.png", isVirtual: true, matchKeys: ["린"] }, { id: "ren_n", name: "카가미네 렌", img: "/icons/characters/REN_n.png", isVirtual: true, matchKeys: ["렌"] }, { id: "luka_n", name: "메구리네 루카", img: "/icons/characters/LUKA_n.png", isVirtual: true, matchKeys: ["루카"] }, { id: "meiko_n", name: "MEIKO", img: "/icons/characters/MEIKO_n.png", isVirtual: true, matchKeys: ["메이코", "MEIKO"] }, { id: "kaito_n", name: "KAITO", img: "/icons/characters/KAITO_n.png", isVirtual: true, matchKeys: ["카이토", "KAITO"] } ] }
+  { id: "n25", name: "25시, 나이트코드에서.", logo: "/icons/25.png", chars: [ { id: "kanade", name: "요이사키 카나데", img: "/icons/characters/Kanade.png" }, { id: "mafuyu", name: "아사히나 마후유", img: "/icons/characters/Mafuyu.png" }, { id: "ena", name: "시노노메 에나", img: "/icons/characters/Ena.png" }, { id: "mizuki", name: "아키야마 미즈키", img: "/icons/characters/Mizuki.png" }, { id: "miku_n", name: "하츠네 미쿠", img: "/icons/characters/MIKU_n.png", isVirtual: true, matchKeys: ["미쿠"] }, { id: "rin_n", name: "카가미네 린", img: "/icons/characters/RIN_n.png", isVirtual: true, matchKeys: ["린"] }, { id: "ren_n", name: "카가미네 렌", img: "/icons/characters/REN_n.png", isVirtual: true, matchKeys: ["렌"] }, { id: "luka_n", name: "메구리네 루카", img: "/icons/characters/LUKA_n.png", isVirtual: true, matchKeys: ["루카"] }, { id: "meiko_n", name: "MEIKO", img: "/icons/characters/MEIKO_n.png", isVirtual: true, matchKeys: ["메이코", "MEIKO"] }, { id: "kaito_n", name: "KAITO", img: "/icons/characters/KAITO_n.png", isVirtual: true, matchKeys: ["카이토", "KAITO"] } ] }
 ];
 
 const ATTR_FILTERS: AttrDef[] = [
@@ -115,9 +115,11 @@ export default function MyCardsPage() {
   const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
   const [refSkillLevel, setRefSkillLevel] = useState<number>(1);
   
-  // 🌟 모바일 필터 열림 상태 추가!
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   
+  // 🌟 스핀 애니메이션용 각도(degree) 상태
+  const [spinDeg, setSpinDeg] = useState(0);
+
   const [isStatusExpanded, setIsStatusExpanded] = useState(true);
   const [isCollabExpanded, setIsCollabExpanded] = useState(true);
   const [isAttrExpanded, setIsAttrExpanded] = useState(true);
@@ -137,7 +139,6 @@ export default function MyCardsPage() {
     if (saved) try { setCardStates(JSON.parse(saved)); } catch (e) { console.error(e); }
   }, []);
 
-  // 🌟 모바일 필터창 열려있을 때 뒷배경 카드 스크롤 방지 로직
   useEffect(() => {
     if (isMobileFilterOpen) {
       document.body.style.overflow = "hidden";
@@ -182,9 +183,25 @@ export default function MyCardsPage() {
     }
   };
 
-  const resetFilters = () => {
+  // 🌟 스핀 애니메이션 적용된 초기화 함수
+  const handleReset = () => {
+    setSpinDeg(prev => prev - 360); // 클릭할 때마다 반시계 방향으로 한 바퀴(-360도) 추가 회전!
     setSelectedChars([]); setSelectedAttrs([]); setSelectedSkills([]); 
     setSelectedStatuses([]); setSelectedTypes([]); setSelectedHairs([]);
+  };
+
+  // 🌟 전체 버싱 일괄 선택 함수
+  const allVsCharIds = UNIT_FILTERS.flatMap(u => u.chars.filter(c => c.isVirtual).map(c => c.id));
+  const isAllVsSelected = allVsCharIds.length > 0 && allVsCharIds.every(id => selectedChars.includes(id));
+
+  const toggleAllVirtualSingers = () => {
+    if (isAllVsSelected) {
+      // 켜져 있으면 모두 끄기
+      setSelectedChars(selectedChars.filter(id => !allVsCharIds.includes(id)));
+    } else {
+      // 꺼져 있으면 모두 켜기
+      setSelectedChars([...new Set([...selectedChars, ...allVsCharIds])]);
+    }
   };
 
   const filteredCards = ALL_CARDS.filter(card => {
@@ -313,7 +330,6 @@ export default function MyCardsPage() {
   return (
     <div className="flex flex-col md:flex-row gap-6 px-4 md:px-8 py-6 min-h-screen text-zinc-100 max-w-[1920px] mx-auto w-full">
       
-      {/* 🎛️ 필터 사이드바: PC에서는 좌측 고정, 모바일에서는 전체화면 팝업(Drawer)으로 변신! */}
       <div className={`
         flex flex-col shrink-0 
         md:w-[280px] md:relative md:block md:bg-transparent md:p-0 md:h-auto md:z-0
@@ -322,12 +338,17 @@ export default function MyCardsPage() {
         <div className="flex items-center justify-between border-b border-white/10 pb-3 mb-6 md:mb-0">
           <h2 className="text-lg md:text-sm font-bold text-zinc-300 tracking-wider uppercase">🔍 필터</h2>
           <div className="flex items-center gap-3">
-            <button onClick={resetFilters} 
-              className="w-8 h-8 md:w-7 md:h-7 flex items-center justify-center rounded-full bg-zinc-900 border border-white/5 text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all text-sm md:text-sm shadow-sm" 
+            {/* 🌟 클릭 시 빙글 도는 화살표 애니메이션 적용! */}
+            <button onClick={handleReset} 
+              className="w-8 h-8 md:w-7 md:h-7 flex items-center justify-center rounded-full bg-zinc-900 border border-white/5 text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors text-sm md:text-sm shadow-sm" 
               title="필터 초기화">
-              <span className="leading-none -mt-[1px]">↺</span>
+              <span 
+                className="leading-none -mt-[1px] inline-block"
+                style={{ transform: `rotate(${spinDeg}deg)`, transition: 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)' }}
+              >
+                ↺
+              </span>
             </button>
-            {/* 모바일에서만 보이는 필터 닫기 버튼 */}
             <button 
               onClick={() => setIsMobileFilterOpen(false)} 
               className="md:hidden w-8 h-8 flex items-center justify-center rounded-full bg-zinc-800 text-white font-bold"
@@ -505,6 +526,20 @@ export default function MyCardsPage() {
             </button>
             {isCharExpanded && (
               <div className="space-y-6 pt-3">
+                
+                {/* 🌟 전체 버싱 일괄 선택 토글 버튼 */}
+                <button 
+                  onClick={toggleAllVirtualSingers}
+                  className={`w-full flex items-center justify-center gap-2 py-2 rounded-xl text-[12px] font-bold transition-all duration-300 border ${
+                    isAllVsSelected 
+                      ? "bg-[#00FFD1]/15 text-[#00FFD1] border-[#00FFD1]/30 shadow-[0_0_10px_rgba(0,255,209,0.1)] scale-[1.02]" 
+                      : "bg-zinc-900 border-white/5 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 scale-100"
+                  }`}
+                >
+                  <span>🎙️</span>
+                  <span>전체 버추얼 싱어 일괄 선택</span>
+                </button>
+
                 {UNIT_FILTERS.map((unit) => {
                   const isAllSelected = unit.chars.every(c => selectedChars.includes(c.id));
                   const logoOpacityClass = !isAnyCharSelected || isAllSelected ? "opacity-100" : "opacity-40 hover:opacity-100";
@@ -535,8 +570,6 @@ export default function MyCardsPage() {
 
       {/* 🗂️ 우측: 카드 리스트 구역 */}
       <div className="flex-1 flex flex-col min-w-0 bg-zinc-900/30 rounded-3xl p-4 md:p-6 border border-white/5">
-        
-        {/* 🌟 모바일에서도 안 깨지는 상단 컨트롤 패널 (flex-wrap 적용) */}
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6 relative z-40">
           <div>
             <h1 className="text-xl font-bold tracking-tight">카드 목록</h1>
@@ -544,8 +577,6 @@ export default function MyCardsPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto relative w-full sm:w-auto">
-            
-            {/* 🌟 모바일 전용 필터 팝업 열기 버튼 (화면 작을 때만 보임) */}
             <button 
               onClick={() => setIsMobileFilterOpen(true)}
               className="md:hidden flex items-center justify-center gap-1.5 h-[34px] px-3 rounded-full bg-zinc-800/80 border border-white/10 text-[12px] font-bold text-zinc-300 hover:text-white transition-colors shadow-sm"

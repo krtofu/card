@@ -280,7 +280,29 @@ const MikuWxs = defineCharacterCards("원더쇼", "하츠네 미쿠", "VS", "MIK
         },
       },
     ],
-  limited: [],
+  limited: [
+      {
+        info: {
+          id: "VS_MIKU_016",
+          cardName: "[반짝반짝 미소의 마법]",
+          attribute: "cute",
+          gachaType: "한정",
+          gachaPoolName: "마음을 연주하는 마칭 퍼레이드 뽑기",
+          eventName: "세카이에 울려 퍼져라! Your Song",
+          skillType: "팀스업",
+          releaseDate: "2024-08-31",
+        },
+        media: {
+          gachaBannerPath: "/gachas/24y/banner_24_25_0.png",
+          eventBannerPath: "/events/24y/banner_24_25_0.png",
+        },
+        costume: {
+          hasCostume: true,
+          costumeName: "스마일링 마칭",
+          hasHair: true,
+        },
+      },
+    ],
   fes: []
 });
 
