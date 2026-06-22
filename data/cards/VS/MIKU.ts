@@ -611,8 +611,8 @@ const MikuNigo = defineCharacterCards("니고", "하츠네 미쿠", "VS", "MIKU"
           releaseDate: "2027-03-20",
         },
         media: {
-          gachaBannerPath: "/gachas/27y/jbanner_27_9_n.png",
-          eventBannerPath: "/events/27y/jbanner_27_9_n.png",
+          gachaBannerPath: "/gachas/27y/jbanner_27_09_n.png",
+          eventBannerPath: "/events/27y/jbanner_27_09_n.png",
           songName: "고백",
           songJacketPath: "/jacket/27y/Kokuhaku.png",
         },
