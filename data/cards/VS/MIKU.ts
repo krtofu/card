@@ -113,6 +113,7 @@ const MikuLeoneed = defineCharacterCards("레오니", "하츠네 미쿠", "VS", 
         costume: {
           hasCostume: true,
           costumeName: "설레는 소녀의 날개옷",
+          hasHair: true,
         },
       },
     ],
@@ -341,6 +342,7 @@ const MikuNigo = defineCharacterCards("니고", "하츠네 미쿠", "VS", "MIKU"
         costume: {
           hasCostume: true,
           costumeName: "밤벚꽃의 옷",
+          hasHair: true,
         },
       },
     ],
