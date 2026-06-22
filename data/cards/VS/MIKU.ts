@@ -94,8 +94,8 @@ const MikuOriginal = defineCharacterCards("버싱", "하츠네 미쿠", "VS", "M
           releaseDate: "2025-09-06",
         },
         media: {
-          gachaBannerPath: "/gachas/26y/banner_26_26_0.png",
-          eventBannerPath: "/events/26y/banner_26_26_0.png",
+          gachaBannerPath: "/gachas/26y/jbanner_26_26_0.png",
+          eventBannerPath: "/events/26y/jbanner_26_26_0.png",
           songName: "후회한다 쓰고 미래",
           songJacketPath: "/jacket/22y/Kuyamu_to_Kaite_Mirai.png",
         },
@@ -115,7 +115,7 @@ const MikuOriginal = defineCharacterCards("버싱", "하츠네 미쿠", "VS", "M
           releaseDate: "2026-05-22",
         },
         media: {
-          gachaBannerPath: "/gachas/26y/banner_c4.png",
+          gachaBannerPath: "/gachas/collab/banner_c4.png",
         },
         costume: {
           hasCostume: true,
@@ -134,8 +134,8 @@ const MikuOriginal = defineCharacterCards("버싱", "하츠네 미쿠", "VS", "M
           releaseDate: "2027-04-18",
         },
         media: {
-          gachaBannerPath: "/gachas/27y/banner_27_12.png",
-          eventBannerPath: "/events/27y/banner_27_12.png",
+          gachaBannerPath: "/gachas/27y/jbanner_27_12.png",
+          eventBannerPath: "/events/27y/jbanner_27_12.png",
           songName: "세상을 걷는 법",
           songJacketPath: "/jacket/27y/Sekai_no_Arukikata.png",
         },
@@ -611,8 +611,8 @@ const MikuNigo = defineCharacterCards("니고", "하츠네 미쿠", "VS", "MIKU"
           releaseDate: "2027-03-20",
         },
         media: {
-          gachaBannerPath: "/gachas/27y/banner_27_9.png",
-          eventBannerPath: "/events/27y/banner_27_9.png",
+          gachaBannerPath: "/gachas/27y/jbanner_27_9.png",
+          eventBannerPath: "/events/27y/jbanner_27_9.png",
           songName: "고백",
           songJacketPath: "/jacket/27y/Kokuhaku.png",
         },
