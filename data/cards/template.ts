@@ -28,12 +28,12 @@ export type CardCostumeGroup = {
   isMovieStyle?: boolean;
 };
 
-// 🌟 [방별 입력 양식 통합]
-export type NormalCardInput = { info: CardInfoGroup; media?: CardMediaGroup; costume?: CardCostumeGroup; };
-export type LimitedCardInput = { info: CardInfoGroup; media?: CardMediaGroup; costume?: CardCostumeGroup; };
-export type FesCardInput = { info: CardInfoGroup; media?: CardMediaGroup; costume?: CardCostumeGroup; };
-
-export type RawCardInput = NormalCardInput | LimitedCardInput | FesCardInput;
+// 🌟 [방별 입력 양식 통합] - 이제 normal, limited 등 나눌 필요 없이 하나로 끝!
+export type RawCardInput = { 
+  info: CardInfoGroup; 
+  media?: CardMediaGroup; 
+  costume?: CardCostumeGroup; 
+};
 
 export type CostumeSetPaths = {
   key: string;   
@@ -53,7 +53,7 @@ export type FinalCardInfo = {
   gachaPoolName: string;
   eventName: string;
   skillType: string;        
-  releaseDate: string;      // 👈 [추가됨!] 최종 데이터에도 출시일 보관
+  releaseDate: string;      
 
   thumbPrePath: string;     
   thumbPostPath: string;    
@@ -80,19 +80,12 @@ export function defineCharacterCards(
   character: CharacterName,
   unitFolder: string,       
   characterFolder: string,  
-  cardGroups: {
-    normal?: NormalCardInput[];
-    limited?: LimitedCardInput[];
-    fes?: FesCardInput[];
+  data: {
+    cards: RawCardInput[]; // 👈 기존 3개 방을 cards 방 하나로 통합!
   }
 ): FinalCardInfo[] {
-  const allInputs: RawCardInput[] = [
-    ...(cardGroups.normal || []),
-    ...(cardGroups.limited || []),
-    ...(cardGroups.fes || []),
-  ];
-
-  return allInputs.map((card) => {
+  // 이제 합칠 필요 없이 data.cards를 바로 사용합니다.
+  return data.cards.map((card) => {
     const { info, media, costume } = card;
     const folderBase = `/cards/${unitFolder}/${characterFolder}/${info.id}`;
 
@@ -123,11 +116,14 @@ export function defineCharacterCards(
     } else if (vsMap[cleanCharName]) {
       const vsBase = vsMap[cleanCharName];
       let suffix = "_0";
-      if (cleanUnitName.includes("레오니") || cleanUnitName.includes("leo") || cleanUnitName === "l/n") suffix = "_l";
+      
+      // 🌟 아까 맞췄던 wds, ng 유닛 약자 규칙을 아이콘 매핑에도 완벽 반영!
+      if (cleanUnitName.includes("레오니") || cleanUnitName.includes("leo") || cleanUnitName === "ln") suffix = "_l";
       else if (cleanUnitName.includes("모모점") || cleanUnitName.includes("more") || cleanUnitName === "mmj") suffix = "_m";
       else if (cleanUnitName.includes("비배스") || cleanUnitName.includes("vivid") || cleanUnitName === "vbs") suffix = "_v";
       else if (cleanUnitName.includes("원더쇼") || cleanUnitName.includes("wonder") || cleanUnitName === "wds") suffix = "_w";
-      else if (cleanUnitName.includes("니고") || cleanUnitName.includes("25") || cleanUnitName === "niigo") suffix = "_n";
+      else if (cleanUnitName.includes("니고") || cleanUnitName.includes("25") || cleanUnitName === "ng" || cleanUnitName === "niigo") suffix = "_n";
+      
       finalIconPath = `/icons/characters/${vsBase}${suffix}.png`;
     }
 
@@ -153,7 +149,7 @@ export function defineCharacterCards(
       gachaPoolName: info.gachaPoolName,
       eventName: info.eventName || "",
       skillType: info.skillType,
-      releaseDate: info.releaseDate, // 👈 [추가됨!]
+      releaseDate: info.releaseDate, 
       
       thumbPrePath,  
       thumbPostPath, 

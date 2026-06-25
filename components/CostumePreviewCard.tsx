@@ -102,11 +102,20 @@ export default function CostumePreviewCard({ preview }: { preview: CostumePrevie
 
   const currentSrc = images[0] ?? "/costumes/placeholder.png";
 
+  // 🌟 [추가된 보너스 로직] 부모(모달)에서 넘어온 이름을 슬래시(/) 기준으로 쪼갭니다!
+  const rawSubtitle = preview.subtitle ?? "[카드 이름] 의상 이름";
+  const splitNames = rawSubtitle.split("/").map(s => s.trim());
+  
+  // 현재 보고 있는 의상 탭 번호 (0: 기본, 1: 어나더1, 2: 어나더2...)
+  const activeTabIndex = sets.length > 0 ? (setIdx % sets.length) : 0;
+  
+  // 탭 번호에 맞는 이름이 배열에 있으면 그걸 쓰고, 없으면 무조건 첫 번째 이름을 씁니다.
+  const dynamicSubtitle = splitNames[activeTabIndex] || splitNames[0];
+
   const subtitle =
     currentSet?.subtitle ??
     currentChar.subtitle ??
-    preview.subtitle ??
-    "[카드 이름] 의상 이름";
+    dynamicSubtitle; // 👈 쪼개진 이름이 최종적으로 여기에 들어갑니다!
 
   const goChar = (dir: -1 | 1) => {
     const next = (charIdx + dir + safeChars.length) % safeChars.length;

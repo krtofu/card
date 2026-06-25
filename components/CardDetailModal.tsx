@@ -34,7 +34,6 @@ export default function CardDetailModal({
   const hasSong = !!songName || !!songJacket;
   
   const hasEvent = !!card.eventName;
-  
 
   const costumePreviewData = hasCostume && card.costume ? {
     title: card.cardName,
@@ -75,20 +74,10 @@ export default function CardDetailModal({
 
   const getSkillInfo = (skill: string) => {
     if (!skill) return { src: "", label: "" };
-    
-    if (skill === "스업") {
-      return { src: "/icons/skills/score_x.png", label: "스업" };
-    } 
-    if (["퍼스업", "굿스업", "체스업", "블페", "팀스업"].includes(skill)) {
-      return { src: "/icons/skills/condition_x.png", label: skill }; 
-    } 
-    if (skill === "판강") {
-      return { src: "/icons/skills/perfect_x.png", label: "판정 강화" };
-    } 
-    if (skill === "힐") {
-      return { src: "/icons/skills/heal_x.png", label: "라이프 회복" };
-    }
-    
+    if (skill === "스업") return { src: "/icons/skills/score_x.png", label: "스업" };
+    if (["퍼스업", "굿스업", "체스업", "블페", "팀스업"].includes(skill)) return { src: "/icons/skills/condition_x.png", label: skill }; 
+    if (skill === "판강") return { src: "/icons/skills/perfect_x.png", label: "판정 강화" };
+    if (skill === "힐") return { src: "/icons/skills/heal_x.png", label: "라이프 회복" };
     return { src: "", label: skill };
   };
 
@@ -101,9 +90,7 @@ export default function CardDetailModal({
       "요이사키 카나데": "Kanade", "아사히나 마후유": "Mafuyu", "시노노메 에나": "Ena", "아키야마 미즈키": "Mizuki"
     };
 
-    if (originalMap[charName]) {
-      return `/icons/characters/${originalMap[charName]}.png`;
-    }
+    if (originalMap[charName]) return `/icons/characters/${originalMap[charName]}.png`;
 
     const vsMap: Record<string, string> = {
       "하츠네 미쿠": "MIKU", "미쿠": "MIKU",
@@ -117,18 +104,30 @@ export default function CardDetailModal({
     if (vsMap[charName]) {
       const vsBase = vsMap[charName];
       let suffix = "_0"; 
-      
       const unit = unitName.toLowerCase();
       if (unit.includes("레오니") || unit.includes("leo") || unit === "l/n") suffix = "_l";
       else if (unit.includes("모모점") || unit.includes("more") || unit === "mmj") suffix = "_m";
       else if (unit.includes("비배스") || unit.includes("vivid") || unit === "vbs") suffix = "_v";
-      else if (unit.includes("원더쇼") || unit.includes("wonder") || unit === "wxs") suffix = "_w";
-      else if (unit.includes("니고") || unit.includes("25") || unit === "niigo") suffix = "_n";
+      else if (unit.includes("원더쇼") || unit.includes("wonder") || unit === "wds") suffix = "_w";
+      else if (unit.includes("니고") || unit.includes("25") || unit === "ng" || unit === "niigo") suffix = "_n";
 
       return `/icons/characters/${vsBase}${suffix}.png`;
     }
 
     return card.iconPath || ""; 
+  };
+
+  // 🌟 [추가된 꿀기능] 카드 정보의 유닛 이름을 식별해서 로고 이미지 파일 매핑하기
+  const getUnitLogo = (unitName: string) => {
+    if (!unitName) return "";
+    const lowerUnit = unitName.toLowerCase();
+    if (lowerUnit.includes("레오니") || lowerUnit.includes("leo") || lowerUnit === "l/n") return "/icons/Leoneed.png";
+    if (lowerUnit.includes("모모점") || lowerUnit.includes("more") || lowerUnit === "mmj") return "/icons/MMJ.png";
+    if (lowerUnit.includes("비배스") || lowerUnit.includes("vivid") || lowerUnit === "vbs") return "/icons/VBS.png";
+    if (lowerUnit.includes("원더쇼") || lowerUnit.includes("wonder") || lowerUnit === "wds") return "/icons/Wds.png";
+    if (lowerUnit.includes("니고") || lowerUnit.includes("25") || lowerUnit === "ng" || lowerUnit === "niigo") return "/icons/Niigo.png";
+    if (lowerUnit.includes("버싱") || lowerUnit.includes("virtual") || lowerUnit === "vs") return "/icons/VS.png";
+    return "";
   };
 
   const currentGachaStyle = getGachaBadgeStyle(card.gachaType);
@@ -149,7 +148,7 @@ export default function CardDetailModal({
           ✕
         </button>
 
-        {/* 🌌 상단 배너 */}
+        {/* 🌌 상단 배너 구역 */}
         <div className="relative -mx-6 -mt-6 h-64 md:h-[360px] shrink-0 flex overflow-hidden border-b border-white/10 bg-zinc-900">
           <div className="relative h-full flex-1 hover:flex-[3] max-w-[455px] md:max-w-[604px] transition-all duration-700 ease-in-out overflow-hidden group/pre z-10 hover:z-20">
             <img src={preIllustration} alt="특훈 전 일러스트" className="absolute left-0 top-0 h-full aspect-[16/9] max-w-none object-cover object-center" />
@@ -161,12 +160,17 @@ export default function CardDetailModal({
           </div>
         </div>
 
-        {/* 📝 하단부 */}
+        {/* 📝 하단부 상세정보 구역 */}
         <div className="flex flex-col md:flex-row gap-8 pt-2 shrink-0">
           
           <div className="flex-1 flex flex-col gap-6">
             <div className="flex items-start justify-between gap-4 w-full mt-1 border-b border-white/5 pb-5">
-              <div className="flex flex-wrap items-baseline gap-2.5">
+              
+              {/* 🌟 [유닛 뱃지 반영완료] 카드 이름 왼쪽에 이쁘게 로고가 배치됩니다! */}
+              <div className="flex flex-wrap items-center gap-2.5">
+                {getUnitLogo(card.unit || "") && (
+                  <img src={getUnitLogo(card.unit || "")} alt={card.unit} className="h-[22px] w-auto object-contain drop-shadow-md" />
+                )}
                 <h2 className="text-xl font-bold text-zinc-100">{card.cardName}</h2>
                 <span className="text-xl font-bold text-zinc-100">{card.character}</span>
               </div>
@@ -219,7 +223,7 @@ export default function CardDetailModal({
               </div>
             </div>
 
-            {/* 🎲 1. 관련 뽑기 */}
+            {/* 🎲 1. 관련 뽑기 (생략 없이 완벽 보존) */}
             <div className="flex gap-3.5">
               <div className="w-10 h-10 rounded-full bg-zinc-900 border border-white/10 shrink-0 overflow-hidden flex items-center justify-center">
                 <img src={characterIconPath} alt="Character Icon" className="w-full h-full object-contain" />
@@ -239,7 +243,7 @@ export default function CardDetailModal({
               </div>
             </div>
 
-            {/* 🎪 2. 관련 이벤트 */}
+            {/* 🎪 2. 관련 이벤트 (생략 없이 완벽 보존) */}
             <div className="flex gap-3.5 pt-2">
               <div className="w-10 h-10 rounded-full bg-zinc-900 border border-white/10 shrink-0 overflow-hidden flex items-center justify-center">
                 <span className="text-zinc-500 text-lg">🎪</span>
@@ -268,7 +272,7 @@ export default function CardDetailModal({
               </div>
             </div>
 
-            {/* 💿 3. 관련 악곡 */}
+            {/* 💿 3. 관련 악곡 (생략 없이 완벽 보존) */}
             <div className="flex gap-3.5 pt-2">
               <div className="w-10 h-10 rounded-full bg-zinc-900 border border-white/10 shrink-0 overflow-hidden flex items-center justify-center">
                 <span className="text-zinc-500 text-lg">🎵</span>
@@ -292,7 +296,7 @@ export default function CardDetailModal({
             </div>
           </div>
 
-          {/* 👉 우측 영역: 카드 상태 및 의상 프리뷰 컨트롤러 */}
+          {/* 👉 우측 영역: 카드 상태 및 의상 프리뷰 컨트롤러 (생략 없이 완벽 보존) */}
           <div className="w-full md:w-80 shrink-0 flex flex-col gap-6 self-start">
             <div className="bg-zinc-950/50 border border-white/5 rounded-2xl p-4 flex flex-col justify-between gap-4">
               <div className="flex items-start justify-between gap-3 pb-2 border-b border-white/5">
@@ -300,9 +304,7 @@ export default function CardDetailModal({
                   <p className="text-[15px] font-bold text-zinc-100 tracking-wide whitespace-nowrap">+ 카드 상태</p>
                 </div>
                 
-                {/* 🌟 수정된 버튼 구역: 목표 버튼과 보유 버튼 나란히 배치 */}
                 <div className="flex items-center gap-1.5 shrink-0">
-                  
                   {/* 🎯 목표(위시) 버튼 */}
                   <button
                     disabled={userState.isOwned}
@@ -324,7 +326,6 @@ export default function CardDetailModal({
                       const nextOwned = !userState.isOwned;
                       onUpdateState(card.id, { 
                         isOwned: nextOwned,
-                        // 🌟 보유 중으로 바뀌면 자동으로 목표(isTarget)를 해제합니다!
                         ...(nextOwned ? { isTarget: false } : {}) 
                       });
                     }}
@@ -356,8 +357,8 @@ export default function CardDetailModal({
                         !userState.isOwned
                           ? "bg-zinc-950 text-zinc-800 cursor-not-allowed"
                           : userState.masterRank === rank
-                          ? "bg-sky-500/20 text-sky-400 border border-sky-500/30"
-                          : "bg-zinc-950 text-zinc-500 border border-white/5 hover:bg-zinc-900"
+                            ? "bg-sky-500/20 text-sky-400 border border-sky-500/30"
+                            : "bg-zinc-950 text-zinc-500 border border-white/5 hover:bg-zinc-900"
                       }`}
                     >
                       {rank}
@@ -383,8 +384,8 @@ export default function CardDetailModal({
                         !userState.isOwned
                           ? "bg-zinc-950 text-zinc-800 cursor-not-allowed"
                           : userState.skillLevel === lvl
-                          ? "bg-purple-500/20 text-purple-400 border border-purple-500/30"
-                          : "bg-zinc-950 text-zinc-500 border border-white/5 hover:bg-zinc-900"
+                            ? "bg-purple-500/20 text-purple-400 border border-purple-500/30"
+                            : "bg-zinc-950 text-zinc-500 border border-white/5 hover:bg-zinc-900"
                       }`}
                     >
                       {lvl}
