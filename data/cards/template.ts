@@ -12,21 +12,21 @@ export type CardInfoGroup = {
   eventName?: string;        
   skillType: string;        
   releaseDate: string;      
-  hasAwakening?: boolean;   // 👈 [추가됨!] 특훈(각성) 여부 (생일/1,2성 등 일러 1장짜리 처리용)
+  hasAwakening?: boolean;   
 };
 
 export type CardMediaGroup = {
   gachaBannerPath?: string; 
   eventBannerPath?: string; 
-  songName?: string | string[];       // 👈 [추가됨!] 악곡 여러 개 배열 지원
-  songJacketPath?: string | string[]; // 👈 [추가됨!] 자켓 여러 개 배열 지원
+  songName?: string | string[];       
+  songJacketPath?: string | string[]; 
 };
 
 export type CardCostumeGroup = {
   hasCostume?: boolean;     
   costumeName?: string;
   hasHair?: boolean;        
-  isMovieStyle?: boolean;   // 👈 극장판 예외 처리용
+  isMovieStyle?: boolean;
 };
 
 export type RawCardInput = { 
@@ -53,7 +53,7 @@ export type FinalCardInfo = {
   eventName: string;
   skillType: string;        
   releaseDate: string;      
-  hasAwakening: boolean;    // 👈 최종 데이터에도 반영
+  hasAwakening: boolean;    
 
   thumbPrePath: string;     
   thumbPostPath: string;    
@@ -126,10 +126,13 @@ export function defineCharacterCards(
 
     let costumeData = undefined;
     if (costume?.hasCostume && costume.costumeName) {
-      // 🌟 [핵심 수정] 극장판(의상 2개) 예외 처리! isMovieStyle이면 어나더를 1개만 만듭니다!
       const isMovie = costume.isMovieStyle;
       const numSets = isMovie ? 2 : 4; 
-      const labels = ["기본", "어나더 1", "어나더 2", "어나더 3"];
+      
+      // 🌟 [핵심 변경점] isMovieStyle 이면 강제로 탭 이름을 "닫힌 창", "열린 창"으로 부여합니다!
+      const labels = isMovie 
+        ? ["닫힌 창", "열린 창"] 
+        : ["기본", "어나더 1", "어나더 2", "어나더 3"];
       
       const sets: CostumeSetPaths[] = labels.slice(0, numSets).map((label, index) => ({
         key: index === 0 ? "base" : `another${index}`,
@@ -151,7 +154,7 @@ export function defineCharacterCards(
       eventName: info.eventName || "",
       skillType: info.skillType,
       releaseDate: info.releaseDate, 
-      hasAwakening: info.hasAwakening ?? true, // 👈 값이 없으면 기본적으로 특훈O(true)
+      hasAwakening: info.hasAwakening ?? true, 
       
       thumbPrePath,  
       thumbPostPath, 

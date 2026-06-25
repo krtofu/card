@@ -64,17 +64,31 @@ export default function ModalCostumePreviewCard({ preview, userState }: ModalCos
   }, [side, currentSet]);
 
   const currentSrc = images[0] ?? "/costumes/placeholder.png";
-  const subtitle = currentSet?.subtitle ?? currentChar.subtitle ?? preview.subtitle ?? "의상 이름 미등록";
+  
+  const rawSubtitle = preview.subtitle ?? "의상 이름 미등록";
+  const splitNames = rawSubtitle.split("/").map(s => s.trim());
+  const activeTabIndex = sets.length > 0 ? (setIdx % sets.length) : 0;
+  const dynamicSubtitle = splitNames[activeTabIndex] || splitNames[0];
+
+  const subtitle = currentSet?.subtitle ?? currentChar.subtitle ?? dynamicSubtitle;
 
   const isUnlocked = useMemo(() => {
-    if (!userState?.isOwned) return false;
+    if (!userState?.isOwned) return false; // 카드가 없으면 무조건 미개방
     if (!currentSet) return false;
+    
     const mr = userState.masterRank || 0;
     const label = currentSet.label; 
+    
+    // 🌟 [수정됨] 마스터 랭크 기반 일반 의상 개방 로직
     if (label === "기본") return true;
     if (label.includes("1") && mr >= 1) return true;
     if (label.includes("2") && mr >= 3) return true;
     if (label.includes("3") && mr >= 5) return true;
+
+    // 🌟 [핵심 로직] "닫힌 창", "열린 창" 처럼 이름에 1, 2, 3 숫자가 안 들어가는 특수 극장판 라벨은
+    // 카드를 보유(isOwned === true)하기만 하면 마랭 상관없이 무조건 개방!
+    if (!label.includes("1") && !label.includes("2") && !label.includes("3")) return true;
+
     return false;
   }, [userState, currentSet]);
 
@@ -84,7 +98,6 @@ export default function ModalCostumePreviewCard({ preview, userState }: ModalCos
 
   return (
     <div className="p-4">
-      {/* 팝업창 전용 헤더 */}
       <div className="flex items-start justify-between gap-3 pb-2 border-b border-white/5">
         <div className="min-w-0 flex-1 flex items-baseline gap-2.5 truncate">
           <span className="text-[15px] font-bold text-zinc-100 tracking-wide whitespace-nowrap">+ 관련 의상</span>
@@ -95,7 +108,6 @@ export default function ModalCostumePreviewCard({ preview, userState }: ModalCos
           <div
             className={
               "shrink-0 inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border tracking-tight transition-all shadow-sm " +
-              // 🌟 테두리(border)의 색상을 확 밝히고, 배경은 어둡게 유지하여 네온 아웃라인 같은 선명함을 살렸습니다!
               (!userState.isOwned
                 ? "bg-zinc-900 border-zinc-700 text-zinc-500" 
                 : isUnlocked
@@ -130,10 +142,11 @@ export default function ModalCostumePreviewCard({ preview, userState }: ModalCos
               {sets.map((s, i) => {
                 const active = i === (setIdx % sets.length);
                 const hovered = hoverSetIdx === i;
-                const isBase = s.label === "기본";
-                const shortLabel = s.label === "기본" ? "기본" : s.label.replace("어나더", "").trim(); 
-                const showFull = !isBase && (active || hovered);
-                const visibleLabel = hovered || active ? s.label : shortLabel;
+                
+                const isAnother = s.label.includes("어나더");
+                const shortLabel = isAnother ? s.label.replace("어나더", "").trim() : s.label;
+                const showFull = !isAnother || active || hovered;
+                const visibleLabel = showFull ? s.label : shortLabel;
 
                 return (
                   <button
@@ -142,7 +155,14 @@ export default function ModalCostumePreviewCard({ preview, userState }: ModalCos
                     onClick={() => pickSet(i)}
                     onMouseEnter={() => setHoverSetIdx(i)}
                     onMouseLeave={() => setHoverSetIdx(null)}
-                    className={["relative", "rounded-xl px-3 py-2 text-xs font-semibold transition-all duration-200", "text-center whitespace-nowrap overflow-visible", "border border-white/10 bg-white/5 hover:bg-white/10", active ? "text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.35)]" : "text-zinc-200", showFull ? "w-17 text-right" : "w-12"].join(" ")}
+                    className={[
+                      "relative", 
+                      "rounded-xl py-2 text-xs font-semibold transition-all duration-200", 
+                      "text-center whitespace-nowrap overflow-visible", 
+                      "border border-white/10 bg-white/5 hover:bg-white/10", 
+                      active ? "text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.35)]" : "text-zinc-200", 
+                      showFull ? "px-3 w-auto min-w-[68px]" : "w-12 px-0"
+                    ].join(" ")}
                   >
                     {visibleLabel}
                     {active ? <span className="pointer-events-none absolute right-full top-1/2 -translate-y-1/2 mr-1.5 text-white/90 text-sm">➡</span> : null}

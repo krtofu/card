@@ -113,6 +113,7 @@ const MikuOriginal = defineCharacterCards("버싱", "하츠네 미쿠", "VS", "M
         eventName: "",
         skillType: "스업",
         releaseDate: "2025-11-20",
+        hasAwakening: false,
       },
       media: {
         songName: "초 나이트 오브 나이츠",
