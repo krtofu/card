@@ -6,8 +6,7 @@ export const IchikaCards = defineCharacterCards(
   "Leoneed",
   "Ichika",
   {
-    // 🟢 1. 통상 카드 방
-    normal: [
+    cards: [
       {
         info: {
           id: "ln_Ichika_001",
@@ -89,6 +88,47 @@ export const IchikaCards = defineCharacterCards(
       },
       {
         info: {
+          id: "ln_Ichika_005",
+          cardName: "[예전에 본 밤하늘]",
+          attribute: "cool",
+          gachaType: "페스",
+          gachaPoolName: "컬러풀 페스티벌 뽑기",
+          eventName: "",
+          skillType: "굿스업",
+          releaseDate: "2023-02-06",
+        },
+        media: {
+          gachaBannerPath: "/gachas/23y/banner_23_f03.png",
+        },
+        costume: {
+          hasCostume: true,
+          costumeName: "화이트 하트 카디건",
+          hasHair: true,
+        },
+      },
+      {
+        info: {
+          id: "ln_Ichika_006",
+          cardName: "[CD가 이어 준 만남]",
+          attribute: "cute",
+          gachaType: "한정",
+          gachaPoolName: "겹치는 마음 Words Snow 뽑기",
+          eventName: "교차하는 선율 빛을 밝히는 온기",
+          skillType: "스업",
+          releaseDate: "2023-03-20",
+        },
+        media: {
+          gachaBannerPath: "/gachas/23y/banner_23_12.png",
+          eventBannerPath: "/events/23y/banner_23_12.png",
+        },
+        costume: {
+          hasCostume: true,
+          costumeName: "스노 크리스탈 코트",
+          hasHair: true,
+        },
+      },
+      {
+        info: {
           id: "ln_Ichika_007",
           cardName: "[방금 한 얘기 들었어?!]",
           attribute: "pure",
@@ -155,6 +195,29 @@ export const IchikaCards = defineCharacterCards(
       },
       {
         info: {
+          id: "ln_Ichika_010",
+          cardName: "[번뜩임을 기다리며]",
+          attribute: "pure",
+          gachaType: "한정",
+          gachaPoolName: "Before the storm 뽑기",
+          eventName: "Don't lose faith!",
+          skillType: "힐",
+          releaseDate: "2023-09-25",
+        },
+        media: {
+          gachaBannerPath: "/gachas/23y/banner_23_39_l.png",
+          eventBannerPath: "/events/23y/banner_23_39_l.png",
+          songName: "Voices",
+          songJacketPath: "/jacket/23y/Voices.png",
+        },
+        costume: {
+          hasCostume: true,
+          costumeName: "Soulful-tone",
+          hasHair: true,
+        },
+      },
+      {
+        info: {
           id: "ln_Ichika_011",
           cardName: "[이어지는 음색]",
           attribute: "happy",
@@ -173,6 +236,27 @@ export const IchikaCards = defineCharacterCards(
         costume: {
           hasCostume: true,
           costumeName: "NEON Vo.",
+        },
+      },
+      {
+        info: {
+          id: "ln_Ichika_012",
+          cardName: "[어둠 속의 온기]",
+          attribute: "cool",
+          gachaType: "한정",
+          gachaPoolName: "Sweet Cute Valentine! 뽑기",
+          eventName: "캔들 향기는 추억과 함께",
+          skillType: "힐",
+          releaseDate: "2024-01-31",
+        },
+        media: {
+          gachaBannerPath: "/gachas/24y/banner_24_04.png",
+          eventBannerPath: "/events/24y/banner_24_04.png",
+        },
+        costume: {
+          hasCostume: true,
+          costumeName: "멜티 오렌지",
+          hasHair: true,
         },
       },
       {
@@ -219,163 +303,6 @@ export const IchikaCards = defineCharacterCards(
       },
       {
         info: {
-          id: "ln_Ichika_016",
-          cardName: "[천천히라도 괜찮으니까]",
-          attribute: "cool",
-          gachaType: "통상",
-          gachaPoolName: "눈동자, 높은 곳을 목표로 뽑기",
-          eventName: "이끄는 용기, 다정함을 가슴에",
-          skillType: "퍼스업",
-          releaseDate: "2025-02-10",
-        },
-        media: {
-          gachaBannerPath: "/gachas/25y/banner_25_05_l.png",
-          eventBannerPath: "/events/25y/banner_25_05_l.png",
-          songName: "레굴루스",
-          songJacketPath: "/jacket/25y/Regulus.png",
-        },
-        costume: {
-          hasCostume: true,
-          costumeName: "에이드 유니폼",
-        },
-      },
-      {
-        info: {
-          id: "ln_Ichika_019",
-          cardName: "[미쿠와의 만남]",
-          attribute: "mysterious",
-          gachaType: "통상",
-          gachaPoolName: "Me and my diva 뽑기",
-          eventName: "This moment with you!",
-          skillType: "퍼스업",
-          releaseDate: "2025-09-20",
-        },
-        media: {
-          gachaBannerPath: "/gachas/25y/banner_25_27_l.png",
-          eventBannerPath: "/events/25y/banner_25_27_l.png",
-          songName: "그럼에도 우리는 노래하기를 그만두지 않아",
-          songJacketPath: "/jacket/25y/Sore_Uta.png",
-        },
-        costume: {
-          hasCostume: true,
-          costumeName: "앰비션 살로페트",
-        },
-      },
-      {
-        info: {
-          id: "ln_Ichika_023",
-          cardName: "[비 위드 유]",
-          attribute: "cute",
-          gachaType: "통상",
-          gachaPoolName: "Seeking my way 뽑기",
-          eventName: "Unsteady, still steady step",
-          skillType: "퍼스업",
-          releaseDate: "2026-07-15",
-        },
-        media: {
-          gachaBannerPath: "/gachas/26y/jbanner_26_20_l.png",
-          eventBannerPath: "/events/26y/jbanner_26_20_l.png",
-          songName: "투명한 팔레트",
-          songJacketPath: "/jacket/26y/Transparent_Palette.png",
-        },
-        costume: {
-          hasCostume: true,
-          costumeName: "Worry of walker",
-        },
-      },
-      {
-        info: {
-          id: "ln_Ichika_024",
-          cardName: "[충격의 아침]",
-          attribute: "happy",
-          gachaType: "통상",
-          gachaPoolName: "Follow my heart 뽑기",
-          eventName: "너와 잇는 Heart Beat",
-          skillType: "스업",
-          releaseDate: "2026-10-11",
-        },
-        media: {
-          gachaBannerPath: "/gachas/26y/jbanner_26_28_l.png",
-          eventBannerPath: "/events/26y/jbanner_26_28_l.png",
-          songName: "스타",
-          songJacketPath: "/jacket/26y/Star.png",
-        },
-        costume: {
-          hasCostume: true,
-          costumeName: "Linked March",
-        },
-      },
-    ],
-
-    // 🔴 2. 한정 & 월링 카드 방
-    limited: [
-      {
-        info: {
-          id: "ln_Ichika_006",
-          cardName: "[CD가 이어 준 만남]",
-          attribute: "cute",
-          gachaType: "한정",
-          gachaPoolName: "겹치는 마음 Words Snow 뽑기",
-          eventName: "교차하는 선율 빛을 밝히는 온기",
-          skillType: "스업",
-          releaseDate: "2023-03-20",
-        },
-        media: {
-          gachaBannerPath: "/gachas/23y/banner_23_12.png",
-          eventBannerPath: "/events/23y/banner_23_12.png",
-        },
-        costume: {
-          hasCostume: true,
-          costumeName: "스노 크리스탈 코트",
-          hasHair: true,
-        },
-      },
-      {
-        info: {
-          id: "ln_Ichika_010",
-          cardName: "[번뜩임을 기다리며]",
-          attribute: "pure",
-          gachaType: "한정",
-          gachaPoolName: "Before the storm 뽑기",
-          eventName: "Don't lose faith!",
-          skillType: "힐",
-          releaseDate: "2023-09-25",
-        },
-        media: {
-          gachaBannerPath: "/gachas/23y/banner_23_39_l.png",
-          eventBannerPath: "/events/23y/banner_23_39_l.png",
-          songName: "Voices",
-          songJacketPath: "/jacket/23y/Voices.png",
-        },
-        costume: {
-          hasCostume: true,
-          costumeName: "Soulful-tone",
-          hasHair: true,
-        },
-      },
-      {
-        info: {
-          id: "ln_Ichika_012",
-          cardName: "[어둠 속의 온기]",
-          attribute: "cool",
-          gachaType: "한정",
-          gachaPoolName: "Sweet Cute Valentine! 뽑기",
-          eventName: "캔들 향기는 추억과 함께",
-          skillType: "힐",
-          releaseDate: "2024-01-31",
-        },
-        media: {
-          gachaBannerPath: "/gachas/24y/banner_24_04.png",
-          eventBannerPath: "/events/24y/banner_24_04.png",
-        },
-        costume: {
-          hasCostume: true,
-          costumeName: "멜티 오렌지",
-          hasHair: true,
-        },
-      },
-      {
-        info: {
           id: "ln_Ichika_015",
           cardName: "[새로운 일들의 시작]",
           attribute: "cute",
@@ -395,6 +322,28 @@ export const IchikaCards = defineCharacterCards(
           hasCostume: true,
           costumeName: "The Starlight",
           hasHair: true,
+        },
+      },
+      {
+        info: {
+          id: "ln_Ichika_016",
+          cardName: "[천천히라도 괜찮으니까]",
+          attribute: "cool",
+          gachaType: "통상",
+          gachaPoolName: "눈동자, 높은 곳을 목표로 뽑기",
+          eventName: "이끄는 용기, 다정함을 가슴에",
+          skillType: "퍼스업",
+          releaseDate: "2025-02-10",
+        },
+        media: {
+          gachaBannerPath: "/gachas/25y/banner_25_05_l.png",
+          eventBannerPath: "/events/25y/banner_25_05_l.png",
+          songName: "레굴루스",
+          songJacketPath: "/jacket/25y/Regulus.png",
+        },
+        costume: {
+          hasCostume: true,
+          costumeName: "에이드 유니폼",
         },
       },
       {
@@ -438,7 +387,29 @@ export const IchikaCards = defineCharacterCards(
         costume: {
           hasCostume: true,
           costumeName: "Youthful life",
-          hasHair: false, // 🌟 돌연변이 (헤어 없음)
+          hasHair: false, 
+        },
+      },
+      {
+        info: {
+          id: "ln_Ichika_019",
+          cardName: "[미쿠와의 만남]",
+          attribute: "mysterious",
+          gachaType: "통상",
+          gachaPoolName: "Me and my diva 뽑기",
+          eventName: "This moment with you!",
+          skillType: "퍼스업",
+          releaseDate: "2025-09-20",
+        },
+        media: {
+          gachaBannerPath: "/gachas/25y/banner_25_27_l.png",
+          eventBannerPath: "/events/25y/banner_25_27_l.png",
+          songName: "그럼에도 우리는 노래하기를 그만두지 않아",
+          songJacketPath: "/jacket/25y/Sore_Uta.png",
+        },
+        costume: {
+          hasCostume: true,
+          costumeName: "앰비션 살로페트",
         },
       },
       {
@@ -507,7 +478,51 @@ export const IchikaCards = defineCharacterCards(
         costume: {
           hasCostume: true,
           costumeName: "Sarry Identity",
-          hasHair: false, // 🌟 돌연변이 (헤어 없음)
+          hasHair: false,
+        },
+      },
+      {
+        info: {
+          id: "ln_Ichika_023",
+          cardName: "[비 위드 유]",
+          attribute: "cute",
+          gachaType: "통상",
+          gachaPoolName: "Seeking my way 뽑기",
+          eventName: "Unsteady, still steady step",
+          skillType: "퍼스업",
+          releaseDate: "2026-07-15",
+        },
+        media: {
+          gachaBannerPath: "/gachas/26y/jbanner_26_20_l.png",
+          eventBannerPath: "/events/26y/jbanner_26_20_l.png",
+          songName: "투명한 팔레트",
+          songJacketPath: "/jacket/26y/Transparent_Palette.png",
+        },
+        costume: {
+          hasCostume: true,
+          costumeName: "Worry of walker",
+        },
+      },
+      {
+        info: {
+          id: "ln_Ichika_024",
+          cardName: "[충격의 아침]",
+          attribute: "happy",
+          gachaType: "통상",
+          gachaPoolName: "Follow my heart 뽑기",
+          eventName: "너와 잇는 Heart Beat",
+          skillType: "스업",
+          releaseDate: "2026-10-11",
+        },
+        media: {
+          gachaBannerPath: "/gachas/26y/jbanner_26_28_l.png",
+          eventBannerPath: "/events/26y/jbanner_26_28_l.png",
+          songName: "스타",
+          songJacketPath: "/jacket/26y/Star.png",
+        },
+        costume: {
+          hasCostume: true,
+          costumeName: "Linked March",
         },
       },
       {
@@ -556,29 +571,6 @@ export const IchikaCards = defineCharacterCards(
           hasHair: true,
         },
       },
-    ],
-
-    // 🟣 3. 페스티벌 카드 방
-    fes: [
-      {
-        info: {
-          id: "ln_Ichika_005",
-          cardName: "[예전에 본 밤하늘]",
-          attribute: "cool",
-          gachaType: "페스",
-          gachaPoolName: "컬러풀 페스티벌 뽑기",
-          skillType: "굿스업",
-          releaseDate: "2023-02-06",
-        },
-        media: {
-          gachaBannerPath: "/gachas/23y/banner_23_f03.png",
-        },
-        costume: {
-          hasCostume: true,
-          costumeName: "화이트 하트 카디건",
-          hasHair: true,
-        },
-      },
-    ],
+    ]
   }
 );
