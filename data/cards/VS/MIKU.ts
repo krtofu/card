@@ -116,8 +116,9 @@ const MikuOriginal = defineCharacterCards("버싱", "하츠네 미쿠", "VS", "M
         hasAwakening: false,
       },
       media: {
-        songName: "초 나이트 오브 나이츠",
-        songJacketPath: "/jacket/25y/Cho-Night_of_Knights.png",
+        gachaBannerPath: "/gachas/collab/banner_c5.png",
+        songName: ["초 나이트 오브 나이츠", "동방☆원더랜드", "치르노의 퍼펙트 산수교실"],
+        songJacketPath: ["/jacket/25y/Cho-Night_of_Knights.png", "/jacket/25y/Touhou_Wonderland.png", "/jacket/25y/Cirno-s_Perfect_Math_Academy.png"],
       },
     },
     {
