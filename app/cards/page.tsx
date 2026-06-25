@@ -118,6 +118,10 @@ export default function MyCardsPage() {
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [spinDeg, setSpinDeg] = useState(0);
 
+  // 🌟 [신규 토글 상태] 콜라보 제외 & 미출시 숨기기
+  const [excludeCollab, setExcludeCollab] = useState(false);
+  const [hideUnreleased, setHideUnreleased] = useState(false);
+
   const [isStatusExpanded, setIsStatusExpanded] = useState(true);
   const [isCollabExpanded, setIsCollabExpanded] = useState(true);
   const [isAttrExpanded, setIsAttrExpanded] = useState(true);
@@ -166,19 +170,11 @@ export default function MyCardsPage() {
     setSelectedSkills(isAllSelected ? selectedSkills.filter(id => !condIds.includes(id)) : [...new Set([...selectedSkills, ...condIds])]);
   };
 
-  const collabIds = COLLAB_FILTERS.map(c => c.id);
-  const limitedGroup = ["limited", ...collabIds];
-  const isAllLimitedSelected = limitedGroup.every(id => selectedTypes.includes(id));
-
-  const toggleLimitedGroup = () => {
-    if (isAllLimitedSelected) setSelectedTypes(selectedTypes.filter(id => !limitedGroup.includes(id)));
-    else setSelectedTypes([...new Set([...selectedTypes, ...limitedGroup])]);
-  };
-
   const handleReset = () => {
     setSpinDeg(prev => prev - 360); 
     setSelectedChars([]); setSelectedAttrs([]); setSelectedSkills([]); 
     setSelectedStatuses([]); setSelectedTypes([]); setSelectedHairs([]);
+    setExcludeCollab(false); setHideUnreleased(false);
   };
 
   const allVsCharIds = UNIT_FILTERS.flatMap(u => u.chars.filter(c => c.isVirtual).map(c => c.id));
@@ -193,14 +189,18 @@ export default function MyCardsPage() {
     const specificIds = UNIT_FILTERS.flatMap(u => u.chars).filter(c => c.isVirtual && c.matchKeys?.includes(matchKey)).map(c => c.id);
     const isAllSpecificSelected = specificIds.length > 0 && specificIds.every(id => selectedChars.includes(id));
     
-    if (isAllSpecificSelected) {
-      setSelectedChars(selectedChars.filter(id => !specificIds.includes(id)));
-    } else {
-      setSelectedChars([...new Set([...selectedChars, ...specificIds])]);
-    }
+    if (isAllSpecificSelected) setSelectedChars(selectedChars.filter(id => !specificIds.includes(id)));
+    else setSelectedChars([...new Set([...selectedChars, ...specificIds])]);
   };
 
   const filteredCards = ALL_CARDS.filter(card => {
+    // 🔒 1. 미출시 카드 숨기기 체크
+    if (hideUnreleased && card.releaseDate && new Date(card.releaseDate) > new Date()) return false;
+
+    // 🚫 2. 콜라보 카드 제외 체크
+    if (excludeCollab && card.gachaType === "콜라보") return false;
+
+    // 3. 상태(보유/미보유 등) 체크
     if (selectedStatuses.length > 0) {
       const isOwned = cardStates[card.id]?.isOwned || false;
       const isTarget = cardStates[card.id]?.isTarget || false;
@@ -210,26 +210,35 @@ export default function MyCardsPage() {
       if (!(matchOwned || matchUnowned || matchTarget)) return false;
     }
 
+    // 4. 가챠 타입(통상/한정/콜라보) 체크
     if (selectedTypes.length > 0) {
       const matchNormal = selectedTypes.includes("normal") && card.gachaType === "통상";
       const matchLimited = selectedTypes.includes("limited") && ["한정", "페스", "월링"].includes(card.gachaType);
+      
       let matchCollab = false;
       if (card.gachaType === "콜라보") {
-        matchCollab = COLLAB_FILTERS.some(collab => {
-          if (!selectedTypes.includes(collab.id)) return false;
-          const searchStr = (card.gachaPoolName + " " + card.eventName).toLowerCase();
-          return collab.matchKeys.some(key => searchStr.includes(key.toLowerCase()));
-        });
+        if (selectedTypes.includes("collab_all")) {
+          matchCollab = true;
+        } else {
+          matchCollab = COLLAB_FILTERS.some(collab => {
+            if (!selectedTypes.includes(collab.id)) return false;
+            const searchStr = (card.gachaPoolName + " " + card.eventName).toLowerCase();
+            return collab.matchKeys.some(key => searchStr.includes(key.toLowerCase()));
+          });
+        }
       }
+      
       if (!(matchNormal || matchLimited || matchCollab)) return false;
     }
 
+    // 5. 헤어 여부 체크
     if (selectedHairs.length > 0) {
       const matchHairO = selectedHairs.includes("hair_o") && card.hasHair;
       const matchHairX = selectedHairs.includes("hair_x") && !card.hasHair;
       if (!(matchHairO || matchHairX)) return false;
     }
     
+    // 6. 캐릭터 체크
     if (selectedChars.length > 0) {
       const matchesChar = selectedChars.some(selId => {
         const parentUnit = UNIT_FILTERS.find(u => u.chars.some(c => c.id === selId));
@@ -244,8 +253,8 @@ export default function MyCardsPage() {
           else if (targetUnitId === "mmj" && (cleanUnit.includes("모모점") || cleanUnit.includes("more") || cleanUnit === "mmj")) isCorrectUnit = true;
           else if (targetUnitId === "vbs" && (cleanUnit.includes("비배스") || cleanUnit.includes("vivid") || cleanUnit === "vbs")) isCorrectUnit = true;
           else if (targetUnitId === "wxs" && (cleanUnit.includes("원더쇼") || cleanUnit.includes("wonder") || cleanUnit === "wxs")) isCorrectUnit = true;
-          else if (targetUnitId === "n25" && (cleanUnit.includes("니고") || cleanUnit.includes("25") || cleanUnit === "niigo")) isCorrectUnit = true;
-          else if (targetUnitId === "vs" && (cleanUnit.includes("버싱") || cleanUnit.includes("virtual") || cleanUnit === "")) isCorrectUnit = true;
+          else if (targetUnitId === "n25" && (cleanUnit.includes("니고") || cleanUnit.includes("25") || cleanUnit === "niigo" || cleanUnit === "ng")) isCorrectUnit = true;
+          else if (targetUnitId === "vs" && (cleanUnit.includes("버싱") || cleanUnit.includes("virtual") || cleanUnit === "" || cleanUnit === "vs")) isCorrectUnit = true;
           return isCorrectUnit && charObj.matchKeys.some(key => card.character.includes(key));
         }
         return card.character === charObj.name;
@@ -253,6 +262,7 @@ export default function MyCardsPage() {
       if (!matchesChar) return false;
     }
     
+    // 7. 속성 체크
     if (selectedAttrs.length > 0) {
       const matchesAttr = selectedAttrs.some(selId => {
         const cardAttr = (card.attribute || "").toLowerCase();
@@ -262,6 +272,7 @@ export default function MyCardsPage() {
       if (!matchesAttr) return false;
     }
 
+    // 8. 스킬 체크
     if (selectedSkills.length > 0) {
       const matchesSkill = selectedSkills.some(selId => {
         const targetObj = ALL_SKILL_TARGETS.find(t => t.id === selId);
@@ -317,28 +328,20 @@ export default function MyCardsPage() {
   return (
     <div className="flex flex-col md:flex-row gap-6 px-4 md:px-8 py-6 min-h-screen text-zinc-100 max-w-[1920px] mx-auto w-full">
       
-      <div className={`
-        flex flex-col shrink-0 
-        md:w-[280px] md:relative md:block md:bg-transparent md:p-0 md:h-auto md:z-0
-        ${isMobileFilterOpen ? 'fixed inset-0 z-[100] bg-zinc-950 p-6 overflow-y-auto' : 'hidden'}
-      `}>
+      <div className={`flex flex-col shrink-0 md:w-[280px] md:relative md:block md:bg-transparent md:p-0 md:h-auto md:z-0 ${isMobileFilterOpen ? 'fixed inset-0 z-[100] bg-zinc-950 p-6 overflow-y-auto' : 'hidden'}`}>
         <div className="flex items-center justify-between border-b border-white/10 pb-3 mb-6 md:mb-0">
           <h2 className="text-lg md:text-sm font-bold text-zinc-300 tracking-wider uppercase">🔍 필터</h2>
           <div className="flex items-center gap-3">
-            <button onClick={handleReset} 
-              className="w-8 h-8 md:w-7 md:h-7 flex items-center justify-center rounded-full bg-zinc-900 border border-white/5 text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors text-sm md:text-sm shadow-sm" 
-              title="필터 초기화">
-              <span className="leading-none -mt-[1px] inline-block" style={{ transform: `rotate(${spinDeg}deg)`, transition: 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)' }}>
-                ↺
-              </span>
+            <button onClick={handleReset} className="w-8 h-8 md:w-7 md:h-7 flex items-center justify-center rounded-full bg-zinc-900 border border-white/5 text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors text-sm md:text-sm shadow-sm" title="필터 초기화">
+              <span className="leading-none -mt-[1px] inline-block" style={{ transform: `rotate(${spinDeg}deg)`, transition: 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)' }}>↺</span>
             </button>
-            <button onClick={() => setIsMobileFilterOpen(false)} className="md:hidden w-8 h-8 flex items-center justify-center rounded-full bg-zinc-800 text-white font-bold">
-              ✕
-            </button>
+            <button onClick={() => setIsMobileFilterOpen(false)} className="md:hidden w-8 h-8 flex items-center justify-center rounded-full bg-zinc-800 text-white font-bold">✕</button>
           </div>
         </div>
 
         <div className="space-y-6 md:mt-6">
+          
+          {/* 🌟 1. STATUS 구역 (통상/한정 및 헤어) */}
           <div className="space-y-2">
             <button onClick={() => setIsStatusExpanded(!isStatusExpanded)} className="w-full flex items-center justify-between group pb-1 cursor-pointer">
               <span className="text-[12px] md:text-[11px] font-bold text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-300 transition-colors">STATUS</span>
@@ -364,8 +367,9 @@ export default function MyCardsPage() {
                     className={`relative group aspect-square rounded-full p-1 transition-all duration-300 w-full h-full ${selectedTypes.includes("normal") ? "bg-zinc-800 scale-105" : "bg-zinc-900 scale-[0.85] hover:scale-95"} ${!isAnyTypeSelected || selectedTypes.includes("normal") ? "opacity-100" : "opacity-40 hover:opacity-100"}`}>
                     <img src="/icons/status/normal.png" alt="통상" className="w-full h-full object-contain" />
                   </button>
-                  <button onClick={toggleLimitedGroup}
-                    className={`relative group aspect-square rounded-full p-1 transition-all duration-300 w-full h-full ${isAllLimitedSelected ? "bg-zinc-800 scale-105" : "bg-zinc-900 scale-[0.85] hover:scale-95"} ${!isAnyTypeSelected || isAllLimitedSelected ? "opacity-100" : "opacity-40 hover:opacity-100"}`}>
+                  {/* 🌟 콜라보가 떨어져 나간 순수 '한정' 버튼 */}
+                  <button onClick={() => toggleFilter(selectedTypes, setSelectedTypes, "limited")}
+                    className={`relative group aspect-square rounded-full p-1 transition-all duration-300 w-full h-full ${selectedTypes.includes("limited") ? "bg-zinc-800 scale-105" : "bg-zinc-900 scale-[0.85] hover:scale-95"} ${!isAnyTypeSelected || selectedTypes.includes("limited") ? "opacity-100" : "opacity-40 hover:opacity-100"}`}>
                     <img src="/icons/status/limited.png" alt="한정" className="w-full h-full object-contain" />
                   </button>
                   <button onClick={() => toggleFilter(selectedHairs, setSelectedHairs, "hair_o")}
@@ -381,27 +385,55 @@ export default function MyCardsPage() {
             )}
           </div>
 
+          {/* 🌟 2. 독립된 COLLAB 구역 */}
           <div className="space-y-2 pt-2 border-t border-white/5">
             <button onClick={() => setIsCollabExpanded(!isCollabExpanded)} className="w-full flex items-center justify-between group pt-2 pb-1 cursor-pointer">
               <span className="text-[12px] md:text-[11px] font-bold text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-300 transition-colors">COLLAB</span>
               <span className={`text-[10px] text-zinc-500 transform transition-transform duration-300 ${isCollabExpanded ? 'rotate-0' : '-rotate-90'}`}>▼</span>
             </button>
             {isCollabExpanded && (
-              <div className="grid grid-cols-4 gap-1.5 pt-1">
-                {COLLAB_FILTERS.map(collab => {
-                  const isSelected = selectedTypes.includes(collab.id);
-                  const opacityClass = !isAnyTypeSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100 text-white bg-zinc-900";
-                  return (
-                    <button key={collab.id} onClick={() => toggleFilter(selectedTypes, setSelectedTypes, collab.id)}
-                      className={`py-2.5 md:py-2 px-1 text-[12px] font-bold tracking-tight rounded-lg transition-all duration-300 text-white ${isSelected ? "bg-amber-500/20 text-amber-300 shadow-md border border-amber-500/30 scale-105" : "bg-zinc-900 hover:bg-zinc-800 border border-transparent scale-95"} ${opacityClass}`}>
-                      {collab.name}
-                    </button>
-                  )
-                })}
+              <div className="space-y-2 pt-1">
+                {/* 콜라보 일괄 선택 버튼 */}
+                <button 
+                  onClick={() => {
+                    const allCollabIds = COLLAB_FILTERS.map(c => c.id);
+                    const isAllCollab = selectedTypes.includes("collab_all") || allCollabIds.every(id => selectedTypes.includes(id));
+                    if (isAllCollab) {
+                      setSelectedTypes(selectedTypes.filter(id => id !== "collab_all" && !allCollabIds.includes(id)));
+                    } else {
+                      setSelectedTypes([...new Set([...selectedTypes, "collab_all", ...allCollabIds])]);
+                    }
+                  }}
+                  className={`w-full py-1.5 rounded-lg text-[11px] font-bold transition-all duration-300 border ${
+                    (selectedTypes.includes("collab_all") || COLLAB_FILTERS.every(c => selectedTypes.includes(c.id)))
+                      ? "bg-amber-500/20 text-amber-300 border-amber-400/30 shadow-md scale-100" 
+                      : "bg-zinc-900/80 border-white/5 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800"
+                  }`}
+                >
+                  🤝 콜라보 일괄 선택
+                </button>
+                <div className="grid grid-cols-4 gap-1.5">
+                  {COLLAB_FILTERS.map(collab => {
+                    const isSelected = selectedTypes.includes(collab.id) || selectedTypes.includes("collab_all");
+                    const opacityClass = !isAnyTypeSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100 text-white bg-zinc-900";
+                    return (
+                      <button key={collab.id} onClick={() => {
+                        let nextSelected = [...selectedTypes];
+                        if (nextSelected.includes(collab.id)) nextSelected = nextSelected.filter(id => id !== collab.id && id !== "collab_all");
+                        else nextSelected.push(collab.id);
+                        setSelectedTypes(nextSelected);
+                      }}
+                        className={`py-2.5 md:py-2 px-1 text-[12px] font-bold tracking-tight rounded-lg transition-all duration-300 text-white ${isSelected ? "bg-amber-500/20 text-amber-300 shadow-md border border-amber-500/30 scale-105" : "bg-zinc-900 hover:bg-zinc-800 border border-transparent scale-95"} ${opacityClass}`}>
+                        {collab.name}
+                      </button>
+                    )
+                  })}
+                </div>
               </div>
             )}
           </div>
 
+          {/* 이하 다른 필터들은 기존과 완벽히 동일 (속성, 스킬, 캐릭터) */}
           <div className="space-y-2 pt-2 border-t border-white/5">
             <button onClick={() => setIsAttrExpanded(!isAttrExpanded)} className="w-full flex items-center justify-between group pt-2 pb-1 cursor-pointer">
               <span className="text-[12px] md:text-[11px] font-bold text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-300 transition-colors">ATTRIBUTE</span>
@@ -465,21 +497,17 @@ export default function MyCardsPage() {
             </button>
             {isCharExpanded && (
               <div className="space-y-6 pt-3">
-                
                 <div className="bg-zinc-900/50 p-2 rounded-2xl border border-white/5">
                   <button 
                     onClick={toggleAllVirtualSingers}
                     className={`w-full flex items-center justify-center gap-2 py-2 rounded-xl text-[12px] font-bold transition-all duration-300 border ${
-                      isAllVsSelected 
-                        ? "bg-[#00FFD1]/15 text-[#00FFD1] border-[#00FFD1]/30 shadow-[0_0_10px_rgba(0,255,209,0.1)] scale-100" 
-                        : "bg-zinc-900 border-white/5 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800"
+                      isAllVsSelected ? "bg-[#00FFD1]/15 text-[#00FFD1] border-[#00FFD1]/30 shadow-[0_0_10px_rgba(0,255,209,0.1)] scale-100" : "bg-zinc-900 border-white/5 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800"
                     }`}
                   >
                     <span>🎙️</span>
                     <span>버추얼 싱어 일괄 선택</span>
                   </button>
 
-                  {/* 🌟 버싱 6인방 퍼스널 컬러 적용! */}
                   <div className="grid grid-cols-3 gap-1.5 mt-2">
                     {[
                       { label: "미쿠", key: "미쿠", activeClass: "bg-teal-500/20 text-teal-300 border-teal-400/30 shadow-[0_0_6px_rgba(45,212,191,0.2)] scale-100" },
@@ -495,11 +523,7 @@ export default function MyCardsPage() {
                         <button 
                           key={vs.key}
                           onClick={() => toggleSpecificVS(vs.key)}
-                          className={`py-1.5 rounded-lg text-[11px] font-bold transition-all duration-300 border ${
-                            isAllSpecificSelected 
-                              ? vs.activeClass
-                              : "bg-zinc-900/80 border-white/5 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800"
-                          }`}
+                          className={`py-1.5 rounded-lg text-[11px] font-bold transition-all duration-300 border ${isAllSpecificSelected ? vs.activeClass : "bg-zinc-900/80 border-white/5 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800"}`}
                         >
                           {vs.label}
                         </button>
@@ -544,10 +568,7 @@ export default function MyCardsPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto relative w-full sm:w-auto">
-            <button 
-              onClick={() => setIsMobileFilterOpen(true)}
-              className="md:hidden flex items-center justify-center gap-1.5 h-[34px] px-3 rounded-full bg-zinc-800/80 border border-white/10 text-[12px] font-bold text-zinc-300 hover:text-white transition-colors shadow-sm"
-            >
+            <button onClick={() => setIsMobileFilterOpen(true)} className="md:hidden flex items-center justify-center gap-1.5 h-[34px] px-3 rounded-full bg-zinc-800/80 border border-white/10 text-[12px] font-bold text-zinc-300 hover:text-white transition-colors shadow-sm">
               🔍 필터
             </button>
 
@@ -557,13 +578,8 @@ export default function MyCardsPage() {
                 <span className="text-[10px] text-zinc-500 font-bold pl-2 pr-1 whitespace-nowrap sm:hidden">Lv</span>
                 <div className="flex gap-0.5 pr-0.5">
                   {[1, 2, 3, 4].map(lv => (
-                    <button
-                      key={lv}
-                      onClick={() => setRefSkillLevel(lv)}
-                      className={`w-[24px] h-[24px] flex items-center justify-center rounded-full text-[12px] font-bold transition-all ${
-                        refSkillLevel === lv ? 'bg-sky-500/20 text-sky-300 border border-sky-400/50 scale-105' : 'text-zinc-400 hover:bg-zinc-700 hover:text-zinc-200'
-                      }`}
-                    >
+                    <button key={lv} onClick={() => setRefSkillLevel(lv)}
+                      className={`w-[24px] h-[24px] flex items-center justify-center rounded-full text-[12px] font-bold transition-all ${refSkillLevel === lv ? 'bg-sky-500/20 text-sky-300 border border-sky-400/50 scale-105' : 'text-zinc-400 hover:bg-zinc-700 hover:text-zinc-200'}`}>
                       {lv}
                     </button>
                   ))}
@@ -571,36 +587,52 @@ export default function MyCardsPage() {
               </div>
             )}
 
+            {/* 🌟 기존 정렬 드롭다운 유지 */}
             <div className="relative">
-              <button 
-                onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
-                className="flex items-center justify-center gap-1 h-[34px] px-2 text-[13px] md:text-[14px] font-bold text-zinc-300 hover:text-white transition-colors"
-              >
+              <button onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)} className="flex items-center justify-center gap-1 h-[34px] px-2 text-[13px] md:text-[14px] font-bold text-zinc-300 hover:text-white transition-colors">
                 ⇅ 정렬 ▾
               </button>
-
               {isSortDropdownOpen && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setIsSortDropdownOpen(false)} />
                   <div className="absolute right-0 top-full mt-1 w-[130px] bg-zinc-800 border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden flex flex-col p-1.5 animate-fade-in origin-top-right">
-                    <button onClick={() => { setSortOrder("newest"); setIsSortDropdownOpen(false); }} className={`px-3 py-2 text-[12px] font-bold text-left rounded-lg transition-colors ${sortOrder === "newest" ? "bg-zinc-700 text-white" : "text-zinc-400 hover:bg-zinc-700/50 hover:text-zinc-200"}`}>
-                      ↓ 최신순
-                    </button>
-                    <button onClick={() => { setSortOrder("oldest"); setIsSortDropdownOpen(false); }} className={`px-3 py-2 text-[12px] font-bold text-left rounded-lg transition-colors mt-0.5 ${sortOrder === "oldest" ? "bg-zinc-700 text-white" : "text-zinc-400 hover:bg-zinc-700/50 hover:text-zinc-200"}`}>
-                      ↑ 출시순
-                    </button>
-                    <button onClick={() => { setSortOrder("score"); setIsSortDropdownOpen(false); }} className={`px-3 py-2 text-[12px] font-bold text-left rounded-lg transition-colors mt-0.5 ${sortOrder === "score" ? "bg-zinc-700 text-sky-300" : "text-zinc-400 hover:bg-zinc-700/50 hover:text-zinc-200"}`}>
-                      ⇪ 스업 수치순 (%)
-                    </button>
-                    <button onClick={() => { setSortOrder("bonus"); setIsSortDropdownOpen(false); }} className={`px-3 py-2 text-[12px] font-bold text-left rounded-lg transition-colors mt-0.5 ${sortOrder === "bonus" ? "bg-zinc-700 text-pink-300" : "text-zinc-400 hover:bg-zinc-700/50 hover:text-zinc-200"}`}>
-                      ✦ 이벤포순 (%)
-                    </button>
+                    <button onClick={() => { setSortOrder("newest"); setIsSortDropdownOpen(false); }} className={`px-3 py-2 text-[12px] font-bold text-left rounded-lg transition-colors ${sortOrder === "newest" ? "bg-zinc-700 text-white" : "text-zinc-400 hover:bg-zinc-700/50 hover:text-zinc-200"}`}>↓ 최신순</button>
+                    <button onClick={() => { setSortOrder("oldest"); setIsSortDropdownOpen(false); }} className={`px-3 py-2 text-[12px] font-bold text-left rounded-lg transition-colors mt-0.5 ${sortOrder === "oldest" ? "bg-zinc-700 text-white" : "text-zinc-400 hover:bg-zinc-700/50 hover:text-zinc-200"}`}>↑ 출시순</button>
+                    <button onClick={() => { setSortOrder("score"); setIsSortDropdownOpen(false); }} className={`px-3 py-2 text-[12px] font-bold text-left rounded-lg transition-colors mt-0.5 ${sortOrder === "score" ? "bg-zinc-700 text-sky-300" : "text-zinc-400 hover:bg-zinc-700/50 hover:text-zinc-200"}`}>⇪ 스업 수치순 (%)</button>
+                    <button onClick={() => { setSortOrder("bonus"); setIsSortDropdownOpen(false); }} className={`px-3 py-2 text-[12px] font-bold text-left rounded-lg transition-colors mt-0.5 ${sortOrder === "bonus" ? "bg-zinc-700 text-pink-300" : "text-zinc-400 hover:bg-zinc-700/50 hover:text-zinc-200"}`}>✦ 이벤포순 (%)</button>
                   </div>
                 </>
               )}
             </div>
 
-            <button onClick={() => setShowPostAwake(!showPostAwake)} className="p-1 rounded-full bg-zinc-900 border border-white/10 shrink-0" aria-label="썸네일 전환">
+            {/* 🌟 신규 토글: 미출시 숨김 & 콜라보 제외 (PC 버전) */}
+            <button 
+              onClick={() => setHideUnreleased(!hideUnreleased)}
+              className={`hidden sm:flex items-center gap-1.5 h-[34px] px-3 rounded-full text-[12px] font-bold transition-all shadow-sm border ${
+                hideUnreleased ? 'bg-indigo-500/20 text-indigo-300 border-indigo-400/50' : 'bg-zinc-800/80 border-white/10 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-700'
+              }`}
+            >
+              {hideUnreleased ? '🔒 미출시 숨김' : '🔓 미출시 포함'}
+            </button>
+            <button 
+              onClick={() => setExcludeCollab(!excludeCollab)}
+              className={`hidden sm:flex items-center gap-1.5 h-[34px] px-3 rounded-full text-[12px] font-bold transition-all shadow-sm border ${
+                excludeCollab ? 'bg-red-500/20 text-red-300 border-red-400/50' : 'bg-zinc-800/80 border-white/10 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-700'
+              }`}
+            >
+              {excludeCollab ? '🚫 콜라보 제외' : '🤝 콜라보 포함'}
+            </button>
+
+            {/* 🌟 신규 토글 (모바일 아이콘 버전) */}
+            <button onClick={() => setHideUnreleased(!hideUnreleased)} className={`sm:hidden flex items-center justify-center w-[34px] h-[34px] rounded-full text-[14px] transition-all shadow-sm border ${hideUnreleased ? 'bg-indigo-500/20 text-indigo-300 border-indigo-400/50' : 'bg-zinc-800/80 border-white/10 text-zinc-400'}`} title="미출시 숨기기">
+              {hideUnreleased ? '🔒' : '🔓'}
+            </button>
+            <button onClick={() => setExcludeCollab(!excludeCollab)} className={`sm:hidden flex items-center justify-center w-[34px] h-[34px] rounded-full text-[14px] transition-all shadow-sm border ${excludeCollab ? 'bg-red-500/20 text-red-300 border-red-400/50' : 'bg-zinc-800/80 border-white/10 text-zinc-400'}`} title="콜라보 제외">
+              {excludeCollab ? '🚫' : '🤝'}
+            </button>
+
+            {/* 기존 썸네일 버튼 */}
+            <button onClick={() => setShowPostAwake(!showPostAwake)} className="p-1 rounded-full bg-zinc-900 border border-white/10 shrink-0 ml-auto sm:ml-0" aria-label="썸네일 전환">
               <img src={showPostAwake ? "/icons/post_star.png" : "/icons/pre_star.png"} alt="스위치" className="h-8 w-auto object-contain block" />
             </button>
           </div>
@@ -618,6 +650,9 @@ export default function MyCardsPage() {
               const levelToUse = isOwned ? (userState?.skillLevel || 1) : refSkillLevel;
               const currentScoreBonus = getSkillBonusPercentage(card.skillType, levelToUse, card.unit);
               
+              // 🇰🇷 그리드에도 출시 여부 판단 로직 추가
+              const isReleased = card.releaseDate ? new Date(card.releaseDate) <= new Date() : false;
+
               return (
                 <div key={card.id} onClick={() => setActiveModalCard(card)} className="relative p-1 cursor-pointer transition-all hover:scale-[1.05] flex flex-col items-center text-center group min-w-0">
                   <div className="relative h-[100px] w-fit flex justify-center">
@@ -627,35 +662,26 @@ export default function MyCardsPage() {
                   
                   <div className="mt-2.5 h-[36px] flex flex-col items-center justify-start w-full px-1">
                     {sortOrder === "score" ? (
-                      <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md shadow-sm mt-1 transition-all ${
-                        isOwned ? "bg-zinc-900/90 border border-[#00FFD1]/70 shadow-[0_0_8px_rgba(0,255,209,0.25)]" : 
-                        isTarget ? "bg-zinc-900/90 border border-pink-400/70 shadow-[0_0_8px_rgba(244,114,182,0.25)]" : 
-                        "bg-zinc-900/80 border border-white/5"
-                      }`}>
+                      <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md shadow-sm mt-1 transition-all ${isOwned ? "bg-zinc-900/90 border border-[#00FFD1]/70 shadow-[0_0_8px_rgba(0,255,209,0.25)]" : isTarget ? "bg-zinc-900/90 border border-pink-400/70 shadow-[0_0_8px_rgba(244,114,182,0.25)]" : "bg-zinc-900/80 border border-white/5"}`}>
                         <img src={getSkillIconPath(card.skillType)} className="w-[14px] h-[14px] object-contain drop-shadow-sm" alt="스킬" />
                         <span className="text-[12px] font-bold text-sky-300 tracking-tight">{currentScoreBonus}%</span>
                       </div>
                     ) : sortOrder === "bonus" ? (
-                      <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md shadow-sm mt-1 transition-all ${
-                        isOwned ? "bg-pink-950/40 border border-[#00FFD1]/70 shadow-[0_0_8px_rgba(0,255,209,0.25)]" : 
-                        isTarget ? "bg-pink-950/40 border border-pink-400/70 shadow-[0_0_8px_rgba(244,114,182,0.25)]" : 
-                        "bg-pink-950/30 border border-pink-500/20"
-                      }`}>
+                      <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md shadow-sm mt-1 transition-all ${isOwned ? "bg-pink-950/40 border border-[#00FFD1]/70 shadow-[0_0_8px_rgba(0,255,209,0.25)]" : isTarget ? "bg-pink-950/40 border border-pink-400/70 shadow-[0_0_8px_rgba(244,114,182,0.25)]" : "bg-pink-950/30 border border-pink-500/20"}`}>
                         <span className="text-[11px] drop-shadow-sm">🌟</span>
                         <span className="text-[12px] font-bold text-pink-300 tracking-tight">{getMockEventBonus(card)}%</span>
                       </div>
                     ) : (
                       <>
-                        <p className={`text-[11px] font-semibold truncate w-full max-w-[100px] transition-colors ${
-                          isOwned ? "text-[#00FFD1]" : isTarget ? "text-pink-400" : "text-zinc-200 group-hover:text-white"
-                        }`}>
-                          {card.cardName}
+                        <p className={`text-[11px] font-semibold truncate w-full max-w-[100px] transition-colors flex items-center justify-center gap-0.5 ${isOwned ? "text-[#00FFD1]" : isTarget ? "text-pink-400" : "text-zinc-200 group-hover:text-white"}`}>
+                          <span className="truncate">{card.cardName}</span>
+                          {/* 🇰🇷 한섭 출시 완료 뱃지 */}
+                          {isReleased && <span className="text-[10px] shrink-0 drop-shadow-sm" title="한국 서버 출시됨">🇰🇷</span>}
                         </p>
                         <p className="text-[10px] text-zinc-500 mt-0.5 truncate w-full max-w-[100px]">{card.character}</p>
                       </>
                     )}
                   </div>
-
                 </div>
               );
             })}

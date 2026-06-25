@@ -29,11 +29,16 @@ export default function CardDetailModal({
   const hasCostume = !!card.costume;
   const attribute = card.attribute || "속성";
 
-  const songName = card.songName || ""; 
-  const songJacket = card.songJacketPath || ""; 
-  const hasSong = !!songName || !!songJacket;
+  // 🌟 [다중 악곡 대응] 문자열이든 배열이든 무조건 배열로 변환해서 처리!
+  const songNames = Array.isArray(card.songName) ? card.songName : (card.songName ? [card.songName] : []);
+  const songJackets = Array.isArray(card.songJacketPath) ? card.songJacketPath : (card.songJacketPath ? [card.songJacketPath] : []);
+  const hasSong = songNames.length > 0 || songJackets.length > 0;
   
   const hasEvent = !!card.eventName;
+  const hasGacha = !!card.gachaPoolName; // 👈 극장판 노배너 픽스를 위한 변수
+
+  // 🇰🇷 [출시일 체크] 오늘 날짜 기준으로 출시되었는지 확인 (시간 오차 방지를 위해 날짜만 비교)
+  const isReleased = card.releaseDate ? new Date(card.releaseDate) <= new Date() : false;
 
   const costumePreviewData = hasCostume && card.costume ? {
     title: card.cardName,
@@ -117,7 +122,6 @@ export default function CardDetailModal({
     return card.iconPath || ""; 
   };
 
-  // 🌟 [추가된 꿀기능] 카드 정보의 유닛 이름을 식별해서 로고 이미지 파일 매핑하기
   const getUnitLogo = (unitName: string) => {
     if (!unitName) return "";
     const lowerUnit = unitName.toLowerCase();
@@ -139,7 +143,7 @@ export default function CardDetailModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md transition-opacity">
       <div className="absolute inset-0" onClick={onClose} />
 
-      <div className="relative w-full max-w-5xl max-h-[95vh] overflow-y-auto rounded-3xl border border-white/10 bg-zinc-950 p-6 shadow-2xl transition-all flex flex-col gap-6 custom-scrollbar">
+      <div className="relative w-full max-w-6xl max-h-[95vh] overflow-y-auto rounded-3xl border border-white/10 bg-zinc-950 p-6 shadow-2xl transition-all flex flex-col gap-6 custom-scrollbar">
         
         <button 
           onClick={onClose}
@@ -150,28 +154,42 @@ export default function CardDetailModal({
 
         {/* 🌌 상단 배너 구역 */}
         <div className="relative -mx-6 -mt-6 h-64 md:h-[360px] shrink-0 flex overflow-hidden border-b border-white/10 bg-zinc-900">
-          <div className="relative h-full flex-1 hover:flex-[3] max-w-[455px] md:max-w-[604px] transition-all duration-700 ease-in-out overflow-hidden group/pre z-10 hover:z-20">
-            <img src={preIllustration} alt="특훈 전 일러스트" className="absolute left-0 top-0 h-full aspect-[16/9] max-w-none object-cover object-center" />
-            <div className="absolute bottom-4 left-5 inline-flex items-center rounded-full border border-white/20 bg-black/60 px-2.5 py-1 text-[10px] font-semibold text-zinc-100 backdrop-blur-md pointer-events-none tracking-wider shadow-md">특훈 전</div>
-          </div>
-          <div className="relative h-full flex-1 hover:flex-[3] max-w-[455px] md:max-w-[604px] transition-all duration-700 ease-in-out overflow-hidden group/post z-10 hover:z-20 border-l border-white/10">
-            <img src={postIllustration} alt="특훈 후 일러스트" className="absolute right-0 top-0 h-full aspect-[16/9] max-w-none object-cover object-center" />
-            <div className="absolute bottom-4 right-5 inline-flex items-center rounded-full border border-cyan-400/20 bg-black/60 px-2.5 py-1 text-[10px] font-semibold text-cyan-300 backdrop-blur-md pointer-events-none tracking-wider shadow-md">특훈 후</div>
-          </div>
+          {card.hasAwakening ? (
+            // 일반 카드: 반반 스플릿
+            <>
+              <div className="relative h-full flex-1 hover:flex-[3] max-w-[455px] md:max-w-[604px] transition-all duration-700 ease-in-out overflow-hidden group/pre z-10 hover:z-20">
+                <img src={preIllustration} alt="특훈 전 일러스트" className="absolute left-0 top-0 h-full aspect-[16/9] max-w-none object-cover object-center" />
+                <div className="absolute bottom-4 left-5 inline-flex items-center rounded-full border border-white/20 bg-black/60 px-2.5 py-1 text-[10px] font-semibold text-zinc-100 backdrop-blur-md pointer-events-none tracking-wider shadow-md">특훈 전</div>
+              </div>
+              <div className="relative h-full flex-1 hover:flex-[3] max-w-[455px] md:max-w-[604px] transition-all duration-700 ease-in-out overflow-hidden group/post z-10 hover:z-20 border-l border-white/10">
+                <img src={postIllustration} alt="특훈 후 일러스트" className="absolute right-0 top-0 h-full aspect-[16/9] max-w-none object-cover object-center" />
+                <div className="absolute bottom-4 right-5 inline-flex items-center rounded-full border border-cyan-400/20 bg-black/60 px-2.5 py-1 text-[10px] font-semibold text-cyan-300 backdrop-blur-md pointer-events-none tracking-wider shadow-md">특훈 후</div>
+              </div>
+            </>
+          ) : (
+            // 🌟 [추가됨] 특훈 X 카드: 일러스트 1장 풀사이즈
+            <div className="relative h-full w-full flex justify-center overflow-hidden z-10">
+              <img src={preIllustration} alt="일러스트" className="h-full w-full object-cover object-center" />
+              <div className="absolute bottom-4 left-5 inline-flex items-center rounded-full border border-white/20 bg-black/60 px-3 py-1.5 text-xs font-semibold text-zinc-100 backdrop-blur-md pointer-events-none tracking-wider shadow-md">일러스트</div>
+            </div>
+          )}
         </div>
 
         {/* 📝 하단부 상세정보 구역 */}
         <div className="flex flex-col md:flex-row gap-8 pt-2 shrink-0">
           
-          <div className="flex-1 flex flex-col gap-6">
+          <div className="flex-[3] flex flex-col gap-6">
             <div className="flex items-start justify-between gap-4 w-full mt-1 border-b border-white/5 pb-5">
               
-              {/* 🌟 [유닛 뱃지 반영완료] 카드 이름 왼쪽에 이쁘게 로고가 배치됩니다! */}
+              {/* 🌟 [수정됨] 로고 크기 28px 확대! 🇰🇷 국기 뱃지 반영! */}
               <div className="flex flex-wrap items-center gap-2.5">
                 {getUnitLogo(card.unit || "") && (
-                  <img src={getUnitLogo(card.unit || "")} alt={card.unit} className="h-[22px] w-auto object-contain drop-shadow-md" />
+                  <img src={getUnitLogo(card.unit || "")} alt={card.unit} className="h-[28px] w-auto object-contain drop-shadow-md" />
                 )}
-                <h2 className="text-xl font-bold text-zinc-100">{card.cardName}</h2>
+                <h2 className="text-xl font-bold text-zinc-100 flex items-center gap-1.5">
+                  {card.cardName}
+                  {isReleased && <span className="text-[16px] drop-shadow-sm" title="한국 서버 출시됨">🇰🇷</span>}
+                </h2>
                 <span className="text-xl font-bold text-zinc-100">{card.character}</span>
               </div>
               
@@ -223,27 +241,36 @@ export default function CardDetailModal({
               </div>
             </div>
 
-            {/* 🎲 1. 관련 뽑기 (생략 없이 완벽 보존) */}
+            {/* 🎲 1. 관련 뽑기 (극장판 등 노 배너 버그 해결) */}
             <div className="flex gap-3.5">
               <div className="w-10 h-10 rounded-full bg-zinc-900 border border-white/10 shrink-0 overflow-hidden flex items-center justify-center">
                 <img src={characterIconPath} alt="Character Icon" className="w-full h-full object-contain" />
               </div>
               <div className="flex-1 flex flex-col gap-2">
                 <span className="font-bold text-zinc-200 text-sm mt-0.5">관련 뽑기</span>
-                <div className="w-full max-w-[480px] bg-zinc-900 border border-white/5 rounded-xl overflow-hidden flex items-center justify-center shadow-sm">
-                  {card.gachaBannerPath ? (
-                    <img src={card.gachaBannerPath} alt="Gacha Banner" className="w-full h-auto block" />
-                  ) : (
-                    <div className="w-full h-24 sm:h-28 flex items-center justify-center">
-                      <span className="text-zinc-600 text-xs">No Banner</span>
+                {hasGacha ? (
+                  <>
+                    <div className="w-full max-w-[480px] bg-zinc-900 border border-white/5 rounded-xl overflow-hidden flex items-center justify-center shadow-sm">
+                      {card.gachaBannerPath ? (
+                        <img src={card.gachaBannerPath} alt="Gacha Banner" className="w-full h-auto block" />
+                      ) : (
+                        <div className="w-full h-24 sm:h-28 flex items-center justify-center">
+                          <span className="text-zinc-600 text-xs">No Banner</span>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-                <span className="text-xs text-zinc-400 font-medium">({card.gachaPoolName})</span>
+                    <span className="text-xs text-zinc-400 font-medium">({card.gachaPoolName})</span>
+                  </>
+                ) : (
+                  <div className="w-full max-w-[480px] h-24 sm:h-28 bg-zinc-900/30 border border-white/10 border-dashed rounded-xl flex flex-col items-center justify-center gap-2">
+                    <span className="text-xl opacity-50">💸</span>
+                    <span className="text-[11px] text-zinc-500 font-medium tracking-wide">관련 뽑기 없음</span>
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* 🎪 2. 관련 이벤트 (생략 없이 완벽 보존) */}
+            {/* 🎪 2. 관련 이벤트 */}
             <div className="flex gap-3.5 pt-2">
               <div className="w-10 h-10 rounded-full bg-zinc-900 border border-white/10 shrink-0 overflow-hidden flex items-center justify-center">
                 <span className="text-zinc-500 text-lg">🎪</span>
@@ -272,7 +299,7 @@ export default function CardDetailModal({
               </div>
             </div>
 
-            {/* 💿 3. 관련 악곡 (생략 없이 완벽 보존) */}
+            {/* 💿 3. 관련 악곡 (다중 악곡 배열 대응) */}
             <div className="flex gap-3.5 pt-2">
               <div className="w-10 h-10 rounded-full bg-zinc-900 border border-white/10 shrink-0 overflow-hidden flex items-center justify-center">
                 <span className="text-zinc-500 text-lg">🎵</span>
@@ -280,12 +307,18 @@ export default function CardDetailModal({
               <div className="flex-1 flex flex-col gap-2">
                 <span className="font-bold text-zinc-200 text-sm mt-0.5">관련 악곡</span>
                 {hasSong ? (
-                  <>
-                    <div className="w-28 sm:w-36 bg-zinc-900 border border-white/5 rounded-xl overflow-hidden flex items-center justify-center shadow-sm shrink-0">
-                      <img src={card.songJacketPath} alt="Song Jacket" className="w-full h-auto block" />
-                    </div>
-                    <span className="text-xs text-zinc-400 font-medium">{songName}</span>
-                  </>
+                  <div className="flex flex-wrap gap-4">
+                    {songJackets.map((jacket, idx) => (
+                      <div key={idx} className="flex flex-col gap-2 items-center">
+                        <div className="w-28 sm:w-36 bg-zinc-900 border border-white/5 rounded-xl overflow-hidden shadow-sm shrink-0">
+                          <img src={jacket} alt="Song Jacket" className="w-full h-auto block" />
+                        </div>
+                        <span className="text-[11px] sm:text-xs text-zinc-400 font-medium max-w-[112px] sm:max-w-[144px] text-center truncate">
+                          {songNames[idx] || ""}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 ) : (
                   <div className="w-28 sm:w-36 h-28 sm:h-36 bg-zinc-900/30 border border-white/10 border-dashed rounded-xl flex flex-col items-center justify-center gap-2 shrink-0">
                     <span className="text-2xl opacity-50">💿</span>
@@ -296,8 +329,11 @@ export default function CardDetailModal({
             </div>
           </div>
 
-          {/* 👉 우측 영역: 카드 상태 및 의상 프리뷰 컨트롤러 (생략 없이 완벽 보존) */}
-          <div className="w-full md:w-80 shrink-0 flex flex-col gap-6 self-start">
+          {/* 🌟 [추가됨] 좌/우를 가르는 성스러운 반투명 세로선 */}
+          <div className="hidden md:block w-px bg-white/5 mx-2 self-stretch rounded-full" />
+
+          {/* 👉 우측 영역: 카드 상태 및 의상 프리뷰 컨트롤러 (유저님 포맷 복구) */}
+          <div className="flex-[2] min-w-[320px] max-w-[380px] shrink-0 flex flex-col gap-6 self-start">
             <div className="bg-zinc-950/50 border border-white/5 rounded-2xl p-4 flex flex-col justify-between gap-4">
               <div className="flex items-start justify-between gap-3 pb-2 border-b border-white/5">
                 <div className="min-w-0 flex-1 flex items-baseline">

@@ -11,24 +11,24 @@ export type CardInfoGroup = {
   gachaPoolName: string;    
   eventName?: string;        
   skillType: string;        
-  releaseDate: string;      // 👈 [추가됨!] 출시일 (예: "2020-09-30")
+  releaseDate: string;      
+  hasAwakening?: boolean;   // 👈 [추가됨!] 특훈(각성) 여부 (생일/1,2성 등 일러 1장짜리 처리용)
 };
 
 export type CardMediaGroup = {
   gachaBannerPath?: string; 
   eventBannerPath?: string; 
-  songName?: string;        
-  songJacketPath?: string;  
+  songName?: string | string[];       // 👈 [추가됨!] 악곡 여러 개 배열 지원
+  songJacketPath?: string | string[]; // 👈 [추가됨!] 자켓 여러 개 배열 지원
 };
 
 export type CardCostumeGroup = {
   hasCostume?: boolean;     
   costumeName?: string;
   hasHair?: boolean;        
-  isMovieStyle?: boolean;
+  isMovieStyle?: boolean;   // 👈 극장판 예외 처리용
 };
 
-// 🌟 [방별 입력 양식 통합] - 이제 normal, limited 등 나눌 필요 없이 하나로 끝!
 export type RawCardInput = { 
   info: CardInfoGroup; 
   media?: CardMediaGroup; 
@@ -42,7 +42,6 @@ export type CostumeSetPaths = {
   back: string;  
 };
 
-// 🌟 [앱 전체가 사용하는 최종 완성형 데이터 뼈대]
 export type FinalCardInfo = {
   id: string;
   unit: UnitName;           
@@ -54,6 +53,7 @@ export type FinalCardInfo = {
   eventName: string;
   skillType: string;        
   releaseDate: string;      
+  hasAwakening: boolean;    // 👈 최종 데이터에도 반영
 
   thumbPrePath: string;     
   thumbPostPath: string;    
@@ -63,8 +63,8 @@ export type FinalCardInfo = {
 
   gachaBannerPath?: string;
   eventBannerPath?: string;
-  songName?: string;
-  songJacketPath?: string;
+  songName?: string | string[];
+  songJacketPath?: string | string[];
 
   costume?: {
     name: string;
@@ -74,17 +74,15 @@ export type FinalCardInfo = {
   hasHair: boolean;         
 };
 
-// 🌟 [하이브리드 데이터 조립 통합 엔진] 
 export function defineCharacterCards(
   unit: UnitName,
   character: CharacterName,
   unitFolder: string,       
   characterFolder: string,  
   data: {
-    cards: RawCardInput[]; // 👈 기존 3개 방을 cards 방 하나로 통합!
+    cards: RawCardInput[]; 
   }
 ): FinalCardInfo[] {
-  // 이제 합칠 필요 없이 data.cards를 바로 사용합니다.
   return data.cards.map((card) => {
     const { info, media, costume } = card;
     const folderBase = `/cards/${unitFolder}/${characterFolder}/${info.id}`;
@@ -117,8 +115,7 @@ export function defineCharacterCards(
       const vsBase = vsMap[cleanCharName];
       let suffix = "_0";
       
-      // 🌟 아까 맞췄던 wds, ng 유닛 약자 규칙을 아이콘 매핑에도 완벽 반영!
-      if (cleanUnitName.includes("레오니") || cleanUnitName.includes("leo") || cleanUnitName === "ln") suffix = "_l";
+      if (cleanUnitName.includes("레오니") || cleanUnitName.includes("leo") || cleanUnitName === "l/n") suffix = "_l";
       else if (cleanUnitName.includes("모모점") || cleanUnitName.includes("more") || cleanUnitName === "mmj") suffix = "_m";
       else if (cleanUnitName.includes("비배스") || cleanUnitName.includes("vivid") || cleanUnitName === "vbs") suffix = "_v";
       else if (cleanUnitName.includes("원더쇼") || cleanUnitName.includes("wonder") || cleanUnitName === "wds") suffix = "_w";
@@ -129,8 +126,12 @@ export function defineCharacterCards(
 
     let costumeData = undefined;
     if (costume?.hasCostume && costume.costumeName) {
+      // 🌟 [핵심 수정] 극장판(의상 2개) 예외 처리! isMovieStyle이면 어나더를 1개만 만듭니다!
+      const isMovie = costume.isMovieStyle;
+      const numSets = isMovie ? 2 : 4; 
       const labels = ["기본", "어나더 1", "어나더 2", "어나더 3"];
-      const sets: CostumeSetPaths[] = labels.map((label, index) => ({
+      
+      const sets: CostumeSetPaths[] = labels.slice(0, numSets).map((label, index) => ({
         key: index === 0 ? "base" : `another${index}`,
         label,
         front: `${folderBase}/c_front_${index}.png`,
@@ -150,6 +151,7 @@ export function defineCharacterCards(
       eventName: info.eventName || "",
       skillType: info.skillType,
       releaseDate: info.releaseDate, 
+      hasAwakening: info.hasAwakening ?? true, // 👈 값이 없으면 기본적으로 특훈O(true)
       
       thumbPrePath,  
       thumbPostPath, 
