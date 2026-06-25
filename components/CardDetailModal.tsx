@@ -3,6 +3,7 @@
 import { FinalCardInfo } from "@/data/cards/template";
 import { UserCardState } from "@/app/cards/page";
 import ModalCostumePreviewCard from "@/components/ModalCostumePreviewCard";
+import { useState } from "react"; 
 
 interface CardDetailModalProps {
   card: FinalCardInfo | null;
@@ -17,27 +18,26 @@ export default function CardDetailModal({
   onUpdateState,
   onClose,
 }: CardDetailModalProps) {
+  // 🌟 [신규 상태] 넓게 보기 모드 활성화 여부
+  const [isExpandMode, setIsExpandMode] = useState(false);
+
   if (!card) return null;
 
   const postIllustration = card.thumbPostPath 
-    ? card.thumbPostPath.replace("thumb_post.png", "post.png") 
-    : "";
+    ? card.thumbPostPath.replace("thumb_post.png", "post.png") : "";
   const preIllustration = card.thumbPostPath 
-    ? card.thumbPostPath.replace("thumb_post.png", "pre.png") 
-    : "";
+    ? card.thumbPostPath.replace("thumb_post.png", "pre.png") : "";
 
   const hasCostume = !!card.costume;
   const attribute = card.attribute || "속성";
 
-  // 🌟 [다중 악곡 대응] 문자열이든 배열이든 무조건 배열로 변환해서 처리!
   const songNames = Array.isArray(card.songName) ? card.songName : (card.songName ? [card.songName] : []);
   const songJackets = Array.isArray(card.songJacketPath) ? card.songJacketPath : (card.songJacketPath ? [card.songJacketPath] : []);
   const hasSong = songNames.length > 0 || songJackets.length > 0;
   
   const hasEvent = !!card.eventName;
-  const hasGacha = !!card.gachaPoolName; // 👈 극장판 노배너 픽스를 위한 변수
+  const hasGacha = !!card.gachaPoolName; 
 
-  // 🇰🇷 [출시일 체크] 오늘 날짜 기준으로 출시되었는지 확인 (시간 오차 방지를 위해 날짜만 비교)
   const isReleased = card.releaseDate ? new Date(card.releaseDate) <= new Date() : false;
 
   const costumePreviewData = hasCostume && card.costume ? {
@@ -47,10 +47,7 @@ export default function CardDetailModal({
       {
         name: card.character,
         sets: card.costume.sets.map((set) => ({
-          key: set.key,
-          label: set.label,
-          front: [set.front], 
-          back: [set.back]
+          key: set.key, label: set.label, front: [set.front], back: [set.back]
         }))
       }
     ]
@@ -98,12 +95,8 @@ export default function CardDetailModal({
     if (originalMap[charName]) return `/icons/characters/${originalMap[charName]}.png`;
 
     const vsMap: Record<string, string> = {
-      "하츠네 미쿠": "MIKU", "미쿠": "MIKU",
-      "카가미네 린": "RIN", "린": "RIN",
-      "카가미네 렌": "REN", "렌": "REN",
-      "메구리네 루카": "LUKA", "루카": "LUKA",
-      "MEIKO": "MEIKO", "메이코": "MEIKO",
-      "KAITO": "KAITO", "카이토": "KAITO"
+      "하츠네 미쿠": "MIKU", "미쿠": "MIKU", "카가미네 린": "RIN", "린": "RIN", "카가미네 렌": "REN", "렌": "REN",
+      "메구리네 루카": "LUKA", "루카": "LUKA", "MEIKO": "MEIKO", "메이코": "MEIKO", "KAITO": "KAITO", "카이토": "KAITO"
     };
 
     if (vsMap[charName]) {
@@ -118,7 +111,6 @@ export default function CardDetailModal({
 
       return `/icons/characters/${vsBase}${suffix}.png`;
     }
-
     return card.iconPath || ""; 
   };
 
@@ -143,19 +135,15 @@ export default function CardDetailModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md transition-opacity">
       <div className="absolute inset-0" onClick={onClose} />
 
-      <div className="relative w-full max-w-6xl max-h-[95vh] overflow-y-auto rounded-3xl border border-white/10 bg-zinc-950 p-6 shadow-2xl transition-all flex flex-col gap-6 custom-scrollbar">
+      <div className={`relative w-full ${isExpandMode ? 'max-w-[95vw] h-[95vh] p-0 overflow-hidden' : 'max-w-6xl max-h-[95vh] overflow-y-auto p-6'} rounded-3xl border border-white/10 bg-zinc-950 shadow-2xl transition-all flex flex-col custom-scrollbar`}>
         
-        <button 
-          onClick={onClose}
-          className="absolute top-4 right-4 z-30 w-8 h-8 rounded-full bg-black/60 border border-white/10 flex items-center justify-center text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all text-sm backdrop-blur-md"
-        >
+        <button onClick={onClose} className="absolute top-4 right-4 z-40 w-8 h-8 rounded-full bg-black/60 border border-white/10 flex items-center justify-center text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all text-sm backdrop-blur-md">
           ✕
         </button>
 
         {/* 🌌 상단 배너 구역 */}
-        <div className="relative -mx-6 -mt-6 h-64 md:h-[360px] shrink-0 flex overflow-hidden border-b border-white/10 bg-zinc-900">
+        <div className={`relative ${isExpandMode ? '-mx-0 -mt-0 h-full' : '-mx-6 -mt-6 h-64 md:h-[360px] border-b border-white/10'} shrink-0 flex overflow-hidden bg-zinc-900 transition-all duration-500 ease-in-out`}>
           {card.hasAwakening ? (
-            // 일반 카드: 반반 스플릿
             <>
               <div className="relative h-full flex-1 hover:flex-[3] max-w-[455px] md:max-w-[604px] transition-all duration-700 ease-in-out overflow-hidden group/pre z-10 hover:z-20">
                 <img src={preIllustration} alt="특훈 전 일러스트" className="absolute left-0 top-0 h-full aspect-[16/9] max-w-none object-cover object-center" />
@@ -167,21 +155,27 @@ export default function CardDetailModal({
               </div>
             </>
           ) : (
-            // 🌟 [추가됨] 특훈 X 카드: 일러스트 1장 풀사이즈
             <div className="relative h-full w-full flex justify-center overflow-hidden z-10">
-              <img src={preIllustration} alt="일러스트" className="h-full w-full object-cover object-center" />
-              <div className="absolute bottom-4 left-5 inline-flex items-center rounded-full border border-white/20 bg-black/60 px-3 py-1.5 text-xs font-semibold text-zinc-100 backdrop-blur-md pointer-events-none tracking-wider shadow-md">일러스트</div>
+              <img src={preIllustration} alt="일러스트" className={`h-full w-full ${isExpandMode ? 'object-contain' : 'object-cover'} object-center transition-all duration-500`} />
+              <div className={`absolute bottom-4 left-5 inline-flex items-center rounded-full border border-white/20 bg-black/60 px-3 py-1.5 text-xs font-semibold text-zinc-100 backdrop-blur-md pointer-events-none tracking-wider shadow-md ${isExpandMode ? 'opacity-0' : 'opacity-100'}`}>일러스트</div>
+              
+              <button
+                onClick={() => setIsExpandMode(!isExpandMode)}
+                className="absolute bottom-4 right-4 z-30 w-10 h-10 rounded-xl bg-black/60 border border-white/10 flex items-center justify-center text-white backdrop-blur-sm hover:bg-zinc-800 transition-all text-xl shadow-lg active:scale-95"
+                title={isExpandMode ? "축소하기" : "넓게 보기"}
+              >
+                {isExpandMode ? "⇱" : "⇲"}
+              </button>
             </div>
           )}
         </div>
 
         {/* 📝 하단부 상세정보 구역 */}
-        <div className="flex flex-col md:flex-row gap-8 pt-2 shrink-0">
+        <div className={`flex flex-col md:flex-row gap-8 pt-2 shrink-0 ${isExpandMode ? 'hidden' : 'mt-6'}`}>
           
           <div className="flex-[3] flex flex-col gap-6">
             <div className="flex items-start justify-between gap-4 w-full mt-1 border-b border-white/5 pb-5">
               
-              {/* 🌟 [수정됨] 로고 크기 28px 확대! 🇰🇷 국기 뱃지 반영! */}
               <div className="flex flex-wrap items-center gap-2.5">
                 {getUnitLogo(card.unit || "") && (
                   <img src={getUnitLogo(card.unit || "")} alt={card.unit} className="h-[28px] w-auto object-contain drop-shadow-md" />
@@ -194,54 +188,40 @@ export default function CardDetailModal({
               </div>
               
               <div className="flex flex-wrap items-center justify-end gap-1.5 shrink-0">
-                {/* ✨ 1. 스킬 뱃지 */}
                 {skillInfo.src ? (
                   <div className="relative group flex items-center justify-center cursor-help">
                     <img src={skillInfo.src} alt={skillInfo.label} className="w-[26px] h-[26px] object-contain drop-shadow-md shrink-0" />
                     <div className="pointer-events-none absolute bottom-full mb-3 left-1/2 -translate-x-1/2 opacity-0 transition-all duration-200 group-hover:opacity-100 z-50">
                       <div className="relative flex flex-col items-center">
-                        <div className="relative z-10 whitespace-nowrap rounded-md border border-zinc-600 bg-zinc-950 px-2.5 py-1.5 text-[11px] font-bold text-zinc-200 shadow-xl">
-                          {skillInfo.label}
-                        </div>
+                        <div className="relative z-10 whitespace-nowrap rounded-md border border-zinc-600 bg-zinc-950 px-2.5 py-1.5 text-[11px] font-bold text-zinc-200 shadow-xl">{skillInfo.label}</div>
                         <div className="absolute -bottom-[4px] z-20 h-2 w-2 rotate-45 border-b border-r border-zinc-600 bg-zinc-950"></div>
                       </div>
                     </div>
                   </div>
                 ) : (
-                  skillInfo.label && (
-                    <span className="shrink-0 inline-flex items-center px-2.5 py-1 text-[11px] font-bold rounded-full border border-purple-500/20 bg-purple-500/10 text-purple-300 tracking-wide">
-                      {skillInfo.label}
-                    </span>
-                  )
+                  skillInfo.label && <span className="shrink-0 inline-flex items-center px-2.5 py-1 text-[11px] font-bold rounded-full border border-purple-500/20 bg-purple-500/10 text-purple-300 tracking-wide">{skillInfo.label}</span>
                 )}
 
-                {/* 💧 2. 속성 뱃지 */}
                 {attrInfo.src ? (
                   <div className="relative group flex items-center justify-center cursor-help ml-0.5">
                     <img src={attrInfo.src} alt={attrInfo.label} className="w-[26px] h-[26px] object-contain drop-shadow-md shrink-0" />
                     <div className="pointer-events-none absolute bottom-full mb-3 left-1/2 -translate-x-1/2 opacity-0 transition-all duration-200 group-hover:opacity-100 z-50">
                       <div className="relative flex flex-col items-center">
-                        <div className="relative z-10 whitespace-nowrap rounded-md border border-zinc-600 bg-zinc-950 px-2.5 py-1.5 text-[11px] font-bold text-zinc-200 shadow-xl">
-                          {attrInfo.label}
-                        </div>
+                        <div className="relative z-10 whitespace-nowrap rounded-md border border-zinc-600 bg-zinc-950 px-2.5 py-1.5 text-[11px] font-bold text-zinc-200 shadow-xl">{attrInfo.label}</div>
                         <div className="absolute -bottom-[4px] z-20 h-2 w-2 rotate-45 border-b border-r border-zinc-600 bg-zinc-950"></div>
                       </div>
                     </div>
                   </div>
                 ) : (
-                  <span className="shrink-0 inline-flex items-center px-2.5 py-1 text-[11px] font-bold rounded-full border border-zinc-700 bg-zinc-800/50 text-zinc-300 tracking-wide ml-0.5">
-                    {attrInfo.label}
-                  </span>
+                  <span className="shrink-0 inline-flex items-center px-2.5 py-1 text-[11px] font-bold rounded-full border border-zinc-700 bg-zinc-800/50 text-zinc-300 tracking-wide ml-0.5">{attrInfo.label}</span>
                 )}
 
-                {/* 🎫 3. 가챠 뱃지 */}
                 <span className={`shrink-0 inline-flex items-center px-3 py-1 text-xs font-bold rounded-full border tracking-wide transition-all ml-0.5 ${currentGachaStyle}`}>
                   {card.gachaType}
                 </span>
               </div>
             </div>
 
-            {/* 🎲 1. 관련 뽑기 (극장판 등 노 배너 버그 해결) */}
             <div className="flex gap-3.5">
               <div className="w-10 h-10 rounded-full bg-zinc-900 border border-white/10 shrink-0 overflow-hidden flex items-center justify-center">
                 <img src={characterIconPath} alt="Character Icon" className="w-full h-full object-contain" />
@@ -263,14 +243,13 @@ export default function CardDetailModal({
                   </>
                 ) : (
                   <div className="w-full max-w-[480px] h-24 sm:h-28 bg-zinc-900/30 border border-white/10 border-dashed rounded-xl flex flex-col items-center justify-center gap-2">
-                    <span className="text-xl opacity-50">💸</span>
+                    <span className="text-xl opacity-50">🎰</span>
                     <span className="text-[11px] text-zinc-500 font-medium tracking-wide">관련 뽑기 없음</span>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* 🎪 2. 관련 이벤트 */}
             <div className="flex gap-3.5 pt-2">
               <div className="w-10 h-10 rounded-full bg-zinc-900 border border-white/10 shrink-0 overflow-hidden flex items-center justify-center">
                 <span className="text-zinc-500 text-lg">🎪</span>
@@ -299,7 +278,6 @@ export default function CardDetailModal({
               </div>
             </div>
 
-            {/* 💿 3. 관련 악곡 (다중 악곡 배열 대응) */}
             <div className="flex gap-3.5 pt-2">
               <div className="w-10 h-10 rounded-full bg-zinc-900 border border-white/10 shrink-0 overflow-hidden flex items-center justify-center">
                 <span className="text-zinc-500 text-lg">🎵</span>
@@ -329,7 +307,6 @@ export default function CardDetailModal({
             </div>
           </div>
 
-          {/* 🌟 [추가됨] 좌/우를 가르는 성스러운 반투명 세로선 */}
           <div className="hidden md:block w-px bg-white/5 mx-2 self-stretch rounded-full" />
 
           {/* 👉 우측 영역: 카드 상태 및 의상 프리뷰 컨트롤러 (유저님 포맷 복구) */}
@@ -341,7 +318,6 @@ export default function CardDetailModal({
                 </div>
                 
                 <div className="flex items-center gap-1.5 shrink-0">
-                  {/* 🎯 목표(위시) 버튼 */}
                   <button
                     disabled={userState.isOwned}
                     onClick={() => onUpdateState(card.id, { isTarget: !userState.isTarget })}
@@ -356,7 +332,6 @@ export default function CardDetailModal({
                     {userState.isTarget && !userState.isOwned ? "⭐ 목표 중" : "☆ 목표 설정"}
                   </button>
 
-                  {/* ✓ 보유 버튼 */}
                   <button
                     onClick={() => {
                       const nextOwned = !userState.isOwned;
