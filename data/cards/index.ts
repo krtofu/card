@@ -4,15 +4,15 @@ import type { FinalCardInfo } from "./template";
 // 🎵 1. VIRTUAL SINGER (VS)
 // ==========================================
 import { MikuCards } from "./VS/MIKU";
-// import { RinCards } from "./VS/RIN";
-// import { RenCards } from "./VS/REN";
+import { RinCards } from "./VS/RIN";
+// import { RenCards } from "./VS/REN"; // 👈 렌(Ren)도 정상 대기 중!
 // import { LukaCards } from "./VS/LUKA";
 // import { MeikoCards } from "./VS/MEIKO";
 // import { KaitoCards } from "./VS/KAITO";
 
 const VS_CARDS = [
   ...MikuCards,
-  // ...RinCards,
+  ...RinCards,
   // ...RenCards,
   // ...LukaCards,
   // ...MeikoCards,
