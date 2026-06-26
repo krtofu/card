@@ -1,7 +1,5 @@
 "use client";
 
-<div className="... max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 w-full"></div>
-
 import Image from "next/image";
 import { FUTURE_EVENTS } from "@/data/events"; // 경로에 맞게 수정해주세요!
 
@@ -17,8 +15,10 @@ const getGachaBadgeStyle = (gachaType: string) => {
 
 export default function FuturePage() {
   return (
-    <div className="space-y-8 pb-20">
-      <header className="space-y-1">
+    /* 🌟 핵심 해결 포인트: 유저님이 원하셨던 최대 너비(1440px), 중앙 정렬(mx-auto), 반응형 좌우 여백(px-4...)을 여기에 쏙 넣어줬습니다! */
+    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 w-full space-y-8 pb-20">
+      
+      <header className="space-y-1 mt-6">
         <h1 className="text-2xl font-extrabold tracking-tight">미래시</h1>
         <p className="text-sm text-zinc-400">앞으로 다가올 가챠 일정과 픽업 멤버를 확인해보세요.</p>
       </header>
