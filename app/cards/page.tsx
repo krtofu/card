@@ -1,9 +1,11 @@
+// src/app/cards/page.tsx
 "use client";
 
 import { useState, useEffect } from "react"; 
 import { ALL_CARDS } from "@/data/cards"; 
 import { FinalCardInfo } from "@/data/cards/template"; 
 import CardDetailModal from "@/components/CardDetailModal";
+import CardItem from "@/components/CardItem"; // 🌟 분리한 부품 불러오기!
 
 export type UserCardState = {
   isOwned: boolean;
@@ -12,98 +14,7 @@ export type UserCardState = {
   skillLevel: number;
 };
 
-type CharDef = { id: string; name: string; img: string; isVirtual?: boolean; matchKeys?: string[] };
-type UnitDef = { id: string; name: string; logo: string; chars: CharDef[] };
-type AttrDef = { id: string; name: string; img: string };
-type SubSkillDef = { id: string; name: string; matchKeys: string[] };
-type SkillDef = { id: string; name: string; img: string; matchKeys?: string[]; subs?: SubSkillDef[] };
-type TypeFilterDef = { id: string; name: string; img?: string; isText?: boolean };
-type HairFilterDef = { id: string; name: string; img: string };
-
-const UNIT_FILTERS: UnitDef[] = [
-  { id: "vs", name: "무소속 / VIRTUAL SINGER", logo: "/icons/VS.png", chars: [ { id: "miku_0", name: "하츠네 미쿠", img: "/icons/characters/MIKU_0.png", isVirtual: true, matchKeys: ["미쿠"] }, { id: "rin_0", name: "카가미네 린", img: "/icons/characters/RIN_0.png", isVirtual: true, matchKeys: ["린"] }, { id: "ren_0", name: "카가미네 렌", img: "/icons/characters/REN_0.png", isVirtual: true, matchKeys: ["렌"] }, { id: "luka_0", name: "메구리네 루카", img: "/icons/characters/LUKA_0.png", isVirtual: true, matchKeys: ["루카"] }, { id: "meiko_0", name: "MEIKO", img: "/icons/characters/MEIKO_0.png", isVirtual: true, matchKeys: ["메이코", "MEIKO"] }, { id: "kaito_0", name: "KAITO", img: "/icons/characters/KAITO_0.png", isVirtual: true, matchKeys: ["카이토", "KAITO"] } ] },
-  { id: "ln", name: "Leo/need", logo: "/icons/Leoneed.png", chars: [ { id: "ichika", name: "호시노 이치카", img: "/icons/characters/Ichika.png" }, { id: "saki", name: "텐마 사키", img: "/icons/characters/Saki.png" }, { id: "honami", name: "모치즈키 호나미", img: "/icons/characters/Honami.png" }, { id: "shiho", name: "히노모리 시호", img: "/icons/characters/Shiho.png" }, { id: "miku_l", name: "하츠네 미쿠", img: "/icons/characters/MIKU_l.png", isVirtual: true, matchKeys: ["미쿠"] }, { id: "rin_l", name: "카가미네 린", img: "/icons/characters/RIN_l.png", isVirtual: true, matchKeys: ["린"] }, { id: "ren_l", name: "카가미네 렌", img: "/icons/characters/REN_l.png", isVirtual: true, matchKeys: ["렌"] }, { id: "luka_l", name: "메구리네 루카", img: "/icons/characters/LUKA_l.png", isVirtual: true, matchKeys: ["루카"] }, { id: "meiko_l", name: "MEIKO", img: "/icons/characters/MEIKO_l.png", isVirtual: true, matchKeys: ["메이코", "MEIKO"] }, { id: "kaito_l", name: "KAITO", img: "/icons/characters/KAITO_l.png", isVirtual: true, matchKeys: ["카이토", "KAITO"] } ] },
-  { id: "mmj", name: "MORE MORE JUMP!", logo: "/icons/MMJ.png", chars: [ { id: "minori", name: "하나사토 미노리", img: "/icons/characters/Minori.png" }, { id: "haruka", name: "키리타니 하루카", img: "/icons/characters/Haruka.png" }, { id: "airi", name: "모모이 아이리", img: "/icons/characters/Airi.png" }, { id: "shizuku", name: "히노모리 시즈쿠", img: "/icons/characters/Shizuku.png" }, { id: "miku_m", name: "하츠네 미쿠", img: "/icons/characters/MIKU_m.png", isVirtual: true, matchKeys: ["미쿠"] }, { id: "rin_m", name: "카가미네 린", img: "/icons/characters/RIN_m.png", isVirtual: true, matchKeys: ["린"] }, { id: "ren_m", name: "카가미네 렌", img: "/icons/characters/REN_m.png", isVirtual: true, matchKeys: ["렌"] }, { id: "luka_m", name: "메구리네 루카", img: "/icons/characters/LUKA_m.png", isVirtual: true, matchKeys: ["루카"] }, { id: "meiko_m", name: "MEIKO", img: "/icons/characters/MEIKO_m.png", isVirtual: true, matchKeys: ["메이코", "MEIKO"] }, { id: "kaito_m", name: "KAITO", img: "/icons/characters/KAITO_m.png", isVirtual: true, matchKeys: ["카이토", "KAITO"] } ] },
-  { id: "vbs", name: "Vivid BAD SQUAD", logo: "/icons/VBS.png", chars: [ { id: "kohane", name: "아즈사와 코하네", img: "/icons/characters/Kohane.png" }, { id: "an", name: "시라이시 안", img: "/icons/characters/An.png" }, { id: "akito", name: "시노노메 아키토", img: "/icons/characters/Akito.png" }, { id: "toya", name: "아오야기 토우야", img: "/icons/characters/Toya.png" }, { id: "miku_v", name: "하츠네 미쿠", img: "/icons/characters/MIKU_v.png", isVirtual: true, matchKeys: ["미쿠"] }, { id: "rin_v", name: "카가미네 린", img: "/icons/characters/RIN_v.png", isVirtual: true, matchKeys: ["린"] }, { id: "ren_v", name: "카가미네 렌", img: "/icons/characters/REN_v.png", isVirtual: true, matchKeys: ["렌"] }, { id: "luka_v", name: "메구리네 루카", img: "/icons/characters/LUKA_v.png", isVirtual: true, matchKeys: ["루카"] }, { id: "meiko_v", name: "MEIKO", img: "/icons/characters/MEIKO_v.png", isVirtual: true, matchKeys: ["메이코", "MEIKO"] }, { id: "kaito_v", name: "KAITO", img: "/icons/characters/KAITO_v.png", isVirtual: true, matchKeys: ["카이토", "KAITO"] } ] },
-  { id: "wxs", name: "Wonderlands×Showtime", logo: "/icons/Wds.png", chars: [ { id: "tsukasa", name: "텐마 츠카사", img: "/icons/characters/Tsukasa.png" }, { id: "emu", name: "오토리 에무", img: "/icons/characters/Emu.png" }, { id: "nene", name: "쿠사나기 네네", img: "/icons/characters/Nene.png" }, { id: "rui", name: "카미시로 루이", img: "/icons/characters/Rui.png" }, { id: "miku_w", name: "하츠네 미쿠", img: "/icons/characters/MIKU_w.png", isVirtual: true, matchKeys: ["미쿠"] }, { id: "rin_w", name: "카가미네 린", img: "/icons/characters/RIN_w.png", isVirtual: true, matchKeys: ["린"] }, { id: "ren_w", name: "카가미네 렌", img: "/icons/characters/REN_w.png", isVirtual: true, matchKeys: ["렌"] }, { id: "luka_w", name: "메구리네 루카", img: "/icons/characters/LUKA_w.png", isVirtual: true, matchKeys: ["루카"] }, { id: "meiko_w", name: "MEIKO", img: "/icons/characters/MEIKO_w.png", isVirtual: true, matchKeys: ["메이코", "MEIKO"] }, { id: "kaito_w", name: "KAITO", img: "/icons/characters/KAITO_w.png", isVirtual: true, matchKeys: ["카이토", "KAITO"] } ] },
-  { id: "n25", name: "25시, 나이트코드에서.", logo: "/icons/Niigo.png", chars: [ { id: "kanade", name: "요이사키 카나데", img: "/icons/characters/Kanade.png" }, { id: "mafuyu", name: "아사히나 마후유", img: "/icons/characters/Mafuyu.png" }, { id: "ena", name: "시노노메 에나", img: "/icons/characters/Ena.png" }, { id: "mizuki", name: "아키야마 미즈키", img: "/icons/characters/Mizuki.png" }, { id: "miku_n", name: "하츠네 미쿠", img: "/icons/characters/MIKU_n.png", isVirtual: true, matchKeys: ["미쿠"] }, { id: "rin_n", name: "카가미네 린", img: "/icons/characters/RIN_n.png", isVirtual: true, matchKeys: ["린"] }, { id: "ren_n", name: "카가미네 렌", img: "/icons/characters/REN_n.png", isVirtual: true, matchKeys: ["렌"] }, { id: "luka_n", name: "메구리네 루카", img: "/icons/characters/LUKA_n.png", isVirtual: true, matchKeys: ["루카"] }, { id: "meiko_n", name: "MEIKO", img: "/icons/characters/MEIKO_n.png", isVirtual: true, matchKeys: ["메이코", "MEIKO"] }, { id: "kaito_n", name: "KAITO", img: "/icons/characters/KAITO_n.png", isVirtual: true, matchKeys: ["카이토", "KAITO"] } ] }
-];
-
-const ATTR_FILTERS: AttrDef[] = [
-  { id: "pure", name: "퓨어", img: "/icons/attrs/pure.png" },
-  { id: "happy", name: "해피", img: "/icons/attrs/happy.png" },
-  { id: "cute", name: "큐트", img: "/icons/attrs/cute.png" },
-  { id: "mysterious", name: "미스테리어스", img: "/icons/attrs/mysterious.png" },
-  { id: "cool", name: "쿨", img: "/icons/attrs/cool.png" }
-];
-
-const SKILL_FILTERS: SkillDef[] = [
-  { id: "score", name: "스업", img: "/icons/skills/score_x.png", matchKeys: ["스업"] },
-  { id: "condition_group", name: "조건부 스업", img: "/icons/skills/condition_x.png", 
-    subs: [ { id: "cond_perfect", name: "퍼스업", matchKeys: ["퍼스업"] }, { id: "cond_good", name: "굿스업", matchKeys: ["굿스업"] }, { id: "cond_life", name: "체스업", matchKeys: ["체스업"] }, { id: "cond_bp", name: "블페", matchKeys: ["블페"] }, { id: "cond_team", name: "팀스업", matchKeys: ["팀스업"] } ] 
-  },
-  { id: "perfect", name: "판정 강화", img: "/icons/skills/perfect_x.png", matchKeys: ["판강"] },
-  { id: "heal", name: "라이프 회복", img: "/icons/skills/heal_x.png", matchKeys: ["힐"] }
-];
-
-const ALL_SKILL_TARGETS = [
-  ...SKILL_FILTERS.filter(s => s.matchKeys),
-  ...(SKILL_FILTERS.find(s => s.id === "condition_group")?.subs || [])
-];
-
-const TYPE_FILTERS: TypeFilterDef[] = [
-  { id: "normal", name: "통상", img: "/icons/status/normal.png" },
-  { id: "limited", name: "한정/페스/월링", img: "/icons/status/limited.png" },
-  { id: "collab", name: "콜라보", isText: true }
-];
-
-const HAIR_FILTERS: HairFilterDef[] = [
-  { id: "hair_o", name: "헤어 O", img: "/icons/status/hair_o.png" },
-  { id: "hair_x", name: "헤어 X", img: "/icons/status/hair_x.png" }
-];
-
-const COLLAB_FILTERS = [
-  { id: "collab_evil", name: "에빌", matchKeys: ["에빌", "악의", "대죄", "evillious"] },
-  { id: "collab_sanrio", name: "산리오", matchKeys: ["산리오", "sanrio", "SEKAI에서 Hello♡ 멋진 만남"] },
-  { id: "collab_enstar", name: "앙스타", matchKeys: ["앙스타", "앙상블", "ensemble"] },
-  { id: "collab_tamagotchi", name: "다마고치", matchKeys: ["다마고치", "tamagotchi"] }
-];
-
-const getSkillIconPath = (skill: string) => {
-  if (skill === "스업") return "/icons/skills/score_x.png";
-  if (["퍼스업", "굿스업", "체스업", "블페", "팀스업"].includes(skill)) return "/icons/skills/condition_x.png";
-  if (skill === "판강") return "/icons/skills/perfect_x.png";
-  if (skill === "힐") return "/icons/skills/heal_x.png";
-  return "";
-};
-
-const getSkillBonusPercentage = (skillType: string, level: number, unit: string) => {
-  const safeLevel = Math.max(1, Math.min(4, level)); 
-  const idx = safeLevel - 1;
-  
-  switch(skillType) {
-    case "스업": return [100, 105, 110, 120][idx];
-    case "퍼스업": return [110, 115, 120, 130][idx];
-    case "굿스업": return [120, 125, 130, 140][idx];
-    case "체스업": return [120, 125, 130, 140][idx];
-    case "판강": return [80, 85, 90, 100][idx];
-    case "힐": return [80, 85, 90, 100][idx];
-    case "팀스업": return [130, 135, 140, 150][idx]; 
-    case "블페": 
-      const isVS = unit === "무소속 / VIRTUAL SINGER" || unit.includes("버싱") || unit.includes("VS") || unit.toLowerCase().includes("virtual");
-      if (isVS) return [130, 135, 140, 150][idx];
-      return [120, 130, 140, 150][idx];
-    default: return 0;
-  }
-};
-
-const getMockEventBonus = (card: FinalCardInfo) => {
-  let bonus = 0;
-  if (card.attribute === "cute") bonus += 25; 
-  if (card.character === "호시노 이치카") bonus += 25; 
-  if (bonus === 50) bonus += 20; 
-  return bonus > 0 ? bonus + 20 : 0; 
-};
+// 🌟 수많은 상수(배열)들은 읽기 편하게 맨 아래로 내렸습니다. (스크롤 쭉 내려보세요!)
 
 export default function MyCardsPage() {
   const [cardStates, setCardStates] = useState<Record<string, UserCardState>>({});
@@ -118,7 +29,6 @@ export default function MyCardsPage() {
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [spinDeg, setSpinDeg] = useState(0);
 
-  // 🌟 [신규 토글 상태] 콜라보 제외 & 미출시 숨기기
   const [excludeCollab, setExcludeCollab] = useState(false);
   const [hideUnreleased, setHideUnreleased] = useState(false);
 
@@ -194,13 +104,9 @@ export default function MyCardsPage() {
   };
 
   const filteredCards = ALL_CARDS.filter(card => {
-    // 🔒 1. 미출시 카드 숨기기 체크
     if (hideUnreleased && card.releaseDate && new Date(card.releaseDate) > new Date()) return false;
-
-    // 🚫 2. 콜라보 카드 제외 체크
     if (excludeCollab && card.gachaType === "콜라보") return false;
 
-    // 3. 상태(보유/미보유 등) 체크
     if (selectedStatuses.length > 0) {
       const isOwned = cardStates[card.id]?.isOwned || false;
       const isTarget = cardStates[card.id]?.isTarget || false;
@@ -210,7 +116,6 @@ export default function MyCardsPage() {
       if (!(matchOwned || matchUnowned || matchTarget)) return false;
     }
 
-    // 4. 가챠 타입(통상/한정/콜라보) 체크
     if (selectedTypes.length > 0) {
       const matchNormal = selectedTypes.includes("normal") && card.gachaType === "통상";
       const matchLimited = selectedTypes.includes("limited") && ["한정", "페스", "월링"].includes(card.gachaType);
@@ -227,18 +132,15 @@ export default function MyCardsPage() {
           });
         }
       }
-      
       if (!(matchNormal || matchLimited || matchCollab)) return false;
     }
 
-    // 5. 헤어 여부 체크
     if (selectedHairs.length > 0) {
       const matchHairO = selectedHairs.includes("hair_o") && card.hasHair;
       const matchHairX = selectedHairs.includes("hair_x") && !card.hasHair;
       if (!(matchHairO || matchHairX)) return false;
     }
     
-    // 6. 캐릭터 체크
     if (selectedChars.length > 0) {
       const matchesChar = selectedChars.some(selId => {
         const parentUnit = UNIT_FILTERS.find(u => u.chars.some(c => c.id === selId));
@@ -262,7 +164,6 @@ export default function MyCardsPage() {
       if (!matchesChar) return false;
     }
     
-    // 7. 속성 체크
     if (selectedAttrs.length > 0) {
       const matchesAttr = selectedAttrs.some(selId => {
         const cardAttr = (card.attribute || "").toLowerCase();
@@ -272,7 +173,6 @@ export default function MyCardsPage() {
       if (!matchesAttr) return false;
     }
 
-    // 8. 스킬 체크
     if (selectedSkills.length > 0) {
       const matchesSkill = selectedSkills.some(selId => {
         const targetObj = ALL_SKILL_TARGETS.find(t => t.id === selId);
@@ -298,8 +198,8 @@ export default function MyCardsPage() {
     else if (sortOrder === "score") {
       const levelA = cardStates[a.id]?.isOwned ? (cardStates[a.id].skillLevel || 1) : refSkillLevel;
       const levelB = cardStates[b.id]?.isOwned ? (cardStates[b.id].skillLevel || 1) : refSkillLevel;
-      const scoreA = getSkillBonusPercentage(a.skillType, levelA, a.unit);
-      const scoreB = getSkillBonusPercentage(b.skillType, levelB, b.unit);
+      const scoreA = getSkillBonusPercentage(a.skillType || "", levelA, a.unit || "");
+      const scoreB = getSkillBonusPercentage(b.skillType || "", levelB, b.unit || "");
       if (scoreB !== scoreA) return scoreB - scoreA;
       return (b.releaseDate || "1970-01-01").localeCompare(a.releaseDate || "1970-01-01");
     }
@@ -328,6 +228,7 @@ export default function MyCardsPage() {
   return (
     <div className="flex flex-col md:flex-row gap-6 px-4 md:px-8 py-6 min-h-screen text-zinc-100 max-w-[1920px] mx-auto w-full">
       
+      {/* 필터 영역 */}
       <div className={`flex flex-col shrink-0 md:w-[280px] md:relative md:block md:bg-transparent md:p-0 md:h-auto md:z-0 ${isMobileFilterOpen ? 'fixed inset-0 z-[100] bg-zinc-950 p-6 overflow-y-auto' : 'hidden'}`}>
         <div className="flex items-center justify-between border-b border-white/10 pb-3 mb-6 md:mb-0">
           <h2 className="text-lg md:text-sm font-bold text-zinc-300 tracking-wider uppercase">🔍 필터</h2>
@@ -341,7 +242,7 @@ export default function MyCardsPage() {
 
         <div className="space-y-6 md:mt-6">
           
-          {/* 🌟 1. STATUS 구역 (통상/한정 및 헤어) */}
+          {/* 1. STATUS 구역 */}
           <div className="space-y-2">
             <button onClick={() => setIsStatusExpanded(!isStatusExpanded)} className="w-full flex items-center justify-between group pb-1 cursor-pointer">
               <span className="text-[12px] md:text-[11px] font-bold text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-300 transition-colors">STATUS</span>
@@ -353,7 +254,14 @@ export default function MyCardsPage() {
                   {[ { id: "owned", label: "✓ 보유" }, { id: "unowned", label: "❌ 미보유" }, { id: "target", label: "⭐ 목표" } ].map(status => {
                     const isSelected = selectedStatuses.includes(status.id);
                     const opacityClass = !isAnyStatusSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100 text-white bg-zinc-900";
-                    const activeClass = status.id === "target" ? "bg-pink-500/20 text-pink-300 border border-pink-400/50 shadow-[0_0_10px_rgba(236,72,153,0.15)] scale-105" : status.id === "owned" ? "bg-emerald-500/20 text-emerald-300 border border-emerald-400/50 shadow-[0_0_10px_rgba(52,211,153,0.15)] scale-105" : "bg-zinc-700 text-zinc-100 border border-zinc-500 shadow-md scale-105";
+                    
+                    // 🌟 목표 버튼 색상을 노란색(amber)으로 완벽 통일!
+                    const activeClass = status.id === "target" 
+                      ? "bg-amber-500/20 text-amber-300 border border-amber-400/50 shadow-[0_0_10px_rgba(245,158,11,0.15)] scale-105" 
+                      : status.id === "owned" 
+                        ? "bg-emerald-500/20 text-emerald-300 border border-emerald-400/50 shadow-[0_0_10px_rgba(52,211,153,0.15)] scale-105" 
+                        : "bg-zinc-700 text-zinc-100 border border-zinc-500 shadow-md scale-105";
+                    
                     return (
                       <button key={status.id} onClick={() => toggleFilter(selectedStatuses, setSelectedStatuses, status.id)}
                         className={`py-2.5 md:py-2 px-1 text-[13px] md:text-[12px] font-bold tracking-tight rounded-lg transition-all duration-300 text-white ${isSelected ? activeClass : "bg-zinc-900 hover:bg-zinc-800 border border-transparent scale-95"} ${opacityClass}`}>
@@ -367,7 +275,6 @@ export default function MyCardsPage() {
                     className={`relative group aspect-square rounded-full p-1 transition-all duration-300 w-full h-full ${selectedTypes.includes("normal") ? "bg-zinc-800 scale-105" : "bg-zinc-900 scale-[0.85] hover:scale-95"} ${!isAnyTypeSelected || selectedTypes.includes("normal") ? "opacity-100" : "opacity-40 hover:opacity-100"}`}>
                     <img src="/icons/status/normal.png" alt="통상" className="w-full h-full object-contain" />
                   </button>
-                  {/* 🌟 콜라보가 떨어져 나간 순수 '한정' 버튼 */}
                   <button onClick={() => toggleFilter(selectedTypes, setSelectedTypes, "limited")}
                     className={`relative group aspect-square rounded-full p-1 transition-all duration-300 w-full h-full ${selectedTypes.includes("limited") ? "bg-zinc-800 scale-105" : "bg-zinc-900 scale-[0.85] hover:scale-95"} ${!isAnyTypeSelected || selectedTypes.includes("limited") ? "opacity-100" : "opacity-40 hover:opacity-100"}`}>
                     <img src="/icons/status/limited.png" alt="한정" className="w-full h-full object-contain" />
@@ -385,7 +292,7 @@ export default function MyCardsPage() {
             )}
           </div>
 
-          {/* 🌟 2. 독립된 COLLAB 구역 */}
+          {/* 2. COLLAB 구역 */}
           <div className="space-y-2 pt-2 border-t border-white/5">
             <button onClick={() => setIsCollabExpanded(!isCollabExpanded)} className="w-full flex items-center justify-between group pt-2 pb-1 cursor-pointer">
               <span className="text-[12px] md:text-[11px] font-bold text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-300 transition-colors">COLLAB</span>
@@ -393,7 +300,6 @@ export default function MyCardsPage() {
             </button>
             {isCollabExpanded && (
               <div className="space-y-2 pt-1">
-                {/* 콜라보 일괄 선택 버튼 */}
                 <button 
                   onClick={() => {
                     const allCollabIds = COLLAB_FILTERS.map(c => c.id);
@@ -433,7 +339,6 @@ export default function MyCardsPage() {
             )}
           </div>
 
-          {/* 이하 다른 필터들은 기존과 완벽히 동일 (속성, 스킬, 캐릭터) */}
           <div className="space-y-2 pt-2 border-t border-white/5">
             <button onClick={() => setIsAttrExpanded(!isAttrExpanded)} className="w-full flex items-center justify-between group pt-2 pb-1 cursor-pointer">
               <span className="text-[12px] md:text-[11px] font-bold text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-300 transition-colors">ATTRIBUTE</span>
@@ -587,7 +492,6 @@ export default function MyCardsPage() {
               </div>
             )}
 
-            {/* 🌟 기존 정렬 드롭다운 유지 */}
             <div className="relative">
               <button onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)} className="flex items-center justify-center gap-1 h-[34px] px-2 text-[13px] md:text-[14px] font-bold text-zinc-300 hover:text-white transition-colors">
                 ⇅ 정렬 ▾
@@ -599,13 +503,12 @@ export default function MyCardsPage() {
                     <button onClick={() => { setSortOrder("newest"); setIsSortDropdownOpen(false); }} className={`px-3 py-2 text-[12px] font-bold text-left rounded-lg transition-colors ${sortOrder === "newest" ? "bg-zinc-700 text-white" : "text-zinc-400 hover:bg-zinc-700/50 hover:text-zinc-200"}`}>↓ 최신순</button>
                     <button onClick={() => { setSortOrder("oldest"); setIsSortDropdownOpen(false); }} className={`px-3 py-2 text-[12px] font-bold text-left rounded-lg transition-colors mt-0.5 ${sortOrder === "oldest" ? "bg-zinc-700 text-white" : "text-zinc-400 hover:bg-zinc-700/50 hover:text-zinc-200"}`}>↑ 출시순</button>
                     <button onClick={() => { setSortOrder("score"); setIsSortDropdownOpen(false); }} className={`px-3 py-2 text-[12px] font-bold text-left rounded-lg transition-colors mt-0.5 ${sortOrder === "score" ? "bg-zinc-700 text-sky-300" : "text-zinc-400 hover:bg-zinc-700/50 hover:text-zinc-200"}`}>⇪ 스업 수치순 (%)</button>
-                    <button onClick={() => { setSortOrder("bonus"); setIsSortDropdownOpen(false); }} className={`px-3 py-2 text-[12px] font-bold text-left rounded-lg transition-colors mt-0.5 ${sortOrder === "bonus" ? "bg-zinc-700 text-pink-300" : "text-zinc-400 hover:bg-zinc-700/50 hover:text-zinc-200"}`}>✦ 이벤포순 (%)</button>
+                    <button onClick={() => { setSortOrder("bonus"); setIsSortDropdownOpen(false); }} className={`px-3 py-2 text-[12px] font-bold text-left rounded-lg transition-colors mt-0.5 ${sortOrder === "bonus" ? "bg-zinc-700 text-amber-300" : "text-zinc-400 hover:bg-zinc-700/50 hover:text-zinc-200"}`}>✦ 이벤포순 (%)</button>
                   </div>
                 </>
               )}
             </div>
 
-            {/* 🌟 신규 토글: 미출시 숨김 & 콜라보 제외 (PC 버전) */}
             <button 
               onClick={() => setHideUnreleased(!hideUnreleased)}
               className={`hidden sm:flex items-center gap-1.5 h-[34px] px-3 rounded-full text-[12px] font-bold transition-all shadow-sm border ${
@@ -623,7 +526,6 @@ export default function MyCardsPage() {
               {excludeCollab ? '🚫 콜라보 제외' : '🤝 콜라보 포함'}
             </button>
 
-            {/* 🌟 신규 토글 (모바일 아이콘 버전) */}
             <button onClick={() => setHideUnreleased(!hideUnreleased)} className={`sm:hidden flex items-center justify-center w-[34px] h-[34px] rounded-full text-[14px] transition-all shadow-sm border ${hideUnreleased ? 'bg-indigo-500/20 text-indigo-300 border-indigo-400/50' : 'bg-zinc-800/80 border-white/10 text-zinc-400'}`} title="미출시 숨기기">
               {hideUnreleased ? '🔒' : '🔓'}
             </button>
@@ -631,7 +533,6 @@ export default function MyCardsPage() {
               {excludeCollab ? '🚫' : '🤝'}
             </button>
 
-            {/* 기존 썸네일 버튼 */}
             <button onClick={() => setShowPostAwake(!showPostAwake)} className="p-1 rounded-full bg-zinc-900 border border-white/10 shrink-0 ml-auto sm:ml-0" aria-label="썸네일 전환">
               <img src={showPostAwake ? "/icons/post_star.png" : "/icons/pre_star.png"} alt="스위치" className="h-8 w-auto object-contain block" />
             </button>
@@ -642,47 +543,22 @@ export default function MyCardsPage() {
           <div className="flex flex-col items-center justify-center py-20 text-zinc-500"><p>선택한 조건에 맞는 카드가 없습니다.</p></div>
         ) : (
           <div className="grid grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-y-6 gap-x-4 w-full">
+            {/* 🌟 40줄짜리 더러운 코드가 단 한 줄의 만능 카드 조각으로 바뀌었습니다! 🌟 */}
             {sortedCards.map((card) => {
               const userState = cardStates[card.id];
-              const isOwned = userState?.isOwned;
-              const isTarget = userState?.isTarget;
+              const levelToUse = userState?.isOwned ? (userState?.skillLevel || 1) : refSkillLevel;
               
-              const levelToUse = isOwned ? (userState?.skillLevel || 1) : refSkillLevel;
-              const currentScoreBonus = getSkillBonusPercentage(card.skillType, levelToUse, card.unit);
-              
-              // 🇰🇷 그리드에도 출시 여부 판단 로직 추가
-              const isReleased = card.releaseDate ? new Date(card.releaseDate) <= new Date() : false;
-
               return (
-                <div key={card.id} onClick={() => setActiveModalCard(card)} className="relative p-1 cursor-pointer transition-all hover:scale-[1.05] flex flex-col items-center text-center group min-w-0">
-                  <div className="relative h-[100px] w-fit flex justify-center">
-                    <img src={showPostAwake ? card.thumbPostPath : card.thumbPrePath} alt="썸네일" className="relative h-[100px] w-auto max-w-full object-contain transition-opacity duration-300 ease-in-out opacity-100 group-hover:opacity-0 rounded-lg border border-white/10 group-hover:border-white/30 z-10" />
-                    <img src={showPostAwake ? card.thumbPrePath : card.thumbPostPath} alt="썸네일 호버" className="absolute top-0 h-[100px] w-auto max-w-full object-contain transition-opacity duration-300 ease-in-out opacity-0 group-hover:opacity-100 rounded-lg border border-white/10 group-hover:border-white/30 z-20" />
-                  </div>
-                  
-                  <div className="mt-2.5 h-[36px] flex flex-col items-center justify-start w-full px-1">
-                    {sortOrder === "score" ? (
-                      <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md shadow-sm mt-1 transition-all ${isOwned ? "bg-zinc-900/90 border border-[#00FFD1]/70 shadow-[0_0_8px_rgba(0,255,209,0.25)]" : isTarget ? "bg-zinc-900/90 border border-pink-400/70 shadow-[0_0_8px_rgba(244,114,182,0.25)]" : "bg-zinc-900/80 border border-white/5"}`}>
-                        <img src={getSkillIconPath(card.skillType)} className="w-[14px] h-[14px] object-contain drop-shadow-sm" alt="스킬" />
-                        <span className="text-[12px] font-bold text-sky-300 tracking-tight">{currentScoreBonus}%</span>
-                      </div>
-                    ) : sortOrder === "bonus" ? (
-                      <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md shadow-sm mt-1 transition-all ${isOwned ? "bg-pink-950/40 border border-[#00FFD1]/70 shadow-[0_0_8px_rgba(0,255,209,0.25)]" : isTarget ? "bg-pink-950/40 border border-pink-400/70 shadow-[0_0_8px_rgba(244,114,182,0.25)]" : "bg-pink-950/30 border border-pink-500/20"}`}>
-                        <span className="text-[11px] drop-shadow-sm">🌟</span>
-                        <span className="text-[12px] font-bold text-pink-300 tracking-tight">{getMockEventBonus(card)}%</span>
-                      </div>
-                    ) : (
-                      <>
-                        <p className={`text-[11px] font-semibold truncate w-full max-w-[100px] transition-colors flex items-center justify-center gap-0.5 ${isOwned ? "text-[#00FFD1]" : isTarget ? "text-pink-400" : "text-zinc-200 group-hover:text-white"}`}>
-                          <span className="truncate">{card.cardName}</span>
-                          {/* 🇰🇷 한섭 출시 완료 뱃지 */}
-                          {isReleased && <span className="text-[10px] shrink-0 drop-shadow-sm" title="한국 서버 출시됨">🇰🇷</span>}
-                        </p>
-                        <p className="text-[10px] text-zinc-500 mt-0.5 truncate w-full max-w-[100px]">{card.character}</p>
-                      </>
-                    )}
-                  </div>
-                </div>
+                <CardItem 
+                  key={card.id}
+                  card={card}
+                  userState={userState}
+                  showPostAwake={showPostAwake}
+                  sortOrder={sortOrder}
+                  scoreBonus={getSkillBonusPercentage(card.skillType || "", levelToUse, card.unit || "")}
+                  eventBonus={getMockEventBonus(card)}
+                  onClick={setActiveModalCard}
+                />
               );
             })}
           </div>
@@ -693,3 +569,92 @@ export default function MyCardsPage() {
     </div>
   );
 }
+
+// =========================================================================================
+// 🌟 여기서부터는 메인 컴포넌트의 가독성을 위해 화면 맨 아래로 내려둔 설정값(배열)들입니다!
+// =========================================================================================
+
+type CharDef = { id: string; name: string; img: string; isVirtual?: boolean; matchKeys?: string[] };
+type UnitDef = { id: string; name: string; logo: string; chars: CharDef[] };
+type AttrDef = { id: string; name: string; img: string };
+type SubSkillDef = { id: string; name: string; matchKeys: string[] };
+type SkillDef = { id: string; name: string; img: string; matchKeys?: string[]; subs?: SubSkillDef[] };
+type TypeFilterDef = { id: string; name: string; img?: string; isText?: boolean };
+type HairFilterDef = { id: string; name: string; img: string };
+
+const UNIT_FILTERS: UnitDef[] = [
+  { id: "vs", name: "무소속 / VIRTUAL SINGER", logo: "/icons/VS.png", chars: [ { id: "miku_0", name: "하츠네 미쿠", img: "/icons/characters/MIKU_0.png", isVirtual: true, matchKeys: ["미쿠"] }, { id: "rin_0", name: "카가미네 린", img: "/icons/characters/RIN_0.png", isVirtual: true, matchKeys: ["린"] }, { id: "ren_0", name: "카가미네 렌", img: "/icons/characters/REN_0.png", isVirtual: true, matchKeys: ["렌"] }, { id: "luka_0", name: "메구리네 루카", img: "/icons/characters/LUKA_0.png", isVirtual: true, matchKeys: ["루카"] }, { id: "meiko_0", name: "MEIKO", img: "/icons/characters/MEIKO_0.png", isVirtual: true, matchKeys: ["메이코", "MEIKO"] }, { id: "kaito_0", name: "KAITO", img: "/icons/characters/KAITO_0.png", isVirtual: true, matchKeys: ["카이토", "KAITO"] } ] },
+  { id: "ln", name: "Leo/need", logo: "/icons/Leoneed.png", chars: [ { id: "ichika", name: "호시노 이치카", img: "/icons/characters/Ichika.png" }, { id: "saki", name: "텐마 사키", img: "/icons/characters/Saki.png" }, { id: "honami", name: "모치즈키 호나미", img: "/icons/characters/Honami.png" }, { id: "shiho", name: "히노모리 시호", img: "/icons/characters/Shiho.png" }, { id: "miku_l", name: "하츠네 미쿠", img: "/icons/characters/MIKU_l.png", isVirtual: true, matchKeys: ["미쿠"] }, { id: "rin_l", name: "카가미네 린", img: "/icons/characters/RIN_l.png", isVirtual: true, matchKeys: ["린"] }, { id: "ren_l", name: "카가미네 렌", img: "/icons/characters/REN_l.png", isVirtual: true, matchKeys: ["렌"] }, { id: "luka_l", name: "메구리네 루카", img: "/icons/characters/LUKA_l.png", isVirtual: true, matchKeys: ["루카"] }, { id: "meiko_l", name: "MEIKO", img: "/icons/characters/MEIKO_l.png", isVirtual: true, matchKeys: ["메이코", "MEIKO"] }, { id: "kaito_l", name: "KAITO", img: "/icons/characters/KAITO_l.png", isVirtual: true, matchKeys: ["카이토", "KAITO"] } ] },
+  { id: "mmj", name: "MORE MORE JUMP!", logo: "/icons/MMJ.png", chars: [ { id: "minori", name: "하나사토 미노리", img: "/icons/characters/Minori.png" }, { id: "haruka", name: "키리타니 하루카", img: "/icons/characters/Haruka.png" }, { id: "airi", name: "모모이 아이리", img: "/icons/characters/Airi.png" }, { id: "shizuku", name: "히노모리 시즈쿠", img: "/icons/characters/Shizuku.png" }, { id: "miku_m", name: "하츠네 미쿠", img: "/icons/characters/MIKU_m.png", isVirtual: true, matchKeys: ["미쿠"] }, { id: "rin_m", name: "카가미네 린", img: "/icons/characters/RIN_m.png", isVirtual: true, matchKeys: ["린"] }, { id: "ren_m", name: "카가미네 렌", img: "/icons/characters/REN_m.png", isVirtual: true, matchKeys: ["렌"] }, { id: "luka_m", name: "메구리네 루카", img: "/icons/characters/LUKA_m.png", isVirtual: true, matchKeys: ["루카"] }, { id: "meiko_m", name: "MEIKO", img: "/icons/characters/MEIKO_m.png", isVirtual: true, matchKeys: ["메이코", "MEIKO"] }, { id: "kaito_m", name: "KAITO", img: "/icons/characters/KAITO_m.png", isVirtual: true, matchKeys: ["카이토", "KAITO"] } ] },
+  { id: "vbs", name: "Vivid BAD SQUAD", logo: "/icons/VBS.png", chars: [ { id: "kohane", name: "아즈사와 코하네", img: "/icons/characters/Kohane.png" }, { id: "an", name: "시라이시 안", img: "/icons/characters/An.png" }, { id: "akito", name: "시노노메 아키토", img: "/icons/characters/Akito.png" }, { id: "toya", name: "아오야기 토우야", img: "/icons/characters/Toya.png" }, { id: "miku_v", name: "하츠네 미쿠", img: "/icons/characters/MIKU_v.png", isVirtual: true, matchKeys: ["미쿠"] }, { id: "rin_v", name: "카가미네 린", img: "/icons/characters/RIN_v.png", isVirtual: true, matchKeys: ["린"] }, { id: "ren_v", name: "카가미네 렌", img: "/icons/characters/REN_v.png", isVirtual: true, matchKeys: ["렌"] }, { id: "luka_v", name: "메구리네 루카", img: "/icons/characters/LUKA_v.png", isVirtual: true, matchKeys: ["루카"] }, { id: "meiko_v", name: "MEIKO", img: "/icons/characters/MEIKO_v.png", isVirtual: true, matchKeys: ["메이코", "MEIKO"] }, { id: "kaito_v", name: "KAITO", img: "/icons/characters/KAITO_v.png", isVirtual: true, matchKeys: ["카이토", "KAITO"] } ] },
+  { id: "wxs", name: "Wonderlands×Showtime", logo: "/icons/Wds.png", chars: [ { id: "tsukasa", name: "텐마 츠카사", img: "/icons/characters/Tsukasa.png" }, { id: "emu", name: "오토리 에무", img: "/icons/characters/Emu.png" }, { id: "nene", name: "쿠사나기 네네", img: "/icons/characters/Nene.png" }, { id: "rui", name: "카미시로 루이", img: "/icons/characters/Rui.png" }, { id: "miku_w", name: "하츠네 미쿠", img: "/icons/characters/MIKU_w.png", isVirtual: true, matchKeys: ["미쿠"] }, { id: "rin_w", name: "카가미네 린", img: "/icons/characters/RIN_w.png", isVirtual: true, matchKeys: ["린"] }, { id: "ren_w", name: "카가미네 렌", img: "/icons/characters/REN_w.png", isVirtual: true, matchKeys: ["렌"] }, { id: "luka_w", name: "메구리네 루카", img: "/icons/characters/LUKA_w.png", isVirtual: true, matchKeys: ["루카"] }, { id: "meiko_w", name: "MEIKO", img: "/icons/characters/MEIKO_w.png", isVirtual: true, matchKeys: ["메이코", "MEIKO"] }, { id: "kaito_w", name: "KAITO", img: "/icons/characters/KAITO_w.png", isVirtual: true, matchKeys: ["카이토", "KAITO"] } ] },
+  { id: "n25", name: "25시, 나이트코드에서.", logo: "/icons/Niigo.png", chars: [ { id: "kanade", name: "요이사키 카나데", img: "/icons/characters/Kanade.png" }, { id: "mafuyu", name: "아사히나 마후유", img: "/icons/characters/Mafuyu.png" }, { id: "ena", name: "시노노메 에나", img: "/icons/characters/Ena.png" }, { id: "mizuki", name: "아키야마 미즈키", img: "/icons/characters/Mizuki.png" }, { id: "miku_n", name: "하츠네 미쿠", img: "/icons/characters/MIKU_n.png", isVirtual: true, matchKeys: ["미쿠"] }, { id: "rin_n", name: "카가미네 린", img: "/icons/characters/RIN_n.png", isVirtual: true, matchKeys: ["린"] }, { id: "ren_n", name: "카가미네 렌", img: "/icons/characters/REN_n.png", isVirtual: true, matchKeys: ["렌"] }, { id: "luka_n", name: "메구리네 루카", img: "/icons/characters/LUKA_n.png", isVirtual: true, matchKeys: ["루카"] }, { id: "meiko_n", name: "MEIKO", img: "/icons/characters/MEIKO_n.png", isVirtual: true, matchKeys: ["메이코", "MEIKO"] }, { id: "kaito_n", name: "KAITO", img: "/icons/characters/KAITO_n.png", isVirtual: true, matchKeys: ["카이토", "KAITO"] } ] }
+];
+
+const ATTR_FILTERS: AttrDef[] = [
+  { id: "pure", name: "퓨어", img: "/icons/attrs/pure.png" },
+  { id: "happy", name: "해피", img: "/icons/attrs/happy.png" },
+  { id: "cute", name: "큐트", img: "/icons/attrs/cute.png" },
+  { id: "mysterious", name: "미스테리어스", img: "/icons/attrs/mysterious.png" },
+  { id: "cool", name: "쿨", img: "/icons/attrs/cool.png" }
+];
+
+const SKILL_FILTERS: SkillDef[] = [
+  { id: "score", name: "스업", img: "/icons/skills/score_x.png", matchKeys: ["스업"] },
+  { id: "condition_group", name: "조건부 스업", img: "/icons/skills/condition_x.png", 
+    subs: [ { id: "cond_perfect", name: "퍼스업", matchKeys: ["퍼스업"] }, { id: "cond_good", name: "굿스업", matchKeys: ["굿스업"] }, { id: "cond_life", name: "체스업", matchKeys: ["체스업"] }, { id: "cond_bp", name: "블페", matchKeys: ["블페"] }, { id: "cond_team", name: "팀스업", matchKeys: ["팀스업"] } ] 
+  },
+  { id: "perfect", name: "판정 강화", img: "/icons/skills/perfect_x.png", matchKeys: ["판강"] },
+  { id: "heal", name: "라이프 회복", img: "/icons/skills/heal_x.png", matchKeys: ["힐"] }
+];
+
+const ALL_SKILL_TARGETS = [
+  ...SKILL_FILTERS.filter(s => s.matchKeys),
+  ...(SKILL_FILTERS.find(s => s.id === "condition_group")?.subs || [])
+];
+
+const TYPE_FILTERS: TypeFilterDef[] = [
+  { id: "normal", name: "통상", img: "/icons/status/normal.png" },
+  { id: "limited", name: "한정/페스/월링", img: "/icons/status/limited.png" },
+  { id: "collab", name: "콜라보", isText: true }
+];
+
+const HAIR_FILTERS: HairFilterDef[] = [
+  { id: "hair_o", name: "헤어 O", img: "/icons/status/hair_o.png" },
+  { id: "hair_x", name: "헤어 X", img: "/icons/status/hair_x.png" }
+];
+
+const COLLAB_FILTERS = [
+  { id: "collab_evil", name: "에빌", matchKeys: ["에빌", "악의", "대죄", "evillious"] },
+  { id: "collab_sanrio", name: "산리오", matchKeys: ["산리오", "sanrio", "SEKAI에서 Hello♡ 멋진 만남"] },
+  { id: "collab_enstar", name: "앙스타", matchKeys: ["앙스타", "앙상블", "ensemble"] },
+  { id: "collab_tamagotchi", name: "다마고치", matchKeys: ["다마고치", "tamagotchi"] }
+];
+
+const getSkillBonusPercentage = (skillType: string, level: number, unit: string) => {
+  const safeLevel = Math.max(1, Math.min(4, level)); 
+  const idx = safeLevel - 1;
+  
+  switch(skillType) {
+    case "스업": return [100, 105, 110, 120][idx];
+    case "퍼스업": return [110, 115, 120, 130][idx];
+    case "굿스업": return [120, 125, 130, 140][idx];
+    case "체스업": return [120, 125, 130, 140][idx];
+    case "판강": return [80, 85, 90, 100][idx];
+    case "힐": return [80, 85, 90, 100][idx];
+    case "팀스업": return [130, 135, 140, 150][idx]; 
+    case "블페": 
+      const isVS = unit === "무소속 / VIRTUAL SINGER" || unit.includes("버싱") || unit.includes("VS") || unit.toLowerCase().includes("virtual");
+      if (isVS) return [130, 135, 140, 150][idx];
+      return [120, 130, 140, 150][idx];
+    default: return 0;
+  }
+};
+
+const getMockEventBonus = (card: FinalCardInfo) => {
+  let bonus = 0;
+  if (card.attribute === "cute") bonus += 25; 
+  if (card.character === "호시노 이치카") bonus += 25; 
+  if (bonus === 50) bonus += 20; 
+  return bonus > 0 ? bonus + 20 : 0; 
+};

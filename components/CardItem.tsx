@@ -8,6 +8,9 @@ interface CardItemProps {
   userState?: UserCardState;
   showPostAwake?: boolean; // 상단의 전체 토글(각전/각후) 상태
   onClick: (card: FinalCardInfo) => void; // 클릭 시 모달 띄우는 함수
+  sortOrder?: "newest" | "oldest" | "score" | "bonus";
+  scoreBonus?: number;
+  eventBonus?: number;
 }
 
 export default function CardItem({ card, userState, showPostAwake = false, onClick }: CardItemProps) {
