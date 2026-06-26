@@ -34,7 +34,7 @@ const RinMmj = defineCharacterCards("모모점", "카가미네 린", "VS", "RIN"
           },
           media: {
             gachaBannerPath: "/gachas/22y/banner_22_07_m.png",
-            eventBannerPath: "/events/22y/banner_22_07_m.png",
+            eventBannerPath: "/events/22y/banner_22_06_m.png",
             songName: "모어! 점프! 모어!",
             songJacketPath: "/jacket/22y/MORE_JUMP_MORE.png",
           },
@@ -86,7 +86,7 @@ const RinWxs = defineCharacterCards("원더쇼", "카가미네 린", "VS", "RIN"
           },
           media: {
             gachaBannerPath: "/gachas/22y/banner_22_13.png",
-            eventBannerPath: "/events/22y/banner_22_13.png",
+            eventBannerPath: "/events/22y/banner_22_12.png",
           },
           costume: {
             hasCostume: true,
