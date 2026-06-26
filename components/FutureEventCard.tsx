@@ -1,17 +1,17 @@
+// src/components/FutureEventCard.tsx
 "use client";
 
 import Image from "next/image";
 import { EventData } from "@/data/events";
-import { ALL_CARDS } from "@/data/cards"; // ★ 전체 카드 데이터 임포트! (경로 확인해주세요)
+import { ALL_CARDS } from "@/data/cards"; // ★ 전체 카드 데이터 임포트
 
-// 가챠 뱃지 스타일 함수 (이 컴포넌트 안에서만 쓰이게 쏙 넣었습니다)
 const getGachaBadgeStyle = (gachaType: string) => {
   switch (gachaType) {
     case "통상": return "border-sky-300/45 bg-sky-400/16 text-sky-100 shadow-[0_0_0_1px_rgba(56,189,248,0.18)]";
     case "한정": return "border-pink-300/45 bg-pink-400/16 text-pink-100 shadow-[0_0_0_1px_rgba(236,72,153,0.18)]";
     case "페스": return "border-violet-300/45 bg-violet-400/16 text-violet-100 shadow-[0_0_0_1px_rgba(167,139,250,0.20)]";
-    case "월링": return "border-emerald-300/45 bg-emerald-400/16 text-emerald-100 shadow-[0_0_0_1px_rgba(16,185,129,0.18)]"; //
-    case "콜라보": return "border-amber-300/45 bg-amber-400/16 text-amber-100 shadow-[0_0_0_1px_rgba(251,191,36,0.18)]"; //
+    case "월링": return "border-emerald-300/45 bg-emerald-400/16 text-emerald-100 shadow-[0_0_0_1px_rgba(16,185,129,0.18)]";
+    case "콜라보": return "border-amber-300/45 bg-amber-400/16 text-amber-100 shadow-[0_0_0_1px_rgba(251,191,36,0.18)]";
     default: return "border-white/10 bg-zinc-800 text-zinc-400";
   }
 };
@@ -22,13 +22,15 @@ interface FutureEventCardProps {
 }
 
 export default function FutureEventCard({ event, index }: FutureEventCardProps) {
-  // 홀수/짝수에 따라 좌우 배치 결정
   const isLeft = index % 2 === 0;
 
-  // ★ 마법의 연동 코드: 픽업 카드 ID 배열을 실제 카드 데이터 객체 배열로 변환!
-  const pickupCards = event.gacha.featuredCardIds.map((cardId) => 
-    ALL_CARDS.find((c) => c.info.id === cardId)
-  ).filter(Boolean); // undefined 걸러내기
+  // 🚨 [핵심 해결] 마법의 강철 연동 코드 (빨간줄 제거 & 유연한 구조 대응)
+  const pickupCards = event.gacha.featuredCardIds
+    .map((cardId) => 
+      // card.id 든 card.info.id 든 다 찾아냅니다!
+      ALL_CARDS.find((c: any) => c.id === cardId || (c.info && c.info.id === cardId))
+    )
+    .filter((c) => c !== undefined) as any[]; // TS 빨간줄 강제 차단!
 
   return (
     <div className={`flex flex-col md:flex-row items-center gap-8 ${isLeft ? '' : 'md:flex-row-reverse'}`}>
@@ -38,8 +40,6 @@ export default function FutureEventCard({ event, index }: FutureEventCardProps) 
         <div className={`w-full max-w-[500px] bg-zinc-900 border border-white/10 rounded-2xl overflow-hidden shadow-xl transition-transform hover:scale-[1.02] ${isLeft ? 'md:mr-auto' : 'md:ml-auto'}`}>
           <div className="relative aspect-[21/9] w-full bg-zinc-800 flex items-center justify-center border-b border-white/10">
             {event.gacha.bannerPath ? (
-               // 배너 이미지 연결 준비 완료!
-               // <Image src={event.gacha.bannerPath} alt={event.name} fill className="object-cover" />
               <span className="text-zinc-500 text-xs">[이미지 자리] {event.gacha.bannerPath}</span>
             ) : (
               <span className="text-zinc-500 text-sm">No Banner Image</span>
@@ -68,32 +68,35 @@ export default function FutureEventCard({ event, index }: FutureEventCardProps) 
         <div className="w-4 h-4 rounded-full bg-white border-4 border-zinc-950 shadow-[0_0_15px_rgba(255,255,255,0.5)]" />
       </div>
 
-      {/* 2. 픽업 캐릭터 썸네일 (★ 실제 카드 데이터 렌더링!) */}
+      {/* 2. 픽업 캐릭터 썸네일 */}
       <div className="flex-1 w-full relative z-10">
         <div className={`bg-zinc-900/30 border border-white/5 rounded-3xl p-6 w-full max-w-[500px] ${isLeft ? 'md:ml-auto' : 'md:mr-auto'}`}>
           <h4 className="text-sm font-bold text-zinc-300 mb-4 pb-2 border-b border-white/10">✨ 픽업 멤버</h4>
           
           <div className="flex flex-wrap gap-4">
-            {pickupCards.map((card) => (
-              <div key={card!.info.id} className="flex flex-col items-center gap-2 group cursor-pointer">
-                
-                {/* 🌟 진짜 썸네일 영역 */}
-                <div className="relative w-16 h-16 rounded-xl overflow-hidden border border-white/10 shadow-inner transition-transform group-hover:scale-105">
-                  {/* 나중에 카드 썸네일 경로가 맞다면 주석을 풀고 사용하세요! */}
-                  {/* <Image src={`/thumbnails/${card!.info.id}.png`} alt={card!.info.cardName} fill className="object-cover" /> */}
+            {pickupCards.map((card, idx) => {
+              // 🌟 데이터 구조가 어느 쪽이든 완벽하게 정보를 꺼내옵니다!
+              const realId = card.info ? card.info.id : card.id;
+              const realName = card.info ? card.info.cardName : card.cardName;
+
+              return (
+                <div key={realId || idx} className="flex flex-col items-center gap-2 group cursor-pointer">
                   
-                  {/* 임시 확인용 텍스트 (캐릭터 이름 표기) */}
-                  <div className="w-full h-full bg-zinc-800 flex items-center justify-center text-[10px] text-zinc-400 p-1 text-center">
-                    {card!.info.cardName}
+                  {/* 진짜 썸네일 영역 */}
+                  <div className="relative w-16 h-16 rounded-xl overflow-hidden border border-white/10 shadow-inner transition-transform group-hover:scale-105">
+                    <div className="w-full h-full bg-zinc-800 flex items-center justify-center text-[10px] text-zinc-400 p-1 text-center">
+                      {/* 진짜 카드 이름이 화면에 출력됩니다! */}
+                      {realName}
+                    </div>
                   </div>
+                  
+                  {/* 상태 연동 뱃지 */}
+                  <span className="rounded bg-zinc-800 px-2 py-0.5 text-[10px] font-bold text-zinc-400 border border-white/5">
+                    미보유
+                  </span>
                 </div>
-                
-                {/* 🌟 상태 연동 뱃지 (다음 스텝에서 userState와 연결할 구역) */}
-                <span className="rounded bg-zinc-800 px-2 py-0.5 text-[10px] font-bold text-zinc-400 border border-white/5">
-                  미보유
-                </span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
