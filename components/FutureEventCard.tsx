@@ -4,7 +4,6 @@
 import Image from "next/image";
 import { EventData } from "@/data/events";
 import { ALL_CARDS } from "@/data/cards"; 
-// 🌟 새롭게 불러오는 진짜 카드 조각과 타입들!
 import CardItem from "@/components/CardItem"; 
 import { UserCardState } from "@/app/cards/page";
 import { FinalCardInfo } from "@/data/cards/template";
@@ -21,15 +20,16 @@ const getGachaBadgeStyle = (gachaType: string) => {
   }
 };
 
-// 🌟 Props에 진짜 상태(userStates)와 모달 띄우기(onCardClick) 함수가 추가되었습니다!
 interface FutureEventCardProps {
   event: EventData;
   index: number;
   userStates: Record<string, UserCardState>; 
   onCardClick: (card: FinalCardInfo) => void; 
+  // 🌟 각전/각후 상태를 받는 통로 추가!
+  showPostAwake: boolean; 
 }
 
-export default function FutureEventCard({ event, index, userStates, onCardClick }: FutureEventCardProps) {
+export default function FutureEventCard({ event, index, userStates, onCardClick, showPostAwake }: FutureEventCardProps) {
   const isLeft = index % 2 === 0;
 
   // 마법의 강철 연동 코드 (카드 데이터 찾기)
@@ -75,7 +75,7 @@ export default function FutureEventCard({ event, index, userStates, onCardClick 
         <div className="w-4 h-4 rounded-full bg-white border-4 border-zinc-950 shadow-[0_0_15px_rgba(255,255,255,0.5)]" />
       </div>
 
-      {/* 🌟 픽업 캐릭터 썸네일 영역 (가장 많이 바뀐 곳!) */}
+      {/* 픽업 캐릭터 썸네일 영역 */}
       <div className="flex-1 w-full relative z-10">
         <div className={`bg-zinc-900/30 border border-white/5 rounded-3xl p-6 w-full max-w-[500px] ${isLeft ? 'md:ml-auto' : 'md:mr-auto'}`}>
           <h4 className="text-sm font-bold text-zinc-300 mb-4 pb-2 border-b border-white/10">✨ 픽업 멤버</h4>
@@ -84,16 +84,16 @@ export default function FutureEventCard({ event, index, userStates, onCardClick 
             {pickupCards.map((card, idx) => {
               const realId = card.info ? card.info.id : card.id;
               
-              // 🌟 현재 카드의 진짜 내 상태(보유/목표)를 가져옵니다!
+              // 현재 카드의 진짜 내 상태(보유/목표) 가져오기
               const myState = userStates[realId]; 
 
               return (
                 <div key={realId || idx} className="w-[100px] shrink-0">
-                  {/* 🌟 기존의 수동 썸네일/뱃지 코드를 지우고, 내 카드 탭에서 만든 진짜 카드 조각을 꽂아 넣습니다! */}
                   <CardItem 
                     card={card} 
                     userState={myState} 
                     onClick={onCardClick} 
+                    showPostAwake={showPostAwake} // 🌟 2. 진짜 카드 조각에 신호 전달!
                   />
                 </div>
               );
