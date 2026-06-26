@@ -18,7 +18,6 @@ export default function CardDetailModal({
   onUpdateState,
   onClose,
 }: CardDetailModalProps) {
-  // 🌟 [상태] 일러스트 세로 확장 모드 활성화 여부
   const [isExpandMode, setIsExpandMode] = useState(false);
 
   if (!card) return null;
@@ -87,7 +86,7 @@ export default function CardDetailModal({
     const originalMap: Record<string, string> = {
       "호시노 이치카": "Ichika", "텐마 사키": "Saki", "모치즈키 호나미": "Honami", "히노모리 시호": "Shiho",
       "하나사토 미노리": "Minori", "키리타니 하루카": "Haruka", "모모이 아이리": "Airi", "히노모리 시즈쿠": "Shizuku",
-      "아즈사와 코하네": "Kohane", "시라이시 An": "An", "시노노메 아키토": "Akito", "아오야기 토우야": "Toya",
+      "아즈사와 코하네": "Kohane", "시라이시 안": "An", "시노노메 아키토": "Akito", "아오야기 토우야": "Toya",
       "텐마 츠카사": "Tsukasa", "오토리 에무": "Emu", "쿠사나기 네네": "Nene", "카미시로 루이": "Rui",
       "요이사키 카나데": "Kanade", "아사히나 마후유": "Mafuyu", "시노노메 에나": "Ena", "아키야마 미즈키": "Mizuki"
     };
@@ -135,7 +134,6 @@ export default function CardDetailModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md transition-opacity">
       <div className="absolute inset-0" onClick={onClose} />
 
-      {/* 모달 창 자체의 전체적인 패딩과 크기는 늘 유지됩니다. */}
       <div className="relative w-full max-w-6xl max-h-[95vh] overflow-y-auto rounded-3xl border border-white/10 bg-zinc-950 p-6 shadow-2xl transition-all flex flex-col custom-scrollbar">
         
         <button 
@@ -146,7 +144,6 @@ export default function CardDetailModal({
         </button>
 
         {/* 🌌 상단 배너 구역 */}
-        {/* 🌟 [수정됨] 토글 버튼에 따라 높이가 h-64 md:h-[360px](잘림)에서 h-auto(원본 비율 전체 노출)로 늘어납니다! */}
         <div className={`relative -mx-6 -mt-6 ${isExpandMode ? 'h-auto' : 'h-64 md:h-[360px] border-b border-white/10'} shrink-0 flex overflow-hidden bg-zinc-900 transition-all duration-300 ease-in-out`}>
           {card.hasAwakening ? (
             <>
@@ -160,9 +157,7 @@ export default function CardDetailModal({
               </div>
             </>
           ) : (
-            // 특훈 X 카드 구역
             <div className="relative w-full flex flex-col justify-center overflow-hidden z-10">
-              {/* 🌟 [수정됨] 확장 모드일 때는 object-contain으로 이미지 비율을 온전히 보존하며 세로 길이를 늘려줍니다! */}
               <img 
                 src={preIllustration} 
                 alt="일러스트" 
@@ -170,20 +165,18 @@ export default function CardDetailModal({
               />
               <div className="absolute bottom-4 left-5 inline-flex items-center rounded-full border border-white/20 bg-black/60 px-3 py-1.5 text-xs font-semibold text-zinc-100 backdrop-blur-md pointer-events-none tracking-wider shadow-md">일러스트</div>
               
-              {/* 🌟 [수정됨] 우측 하단 구석에 완벽하게 안착한 비율 확장 토글 버튼! */}
               <button
                 onClick={() => setIsExpandMode(!isExpandMode)}
                 className="absolute bottom-4 right-4 z-30 w-10 h-10 rounded-xl bg-black/60 border border-white/10 flex items-center justify-center text-white backdrop-blur-sm hover:bg-zinc-800 transition-all text-xl shadow-lg active:scale-95"
                 title={isExpandMode ? "축소하기" : "넓게 보기"}
               >
-                {/* 🌟 [동적 아이콘 변신] 비활성화 상태에선 ⇲, 활성화 상태에선 ⇱ 가 됩니다! */}
                 {isExpandMode ? "⇱" : "⇲"}
               </button>
             </div>
           )}
         </div>
 
-        {/* 📝 하단부 상세정보 구역 (이제 숨겨지지 않고 무조건 아래에 렌더링되며, 스롤해서 감상 가능합니다!) */}
+        {/* 📝 하단부 상세정보 구역 */}
         <div className="flex flex-col md:flex-row gap-8 pt-2 shrink-0 mt-6">
           
           <div className="flex-[3] flex flex-col gap-6">
@@ -193,55 +186,44 @@ export default function CardDetailModal({
                 {getUnitLogo(card.unit || "") && (
                   <img src={getUnitLogo(card.unit || "")} alt={card.unit} className="h-[28px] w-auto object-contain drop-shadow-md" />
                 )}
+                
+                {/* 🌟 [핵심 변경] 국기를 이름의 좌측으로 이동했습니다! */}
                 <h2 className="text-xl font-bold text-zinc-100 flex items-center gap-1.5">
-                  {card.cardName}
                   {isReleased && <span className="text-[16px] drop-shadow-sm" title="한국 서버 출시됨">🇰🇷</span>}
+                  {card.cardName}
                 </h2>
                 <span className="text-xl font-bold text-zinc-100">{card.character}</span>
               </div>
               
               <div className="flex flex-wrap items-center justify-end gap-1.5 shrink-0">
-                {/* ✨ 1. 스킬 뱃지 */}
                 {skillInfo.src ? (
                   <div className="relative group flex items-center justify-center cursor-help">
                     <img src={skillInfo.src} alt={skillInfo.label} className="w-[26px] h-[26px] object-contain drop-shadow-md shrink-0" />
                     <div className="pointer-events-none absolute bottom-full mb-3 left-1/2 -translate-x-1/2 opacity-0 transition-all duration-200 group-hover:opacity-100 z-50">
                       <div className="relative flex flex-col items-center">
-                        <div className="relative z-10 whitespace-nowrap rounded-md border border-zinc-600 bg-zinc-950 px-2.5 py-1.5 text-[11px] font-bold text-zinc-200 shadow-xl">
-                          {skillInfo.label}
-                        </div>
+                        <div className="relative z-10 whitespace-nowrap rounded-md border border-zinc-600 bg-zinc-950 px-2.5 py-1.5 text-[11px] font-bold text-zinc-200 shadow-xl">{skillInfo.label}</div>
                         <div className="absolute -bottom-[4px] z-20 h-2 w-2 rotate-45 border-b border-r border-zinc-600 bg-zinc-950"></div>
                       </div>
                     </div>
                   </div>
                 ) : (
-                  skillInfo.label && (
-                    <span className="shrink-0 inline-flex items-center px-2.5 py-1 text-[11px] font-bold rounded-full border border-purple-500/20 bg-purple-500/10 text-purple-300 tracking-wide">
-                      {skillInfo.label}
-                    </span>
-                  )
+                  skillInfo.label && <span className="shrink-0 inline-flex items-center px-2.5 py-1 text-[11px] font-bold rounded-full border border-purple-500/20 bg-purple-500/10 text-purple-300 tracking-wide">{skillInfo.label}</span>
                 )}
 
-                {/* 💧 2. 속성 뱃지 */}
                 {attrInfo.src ? (
                   <div className="relative group flex items-center justify-center cursor-help ml-0.5">
                     <img src={attrInfo.src} alt={attrInfo.label} className="w-[26px] h-[26px] object-contain drop-shadow-md shrink-0" />
                     <div className="pointer-events-none absolute bottom-full mb-3 left-1/2 -translate-x-1/2 opacity-0 transition-all duration-200 group-hover:opacity-100 z-50">
                       <div className="relative flex flex-col items-center">
-                        <div className="relative z-10 whitespace-nowrap rounded-md border border-zinc-600 bg-zinc-950 px-2.5 py-1.5 text-[11px] font-bold text-zinc-200 shadow-xl">
-                          {attrInfo.label}
-                        </div>
+                        <div className="relative z-10 whitespace-nowrap rounded-md border border-zinc-600 bg-zinc-950 px-2.5 py-1.5 text-[11px] font-bold text-zinc-200 shadow-xl">{attrInfo.label}</div>
                         <div className="absolute -bottom-[4px] z-20 h-2 w-2 rotate-45 border-b border-r border-zinc-600 bg-zinc-950"></div>
                       </div>
                     </div>
                   </div>
                 ) : (
-                  <span className="shrink-0 inline-flex items-center px-2.5 py-1 text-[11px] font-bold rounded-full border border-zinc-700 bg-zinc-800/50 text-zinc-300 tracking-wide ml-0.5">
-                    {attrInfo.label}
-                  </span>
+                  <span className="shrink-0 inline-flex items-center px-2.5 py-1 text-[11px] font-bold rounded-full border border-zinc-700 bg-zinc-800/50 text-zinc-300 tracking-wide ml-0.5">{attrInfo.label}</span>
                 )}
 
-                {/* 🎫 3. 가챠 뱃지 */}
                 <span className={`shrink-0 inline-flex items-center px-3 py-1 text-xs font-bold rounded-full border tracking-wide transition-all ml-0.5 ${currentGachaStyle}`}>
                   {card.gachaType}
                 </span>

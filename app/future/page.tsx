@@ -1,5 +1,7 @@
 "use client";
 
+<div className="... max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 w-full"></div>
+
 import Image from "next/image";
 import { FUTURE_EVENTS } from "@/data/events"; // 경로에 맞게 수정해주세요!
 
