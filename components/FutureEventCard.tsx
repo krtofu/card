@@ -42,11 +42,9 @@ export default function FutureEventCard({ event, index }: FutureEventCardProps) 
     .filter((c) => c !== undefined) as any[];
 
   // 🌟 [임시 테스트용] 가짜 유저 상태 데이터
-  // 나중에 전역 상태(Context, Zustand 등)나 LocalStorage에서 진짜 상태를 불러와서 교체할 부분입니다!
   const mockUserState: Record<string, string> = {
     "ln_Ichika_001": "보유", // 이치카는 뽑았다!
     "VS_MIKU_001": "목표",   // 미쿠는 목표 중!
-    // 나머지는 자동으로 '미보유' 처리됨
   };
 
   return (
@@ -96,32 +94,36 @@ export default function FutureEventCard({ event, index }: FutureEventCardProps) 
               const realId = card.info ? card.info.id : card.id;
               const realName = card.info ? card.info.cardName : card.cardName;
               
-              // 🌟 2. 썸네일 이미지 경로 추출! (데이터 구조에 맞게 유연하게 처리)
-              // 만약 유저님 데이터에 썸네일 경로가 다르다면 이 부분을 수정하면 됩니다!
-              const thumbPath = card.media?.thumbPrePath || `/thumbnails/${realId}.png`;
+              // 🌟 2. [핵심 업데이트] 썸네일 경로 무적 탐색기!
+              // media 안에 있든, 밖에 있든, 특훈 전이든, 특훈 후든 일단 다 찔러봅니다.
+              const thumbPath = 
+                card.media?.thumbPrePath || 
+                card.media?.thumbPostPath || 
+                card.thumbPrePath || 
+                card.thumbPostPath || 
+                card.iconPath || 
+                `/thumbnails/${realId}.png`;
 
-              // 🌟 3. 현재 카드의 내 상태 확인 (보유/목표/미보유)
+              // 3. 현재 카드의 내 상태 확인
               const myStatus = mockUserState[realId] || "미보유";
 
               return (
                 <div key={realId || idx} className="flex flex-col items-center gap-2 group cursor-pointer">
                   
-                  {/* 🌟 드디어 개방된 진짜 썸네일 영역! */}
+                  {/* 진짜 썸네일 영역 */}
                   <div className="relative w-16 h-16 rounded-xl overflow-hidden border border-white/10 shadow-inner transition-transform group-hover:scale-105 bg-zinc-800">
-                    {/* 👇 이미지가 깨질 때를 대비해 진짜 이름도 깔아둡니다. */}
                     <div className="absolute inset-0 flex items-center justify-center text-[9px] text-zinc-500 p-1 text-center z-0">
                       {realName}
                     </div>
-                    {/* 👇 진짜 썸네일 렌더링! */}
                     <img 
                       src={thumbPath} 
                       alt={realName} 
                       className="absolute inset-0 w-full h-full object-cover z-10"
-                      onError={(e) => { e.currentTarget.style.display = 'none'; }} // 이미지 없으면 텍스트 보이게 스르륵 숨김
+                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
                     />
                   </div>
                   
-                  {/* 🌟 상태 연동 뱃지 (보유/목표/미보유 색상 자동 변경) */}
+                  {/* 상태 연동 뱃지 */}
                   <span className={`rounded px-2 py-0.5 text-[10px] font-bold border ${getStateBadgeStyle(myStatus)}`}>
                     {myStatus === "보유" ? "✓ 보유" : myStatus === "목표" ? "⭐ 목표" : "미보유"}
                   </span>
