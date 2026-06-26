@@ -21,6 +21,24 @@ const RinLeoneed = defineCharacterCards("레오니", "카가미네 린", "VS", "
 // -> 얼굴 아이콘: RIN_m.png 자동 매핑
 const RinMmj = defineCharacterCards("모모점", "카가미네 린", "VS", "RIN", {
   cards: [
+        {
+          info: {
+            id: "VS_RIN_002",
+            cardName: "[네가 웃어 준다면]",
+            attribute: "cute",
+            gachaType: "통상",
+            gachaPoolName: "MORE MORE SMILE! 뽑기",
+            eventName: "지금부터 RE:START!",
+            skillType: "퍼스업",
+            releaseDate: "2022-06-30",
+          },
+          media: {
+            gachaBannerPath: "/gachas/22y/banner_22_07_m.png",
+            eventBannerPath: "/events/22y/banner_22_07_m.png",
+            songName: "모어! 점프! 모어!",
+            songJacketPath: "/jacket/22y/MORE_JUMP_MORE.png",
+          },
+        },
 
   ]
 });
@@ -40,7 +58,7 @@ const RinVbs = defineCharacterCards("비배스", "카가미네 린", "VS", "RIN"
             releaseDate: "2022-05-20",
           },
           media: {
-            gachaBannerPath: "/gachas/22y/banner_22_1.png",
+            gachaBannerPath: "/gachas/22y/banner_22_01.png",
           },
           costume: {
             hasCostume: true,
@@ -55,6 +73,26 @@ const RinVbs = defineCharacterCards("비배스", "카가미네 린", "VS", "RIN"
 // -> 얼굴 아이콘: RIN_w.png 자동 매핑
 const RinWxs = defineCharacterCards("원더쇼", "카가미네 린", "VS", "RIN", {
   cards: [
+        {
+          info: {
+            id: "VS_RIN_003",
+            cardName: "[우정의 큐피드]",
+            attribute: "cute",
+            gachaType: "통상",
+            gachaPoolName: "Rockin'Parade 뽑기",
+            eventName: "울려 퍼지는 트와일라이트 퍼레이드",
+            skillType: "힐",
+            releaseDate: "2022-08-17",
+          },
+          media: {
+            gachaBannerPath: "/gachas/22y/banner_22_13.png",
+            eventBannerPath: "/events/22y/banner_22_13.png",
+          },
+          costume: {
+            hasCostume: true,
+            costumeName: "푹신푹신 록",
+          },
+        },
 
   ]
 });
