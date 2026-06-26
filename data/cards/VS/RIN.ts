@@ -45,7 +45,7 @@ const RinLeoneed = defineCharacterCards("레오니", "카가미네 린", "VS", "
             releaseDate: "2022-12-05",
           },
           media: {
-            gachaBannerPath: "/gachas/22y/banner_22_27_l.png",
+            gachaBannerPath: "/gachas/22y/banner_22_28_l.png",
             eventBannerPath: "/events/22y/banner_22_27_l.png",
             songName: "프롬 도쿄",
             songJacketPath: "/jacket/22y/From_Tokyo.png",
