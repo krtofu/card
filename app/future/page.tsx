@@ -1,9 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import { FUTURE_EVENTS } from "@/data/events"; // 경로에 맞게 수정해주세요!
+import { FUTURE_EVENTS } from "@/data/events"; // 우리가 짠 뼈대 경로!
 
-// 기존에 쓰시던 가챠 뱃지 스타일 재활용!
+// 우리가 만든 영롱한 뱃지 스타일!
 const getGachaBadgeStyle = (gachaType: string) => {
   switch (gachaType) {
     case "통상": return "border-sky-300/45 bg-sky-400/16 text-sky-100 shadow-[0_0_0_1px_rgba(56,189,248,0.18)]";
@@ -15,75 +15,93 @@ const getGachaBadgeStyle = (gachaType: string) => {
 
 export default function FuturePage() {
   return (
-    /* 🌟 핵심 해결 포인트: 유저님이 원하셨던 최대 너비(1440px), 중앙 정렬(mx-auto), 반응형 좌우 여백(px-4...)을 여기에 쏙 넣어줬습니다! */
-    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 w-full space-y-8 pb-20">
+    // 여백이 넉넉한 레이아웃 유지!
+    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 w-full py-10 min-h-screen text-zinc-100">
       
-      <header className="space-y-1 mt-6">
-        <h1 className="text-2xl font-extrabold tracking-tight">미래시</h1>
-        <p className="text-sm text-zinc-400">앞으로 다가올 가챠 일정과 픽업 멤버를 확인해보세요.</p>
-      </header>
+      {/* 🌟 페이지 헤더 */}
+      <div className="mb-12 border-b border-white/10 pb-6 text-center mt-6">
+        <h1 className="text-3xl font-bold tracking-tight text-white mb-2">📅 미래시 타임라인</h1>
+        <p className="text-zinc-400 text-sm">앞으로 다가올 가챠 일정과 픽업 멤버를 확인해보세요!</p>
+      </div>
 
-      <div className="space-y-6">
-        {FUTURE_EVENTS.map((event) => (
-          <div key={event.id} className="overflow-hidden rounded-2xl border border-white/10 bg-zinc-900/40 backdrop-blur-md">
+      {/* 🌟 타임라인 메인 컨테이너 */}
+      <div className="relative">
+        
+        {/* 가운데 수직 기준선 (PC에서만 보임) */}
+        <div className="absolute left-1/2 top-0 bottom-0 w-px bg-white/10 -translate-x-1/2 hidden md:block" />
+
+        <div className="space-y-16">
+          {FUTURE_EVENTS.map((event, index) => {
             
-            {/* 1. 배너 이미지 영역 */}
-            <div className="relative aspect-[21/9] w-full bg-zinc-800 border-b border-white/10 overflow-hidden">
-              {/* 이미지 경로가 확실할 때 렌더링하도록 처리 */}
-              {event.gacha.bannerPath ? (
-                // 실제 이미지가 준비되면 아래 Image 태그의 주석을 풀고 사용하세요!
-                // <Image src={event.gacha.bannerPath} alt={event.name} fill className="object-cover" />
-                <div className="absolute inset-0 flex items-center justify-center text-xs text-zinc-500">
-                  [이미지 자리] {event.gacha.bannerPath}
-                </div>
-              ) : null}
-              
-              {/* 가챠 타입 뱃지 (좌측 상단) */}
-              <div className="absolute left-3 top-3 flex gap-2">
-                {event.gacha.types.map((type, idx) => (
-                  <span 
-                    key={idx} 
-                    className={`rounded px-2 py-[2px] text-xs font-bold ${getGachaBadgeStyle(type)}`}
-                  >
-                    {type}
-                  </span>
-                ))}
-              </div>
-            </div>
+            // 핵심 로직: 홀수 번째는 왼쪽(isLeft = true), 짝수 번째는 오른쪽 교차 배치!
+            const isLeft = index % 2 === 0;
 
-            {/* 2. 하단 상세 정보 영역 */}
-            <div className="p-4 md:p-5">
-              {/* 가챠 이름 & 기간 */}
-              <div className="mb-5">
-                <h2 className="text-lg font-bold text-white md:text-xl">{event.name}</h2>
-                <p className="mt-1 text-xs text-zinc-400 font-medium">
-                  🕒 {event.period.start} ~ {event.period.end}
-                </p>
-              </div>
-
-              {/* 3. 픽업 캐릭터 썸네일 & 보유 상태 연동 (목업) */}
-              <div className="space-y-2">
-                <div className="text-xs font-bold text-zinc-500">픽업 멤버</div>
-                <div className="flex flex-wrap gap-3">
-                  {event.gacha.featuredCardIds.map((cardId) => (
-                    <div key={cardId} className="flex flex-col items-center gap-1.5">
-                      {/* 카드 썸네일 플레이스홀더 (나중에 실제 카드 썸네일로 교체) */}
-                      <div className="h-14 w-14 rounded-lg bg-zinc-800 border border-white/5 flex items-center justify-center text-[9px] text-zinc-500 break-all p-1 text-center shadow-inner">
-                        {cardId}
-                      </div>
+            return (
+              <div key={event.id} className={`flex flex-col md:flex-row items-center gap-8 ${isLeft ? '' : 'md:flex-row-reverse'}`}>
+                
+                {/* 1. 가챠 배너 영역 */}
+                <div className="flex-1 w-full relative z-10 flex justify-center">
+                  <div className={`w-full max-w-[500px] bg-zinc-900 border border-white/10 rounded-2xl overflow-hidden shadow-xl transition-transform hover:scale-[1.02] ${isLeft ? 'md:mr-auto' : 'md:ml-auto'}`}>
+                    
+                    <div className="relative aspect-[21/9] w-full bg-zinc-800 flex items-center justify-center border-b border-white/10">
+                      {event.gacha.bannerPath ? (
+                        <span className="text-zinc-500 text-xs">[이미지 자리] {event.gacha.bannerPath}</span>
+                      ) : (
+                        <span className="text-zinc-500 text-sm">No Banner Image</span>
+                      )}
                       
-                      {/* 상태 뱃지 (나중에 userState와 연동할 부분!) */}
-                      <span className="rounded bg-zinc-800 px-1.5 py-0.5 text-[10px] font-bold text-zinc-400 border border-white/5">
-                        미보유
-                      </span>
+                      {/* 우리 기능: 가챠 타입 다중 뱃지 */}
+                      <div className="absolute top-3 left-3 flex gap-2 z-20">
+                        {event.gacha.types.map((type, idx) => (
+                          <span key={idx} className={`px-2 py-0.5 text-xs font-bold rounded shadow-md backdrop-blur-md ${getGachaBadgeStyle(type)}`}>
+                            {type}
+                          </span>
+                        ))}
+                      </div>
                     </div>
-                  ))}
+                    
+                    <div className="p-4 bg-zinc-950/80 backdrop-blur-sm">
+                      <h3 className="text-lg font-bold text-white mb-1 truncate">{event.name}</h3>
+                      <p className="text-sm font-medium text-zinc-400">
+                        🕒 {event.period.start} ~ {event.period.end}
+                      </p>
+                    </div>
+                  </div>
                 </div>
-              </div>
 
-            </div>
-          </div>
-        ))}
+                {/* 가운데 시간 점 (PC에서만 보임) */}
+                <div className="hidden md:flex flex-col items-center justify-center relative z-20">
+                  <div className="w-4 h-4 rounded-full bg-white border-4 border-zinc-950 shadow-[0_0_15px_rgba(255,255,255,0.5)]" />
+                </div>
+
+                {/* 2. 픽업 캐릭터 썸네일 (우리 기능: 상태 연동 뼈대 적용) */}
+                <div className="flex-1 w-full relative z-10">
+                  <div className={`bg-zinc-900/30 border border-white/5 rounded-3xl p-6 w-full max-w-[500px] ${isLeft ? 'md:ml-auto' : 'md:mr-auto'}`}>
+                    <h4 className="text-sm font-bold text-zinc-300 mb-4 pb-2 border-b border-white/10">✨ 픽업 멤버</h4>
+                    
+                    <div className="flex flex-wrap gap-4">
+                      {event.gacha.featuredCardIds.map((cardId) => (
+                        <div key={cardId} className="flex flex-col items-center gap-2 group">
+                          {/* 썸네일 자리 */}
+                          <div className="w-16 h-16 rounded-xl bg-zinc-800 border border-white/10 flex items-center justify-center text-[10px] text-zinc-500 break-all p-1 text-center shadow-inner transition-transform group-hover:scale-105 cursor-pointer">
+                            {cardId}
+                          </div>
+                          
+                          {/* 상태 연동 뱃지 자리 */}
+                          <span className="rounded bg-zinc-800 px-2 py-0.5 text-[10px] font-bold text-zinc-400 border border-white/5">
+                            미보유
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            );
+          })}
+        </div>
+
       </div>
     </div>
   );
