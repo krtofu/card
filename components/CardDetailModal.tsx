@@ -336,7 +336,7 @@ export default function CardDetailModal({
                       userState.isOwned
                         ? "opacity-50 cursor-not-allowed bg-zinc-900 text-zinc-600 border-zinc-800"
                         : userState.isTarget
-                          ? "bg-pink-500/20 text-pink-300 border-pink-400/50 shadow-[0_0_10px_rgba(236,72,153,0.15)] active:scale-95"
+                          ? "bg-amber-500/20 text-amber-300 border-amber-400/50 shadow-[0_0_10px_rgba(245,158,11,0.15)] active:scale-95"
                           : "bg-zinc-800 text-zinc-400 border-zinc-700 hover:bg-zinc-700 hover:text-zinc-200 active:scale-95"
                     }`}
                   >
