@@ -6,6 +6,8 @@ import { ALL_CARDS } from "@/data/cards";
 import { FinalCardInfo } from "@/data/cards/template"; 
 import CardDetailModal from "@/components/CardDetailModal";
 import CardItem from "@/components/CardItem"; 
+// 🌟 1. 설정 모달 임포트! (경로 확인해주세요)
+import CharacterSettingsModal from "@/components/CharacterSettingsModal";
 
 export type UserCardState = {
   isOwned: boolean;
@@ -14,8 +16,8 @@ export type UserCardState = {
   skillLevel: number;
 };
 
-// 🌟 [수정됨] 1. 각후 상태(isAwakened)를 파라미터로 받도록 통로를 뚫었습니다!
-const getSkillBonusPercentage = (skillType: string, level: number, unit: string, isAwakened: boolean) => {
+// 🌟 2. [수정됨] 파라미터에 charRank 추가 & 블페 각후 완벽 계산식 적용!
+const getSkillBonusPercentage = (skillType: string, level: number, unit: string, isAwakened: boolean, charRank: number = 1) => {
   const safeLevel = Math.max(1, Math.min(4, level)); 
   const idx = safeLevel - 1;
   
@@ -28,11 +30,16 @@ const getSkillBonusPercentage = (skillType: string, level: number, unit: string,
     case "힐": return [80, 85, 90, 100][idx];
     case "팀스업": return [130, 135, 140, 150][idx]; 
     case "블페": 
-      // 🌟 2. 각후 상태라면 160%가 포함된 새로운 계산식을 탑니다!
       if (isAwakened) {
-        return [130, 140, 150, 160][idx]; // 각후(특훈 후) 수치
+        // 🌸 인게임 팩트 완벽 반영: (기본수치) + (랭크/2) -> 최대치 제한
+        const bases = [90, 95, 100, 110];
+        const maxLimits = [140, 145, 150, 160];
+        const base = bases[idx];
+        const maxLimit = maxLimits[idx];
+        const bloomBonus = Math.floor(charRank / 2);
+        return Math.min(maxLimit, base + bloomBonus);
       }
-      // 각전 상태일 때의 기존 수치
+      // 각전 상태
       const isVS = unit === "무소속 / VIRTUAL SINGER" || unit.includes("버싱") || unit.includes("VS") || unit.toLowerCase().includes("virtual");
       if (isVS) return [130, 135, 140, 150][idx];
       return [120, 130, 140, 150][idx];
@@ -53,6 +60,10 @@ export default function MyCardsPage() {
   const [activeModalCard, setActiveModalCard] = useState<FinalCardInfo | null>(null);
   const [mounted, setMounted] = useState(false);
   const [showPostAwake, setShowPostAwake] = useState(false);
+  
+  // 🌟 3. 모달 열림 상태 & 캐릭터 랭크 전역 상태 추가!
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [characterRanks, setCharacterRanks] = useState<Record<string, number>>({});
   
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest" | "score" | "bonus">("newest");
   const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
@@ -79,20 +90,32 @@ export default function MyCardsPage() {
 
   useEffect(() => {
     setMounted(true);
-    const saved = localStorage.getItem("sekard_user_card_states");
-    if (saved) try { setCardStates(JSON.parse(saved)); } catch (e) { console.error(e); }
+    // 카드 상태 로드
+    const savedCards = localStorage.getItem("sekard_user_card_states");
+    if (savedCards) try { setCardStates(JSON.parse(savedCards)); } catch (e) { console.error(e); }
+    
+    // 🌟 4. 저장된 캐릭터 랭크 로드
+    const savedRanks = localStorage.getItem("sekard_character_ranks");
+    if (savedRanks) try { setCharacterRanks(JSON.parse(savedRanks)); } catch(e) { console.error(e); }
   }, []);
 
   useEffect(() => {
-    if (isMobileFilterOpen) document.body.style.overflow = "hidden";
+    if (isMobileFilterOpen || isSettingsOpen) document.body.style.overflow = "hidden";
     else document.body.style.overflow = "auto";
     return () => { document.body.style.overflow = "auto"; };
-  }, [isMobileFilterOpen]);
+  }, [isMobileFilterOpen, isSettingsOpen]);
 
   const handleUpdateCardState = (id: string, newState: Partial<UserCardState>) => {
     const updated = { ...cardStates, [id]: { ...(cardStates[id] || { isOwned: false, isTarget: false, masterRank: 0, skillLevel: 1 }), ...newState } };
     setCardStates(updated);
     localStorage.setItem("sekard_user_card_states", JSON.stringify(updated));
+  };
+
+  // 🌟 5. 랭크 업데이트 및 로컬 스토리지 저장 함수
+  const updateCharacterRank = (charName: string, rank: number) => {
+    const newRanks = { ...characterRanks, [charName]: rank };
+    setCharacterRanks(newRanks);
+    localStorage.setItem("sekard_character_ranks", JSON.stringify(newRanks));
   };
 
   const toggleFilter = (list: string[], setList: (val: string[]) => void, id: string) => {
@@ -230,9 +253,13 @@ export default function MyCardsPage() {
     else if (sortOrder === "score") {
       const levelA = cardStates[a.id]?.isOwned ? (cardStates[a.id].skillLevel || 1) : refSkillLevel;
       const levelB = cardStates[b.id]?.isOwned ? (cardStates[b.id].skillLevel || 1) : refSkillLevel;
-      // 🌟 3. 정렬할 때도 showPostAwake(각후 토글 상태)를 넘겨줍니다!
-      const scoreA = getSkillBonusPercentage(a.skillType || "", levelA, a.unit || "", showPostAwake);
-      const scoreB = getSkillBonusPercentage(b.skillType || "", levelB, b.unit || "", showPostAwake);
+      
+      // 🌟 6. 정렬 로직에도 랭크(charRank) 넘겨주기!
+      const rankA = characterRanks[a.character] || 1;
+      const rankB = characterRanks[b.character] || 1;
+      const scoreA = getSkillBonusPercentage(a.skillType || "", levelA, a.unit || "", showPostAwake, rankA);
+      const scoreB = getSkillBonusPercentage(b.skillType || "", levelB, b.unit || "", showPostAwake, rankB);
+      
       if (scoreB !== scoreA) return scoreB - scoreA;
       return (b.releaseDate || "1970-01-01").localeCompare(a.releaseDate || "1970-01-01");
     }
@@ -565,6 +592,23 @@ export default function MyCardsPage() {
               {excludeCollab ? '🚫' : '🤝'}
             </button>
 
+            {/* 🌟 6. 새로 추가된 [⚙️ 설정] 버튼! (모바일/PC 반응형) */}
+            <button
+              onClick={() => setIsSettingsOpen(true)}
+              className="hidden sm:flex items-center justify-center gap-1.5 h-[34px] px-3 rounded-full bg-zinc-800/80 hover:bg-zinc-700 text-zinc-300 hover:text-white font-bold transition-all shadow-sm border border-white/10 text-[12px]"
+              title="엔진 설정"
+            >
+              ⚙️ 설정
+            </button>
+            <button
+              onClick={() => setIsSettingsOpen(true)}
+              className="sm:hidden flex items-center justify-center w-[34px] h-[34px] rounded-full bg-zinc-800/80 border border-white/10 text-zinc-400 text-[14px] shadow-sm transition-all"
+              title="엔진 설정"
+            >
+              ⚙️
+            </button>
+
+            {/* 썸네일 전환 버튼 */}
             <button onClick={() => setShowPostAwake(!showPostAwake)} className="p-1 rounded-full bg-zinc-900 border border-white/10 shrink-0 ml-auto sm:ml-0" aria-label="썸네일 전환">
               <img src={showPostAwake ? "/icons/post_star.png" : "/icons/pre_star.png"} alt="스위치" className="h-8 w-auto object-contain block" />
             </button>
@@ -579,6 +623,9 @@ export default function MyCardsPage() {
               const userState = cardStates[card.id];
               const levelToUse = userState?.isOwned ? (userState?.skillLevel || 1) : refSkillLevel;
               
+              {/* 🌟 7. 카드 렌더링 시에도 해당 카드의 캐릭터 랭크를 찾아서 보냅니다! */}
+              const charRank = characterRanks[card.character] || 1;
+              
               return (
                 <CardItem 
                   key={card.id}
@@ -586,8 +633,7 @@ export default function MyCardsPage() {
                   userState={userState}
                   showPostAwake={showPostAwake}
                   sortOrder={sortOrder}
-                  // 🌟 4. 카드를 렌더링할 때도 각후(showPostAwake) 상태를 넘겨줍니다!
-                  scoreBonus={getSkillBonusPercentage(card.skillType || "", levelToUse, card.unit || "", showPostAwake)}
+                  scoreBonus={getSkillBonusPercentage(card.skillType || "", levelToUse, card.unit || "", showPostAwake, charRank)}
                   eventBonus={getMockEventBonus(card)}
                   onClick={setActiveModalCard}
                 />
@@ -598,6 +644,14 @@ export default function MyCardsPage() {
       </div>
 
       <CardDetailModal card={activeModalCard} userState={cardStates[activeModalCard?.id || ""] || { isOwned: false, isTarget: false, masterRank: 0, skillLevel: 1 }} onUpdateState={handleUpdateCardState} onClose={() => setActiveModalCard(null)} />
+      
+      {/* 🌟 8. 설정 모달창 바닥에 장착! */}
+      <CharacterSettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        ranks={characterRanks}
+        onUpdateRank={updateCharacterRank}
+      />
     </div>
   );
 }
