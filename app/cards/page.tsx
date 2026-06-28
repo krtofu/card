@@ -13,7 +13,8 @@ export type UserCardState = {
   skillLevel: number;
 };
 
-const getSkillBonusPercentage = (skillType: string, level: number, unit: string, isAwakened: boolean, charRank: number = 1) => {
+// 🌟 [수정됨] isOwned 파라미터 추가! 미보유/목표중일 때는 최대 효율(maxLimits)을 쏴줍니다.
+const getSkillBonusPercentage = (skillType: string, level: number, unit: string, isAwakened: boolean, charRank: number = 1, isOwned: boolean = false) => {
   const safeLevel = Math.max(1, Math.min(4, level)); 
   const idx = safeLevel - 1;
   
@@ -22,12 +23,14 @@ const getSkillBonusPercentage = (skillType: string, level: number, unit: string,
   // 🌸 블룸 페스 (블페)
   if (skill.includes("블페") || skill.includes("블룸")) {
     if (isAwakened) {
-      // 🌟 [수정됨] 각전 수치와 비교하지 않고, 각후 수치를 "있는 그대로" 반환합니다!
-      const bases = [90, 95, 100, 110];
       const maxLimits = [140, 145, 150, 160];
-      const bloomBonus = Math.floor(charRank / 2);
       
-      // 랭크 6이면 110 + 3 = 113% 정확히 반환!
+      // 🌟 [핵심] 미보유 카드면 내 캐릭터 랭크를 무시하고 해당 레벨의 "최대치"를 반환!
+      if (!isOwned) return maxLimits[idx];
+      
+      // 보유 중일 때만 내 랭크를 반영한 찐 실전 스탯 반환
+      const bases = [90, 95, 100, 110];
+      const bloomBonus = Math.floor(charRank / 2);
       return Math.min(maxLimits[idx], bases[idx] + bloomBonus);
     }
     
@@ -253,13 +256,18 @@ export default function MyCardsPage() {
       return dateA.localeCompare(dateB); 
     }
     else if (sortOrder === "score") {
-      const levelA = cardStates[a.id]?.isOwned ? (cardStates[a.id].skillLevel || 1) : refSkillLevel;
-      const levelB = cardStates[b.id]?.isOwned ? (cardStates[b.id].skillLevel || 1) : refSkillLevel;
+      // 🌟 2. 정렬 시에도 보유 여부를 추출해서 보냅니다!
+      const isOwnedA = cardStates[a.id]?.isOwned || false;
+      const isOwnedB = cardStates[b.id]?.isOwned || false;
+
+      const levelA = isOwnedA ? (cardStates[a.id].skillLevel || 1) : refSkillLevel;
+      const levelB = isOwnedB ? (cardStates[b.id].skillLevel || 1) : refSkillLevel;
       
       const rankA = characterRanks[a.character] || 1;
       const rankB = characterRanks[b.character] || 1;
-      const scoreA = getSkillBonusPercentage(a.skillType || "", levelA, a.unit || "", showPostAwake, rankA);
-      const scoreB = getSkillBonusPercentage(b.skillType || "", levelB, b.unit || "", showPostAwake, rankB);
+      
+      const scoreA = getSkillBonusPercentage(a.skillType || "", levelA, a.unit || "", showPostAwake, rankA, isOwnedA);
+      const scoreB = getSkillBonusPercentage(b.skillType || "", levelB, b.unit || "", showPostAwake, rankB, isOwnedB);
       
       if (scoreB !== scoreA) return scoreB - scoreA;
       return (b.releaseDate || "1970-01-01").localeCompare(a.releaseDate || "1970-01-01");
@@ -606,7 +614,9 @@ export default function MyCardsPage() {
           <div className="grid grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-y-6 gap-x-4 w-full">
             {sortedCards.map((card) => {
               const userState = cardStates[card.id];
-              const levelToUse = userState?.isOwned ? (userState?.skillLevel || 1) : refSkillLevel;
+              // 🌟 3. CardItem으로 넘겨주기 위해 보유 여부(isOwned) 명시적 추출!
+              const isOwned = userState?.isOwned || false;
+              const levelToUse = isOwned ? (userState?.skillLevel || 1) : refSkillLevel;
               const charRank = characterRanks[card.character] || 1;
               
               return (
@@ -616,7 +626,8 @@ export default function MyCardsPage() {
                   userState={userState}
                   showPostAwake={showPostAwake}
                   sortOrder={sortOrder}
-                  scoreBonus={getSkillBonusPercentage(card.skillType || "", levelToUse, card.unit || "", showPostAwake, charRank)}
+                  // 🌟 4. 보유 여부도 함께 넘겨줍니다!
+                  scoreBonus={getSkillBonusPercentage(card.skillType || "", levelToUse, card.unit || "", showPostAwake, charRank, isOwned)}
                   eventBonus={getMockEventBonus(card)}
                   onClick={setActiveModalCard}
                 />
@@ -645,12 +656,12 @@ type TypeFilterDef = { id: string; name: string; img?: string; isText?: boolean 
 type HairFilterDef = { id: string; name: string; img: string };
 
 const UNIT_FILTERS: UnitDef[] = [
-  { id: "vs", name: "무소속 / VIRTUAL SINGER", logo: "/icons/VS.png", chars: [ { id: "miku_0", name: "하츠네 미쿠", img: "/icons/characters/MIKU_0.png", isVirtual: true, matchKeys: ["미쿠"] }, { id: "rin_0", name: "카가미네 린", img: "/icons/characters/RIN_0.png", isVirtual: true, matchKeys: ["린"] }, { id: "ren_0", name: "카가미네 렌", img: "/icons/characters/REN_0.png", isVirtual: true, matchKeys: ["렌"] }, { id: "luka_0", name: "메구리네 루카", img: "/icons/characters/LUKA_0.png", isVirtual: true, matchKeys: ["루카"] }, { id: "meiko_0", name: "MEIKO", img: "/icons/characters/MEIKO_0.png", isVirtual: true, matchKeys: ["메이코", "MEIKO"] }, { id: "kaito_0", name: "KAITO", img: "/icons/characters/KAITO_0.png", isVirtual: true, matchKeys: ["카이토", "KAITO"] } ] },
-  { id: "ln", name: "Leo/need", logo: "/icons/Leoneed.png", chars: [ { id: "ichika", name: "호시노 이치카", img: "/icons/characters/Ichika.png" }, { id: "saki", name: "텐마 사키", img: "/icons/characters/Saki.png" }, { id: "honami", name: "모치즈키 호나미", img: "/icons/characters/Honami.png" }, { id: "shiho", name: "히노모리 시호", img: "/icons/characters/Shiho.png" }, { id: "miku_l", name: "하츠네 미쿠", img: "/icons/characters/MIKU_l.png", isVirtual: true, matchKeys: ["미쿠"] }, { id: "rin_l", name: "카가미네 린", img: "/icons/characters/RIN_l.png", isVirtual: true, matchKeys: ["린"] }, { id: "ren_l", name: "카가미네 렌", img: "/icons/characters/REN_l.png", isVirtual: true, matchKeys: ["렌"] }, { id: "luka_l", name: "메구리네 루카", img: "/icons/characters/LUKA_l.png", isVirtual: true, matchKeys: ["루카"] }, { id: "meiko_l", name: "MEIKO", img: "/icons/characters/MEIKO_l.png", isVirtual: true, matchKeys: ["메이코", "MEIKO"] }, { id: "kaito_l", name: "KAITO", img: "/icons/characters/KAITO_l.png", isVirtual: true, matchKeys: ["카이토", "KAITO"] } ] },
-  { id: "mmj", name: "MORE MORE JUMP!", logo: "/icons/MMJ.png", chars: [ { id: "minori", name: "하나사토 미노리", img: "/icons/characters/Minori.png" }, { id: "haruka", name: "키리타니 하루카", img: "/icons/characters/Haruka.png" }, { id: "airi", name: "모모이 아이리", img: "/icons/characters/Airi.png" }, { id: "shizuku", name: "히노모리 시즈쿠", img: "/icons/characters/Shizuku.png" }, { id: "miku_m", name: "하츠네 미쿠", img: "/icons/characters/MIKU_m.png", isVirtual: true, matchKeys: ["미쿠"] }, { id: "rin_m", name: "카가미네 린", img: "/icons/characters/RIN_m.png", isVirtual: true, matchKeys: ["린"] }, { id: "ren_m", name: "카가미네 렌", img: "/icons/characters/REN_m.png", isVirtual: true, matchKeys: ["렌"] }, { id: "luka_m", name: "메구리네 루카", img: "/icons/characters/LUKA_m.png", isVirtual: true, matchKeys: ["루카"] }, { id: "meiko_m", name: "MEIKO", img: "/icons/characters/MEIKO_m.png", isVirtual: true, matchKeys: ["메이코", "MEIKO"] }, { id: "kaito_m", name: "KAITO", img: "/icons/characters/KAITO_m.png", isVirtual: true, matchKeys: ["카이토", "KAITO"] } ] },
-  { id: "vbs", name: "Vivid BAD SQUAD", logo: "/icons/VBS.png", chars: [ { id: "kohane", name: "아즈사와 코하네", img: "/icons/characters/Kohane.png" }, { id: "an", name: "시라이시 안", img: "/icons/characters/An.png" }, { id: "akito", name: "시노노메 아키토", img: "/icons/characters/Akito.png" }, { id: "toya", name: "아오야기 토우야", img: "/icons/characters/Toya.png" }, { id: "miku_v", name: "하츠네 미쿠", img: "/icons/characters/MIKU_v.png", isVirtual: true, matchKeys: ["미쿠"] }, { id: "rin_v", name: "카가미네 린", img: "/icons/characters/RIN_v.png", isVirtual: true, matchKeys: ["린"] }, { id: "ren_v", name: "카가미네 렌", img: "/icons/characters/REN_v.png", isVirtual: true, matchKeys: ["렌"] }, { id: "luka_v", name: "메구리네 루카", img: "/icons/characters/LUKA_v.png", isVirtual: true, matchKeys: ["루카"] }, { id: "meiko_v", name: "MEIKO", img: "/icons/characters/MEIKO_v.png", isVirtual: true, matchKeys: ["메이코", "MEIKO"] }, { id: "kaito_v", name: "KAITO", img: "/icons/characters/KAITO_v.png", isVirtual: true, matchKeys: ["카이토", "KAITO"] } ] },
-  { id: "wxs", name: "Wonderlands×Showtime", logo: "/icons/Wds.png", chars: [ { id: "tsukasa", name: "텐마 츠카사", img: "/icons/characters/Tsukasa.png" }, { id: "emu", name: "오토리 에무", img: "/icons/characters/Emu.png" }, { id: "nene", name: "쿠사나기 네네", img: "/icons/characters/Nene.png" }, { id: "rui", name: "카미시로 루이", img: "/icons/characters/Rui.png" }, { id: "miku_w", name: "하츠네 미쿠", img: "/icons/characters/MIKU_w.png", isVirtual: true, matchKeys: ["미쿠"] }, { id: "rin_w", name: "카가미네 린", img: "/icons/characters/RIN_w.png", isVirtual: true, matchKeys: ["린"] }, { id: "ren_w", name: "카가미네 렌", img: "/icons/characters/REN_w.png", isVirtual: true, matchKeys: ["렌"] }, { id: "luka_w", name: "메구리네 루카", img: "/icons/characters/LUKA_w.png", isVirtual: true, matchKeys: ["루카"] }, { id: "meiko_w", name: "MEIKO", img: "/icons/characters/MEIKO_w.png", isVirtual: true, matchKeys: ["메이코", "MEIKO"] }, { id: "kaito_w", name: "KAITO", img: "/icons/characters/KAITO_w.png", isVirtual: true, matchKeys: ["카이토", "KAITO"] } ] },
-  { id: "n25", name: "25시, 나이트코드에서.", logo: "/icons/Niigo.png", chars: [ { id: "kanade", name: "요이사키 카나데", img: "/icons/characters/Kanade.png" }, { id: "mafuyu", name: "아사히나 마후유", img: "/icons/characters/Mafuyu.png" }, { id: "ena", name: "시노노메 에나", img: "/icons/characters/Ena.png" }, { id: "mizuki", name: "아키야마 미즈키", img: "/icons/characters/Mizuki.png" }, { id: "miku_n", name: "하츠네 미쿠", img: "/icons/characters/MIKU_n.png", isVirtual: true, matchKeys: ["미쿠"] }, { id: "rin_n", name: "카가미네 린", img: "/icons/characters/RIN_n.png", isVirtual: true, matchKeys: ["린"] }, { id: "ren_n", name: "카가미네 렌", img: "/icons/characters/REN_n.png", isVirtual: true, matchKeys: ["렌"] }, { id: "luka_n", name: "메구리네 루카", img: "/icons/characters/LUKA_n.png", isVirtual: true, matchKeys: ["루카"] }, { id: "meiko_n", name: "MEIKO", img: "/icons/characters/MEIKO_n.png", isVirtual: true, matchKeys: ["메이코", "MEIKO"] }, { id: "kaito_n", name: "KAITO", img: "/icons/characters/KAITO_n.png", isVirtual: true, matchKeys: ["카이토", "KAITO"] } ] }
+  { id: "vs", name: "무소속 / VIRTUAL SINGER", logo: "/icons/VS.png", chars: [ { id: "miku_0", name: "하츠네 미쿠", img: "/icons/characters/MIKU_0.png", isVirtual: true, matchKeys: ["미쿠"] }, { id: "rin_0", name: "카가미네 린", img: "/icons/characters/RIN_0.png", isVirtual: true, matchKeys: ["린"] }, { id: "len_0", name: "카가미네 렌", img: "/icons/characters/LEN_0.png", isVirtual: true, matchKeys: ["렌"] }, { id: "luka_0", name: "메구리네 루카", img: "/icons/characters/LUKA_0.png", isVirtual: true, matchKeys: ["루카"] }, { id: "meiko_0", name: "MEIKO", img: "/icons/characters/MEIKO_0.png", isVirtual: true, matchKeys: ["메이코", "MEIKO"] }, { id: "kaito_0", name: "KAITO", img: "/icons/characters/KAITO_0.png", isVirtual: true, matchKeys: ["카이토", "KAITO"] } ] },
+  { id: "ln", name: "Leo/need", logo: "/icons/Leoneed.png", chars: [ { id: "ichika", name: "호시노 이치카", img: "/icons/characters/Ichika.png" }, { id: "saki", name: "텐마 사키", img: "/icons/characters/Saki.png" }, { id: "honami", name: "모치즈키 호나미", img: "/icons/characters/Honami.png" }, { id: "shiho", name: "히노모리 시호", img: "/icons/characters/Shiho.png" }, { id: "miku_l", name: "하츠네 미쿠", img: "/icons/characters/MIKU_l.png", isVirtual: true, matchKeys: ["미쿠"] }, { id: "rin_l", name: "카가미네 린", img: "/icons/characters/RIN_l.png", isVirtual: true, matchKeys: ["린"] }, { id: "len_l", name: "카가미네 렌", img: "/icons/characters/LEN_l.png", isVirtual: true, matchKeys: ["렌"] }, { id: "luka_l", name: "메구리네 루카", img: "/icons/characters/LUKA_l.png", isVirtual: true, matchKeys: ["루카"] }, { id: "meiko_l", name: "MEIKO", img: "/icons/characters/MEIKO_l.png", isVirtual: true, matchKeys: ["메이코", "MEIKO"] }, { id: "kaito_l", name: "KAITO", img: "/icons/characters/KAITO_l.png", isVirtual: true, matchKeys: ["카이토", "KAITO"] } ] },
+  { id: "mmj", name: "MORE MORE JUMP!", logo: "/icons/MMJ.png", chars: [ { id: "minori", name: "하나사토 미노리", img: "/icons/characters/Minori.png" }, { id: "haruka", name: "키리타니 하루카", img: "/icons/characters/Haruka.png" }, { id: "airi", name: "모모이 아이리", img: "/icons/characters/Airi.png" }, { id: "shizuku", name: "히노모리 시즈쿠", img: "/icons/characters/Shizuku.png" }, { id: "miku_m", name: "하츠네 미쿠", img: "/icons/characters/MIKU_m.png", isVirtual: true, matchKeys: ["미쿠"] }, { id: "rin_m", name: "카가미네 린", img: "/icons/characters/RIN_m.png", isVirtual: true, matchKeys: ["린"] }, { id: "len_m", name: "카가미네 렌", img: "/icons/characters/LEN_m.png", isVirtual: true, matchKeys: ["렌"] }, { id: "luka_m", name: "메구리네 루카", img: "/icons/characters/LUKA_m.png", isVirtual: true, matchKeys: ["루카"] }, { id: "meiko_m", name: "MEIKO", img: "/icons/characters/MEIKO_m.png", isVirtual: true, matchKeys: ["메이코", "MEIKO"] }, { id: "kaito_m", name: "KAITO", img: "/icons/characters/KAITO_m.png", isVirtual: true, matchKeys: ["카이토", "KAITO"] } ] },
+  { id: "vbs", name: "Vivid BAD SQUAD", logo: "/icons/VBS.png", chars: [ { id: "kohane", name: "아즈사와 코하네", img: "/icons/characters/Kohane.png" }, { id: "an", name: "시라이시 안", img: "/icons/characters/An.png" }, { id: "akito", name: "시노노메 아키토", img: "/icons/characters/Akito.png" }, { id: "toya", name: "아오야기 토우야", img: "/icons/characters/Toya.png" }, { id: "miku_v", name: "하츠네 미쿠", img: "/icons/characters/MIKU_v.png", isVirtual: true, matchKeys: ["미쿠"] }, { id: "rin_v", name: "카가미네 린", img: "/icons/characters/RIN_v.png", isVirtual: true, matchKeys: ["린"] }, { id: "len_v", name: "카가미네 렌", img: "/icons/characters/LEN_v.png", isVirtual: true, matchKeys: ["렌"] }, { id: "luka_v", name: "메구리네 루카", img: "/icons/characters/LUKA_v.png", isVirtual: true, matchKeys: ["루카"] }, { id: "meiko_v", name: "MEIKO", img: "/icons/characters/MEIKO_v.png", isVirtual: true, matchKeys: ["메이코", "MEIKO"] }, { id: "kaito_v", name: "KAITO", img: "/icons/characters/KAITO_v.png", isVirtual: true, matchKeys: ["카이토", "KAITO"] } ] },
+  { id: "wxs", name: "Wonderlands×Showtime", logo: "/icons/Wds.png", chars: [ { id: "tsukasa", name: "텐마 츠카사", img: "/icons/characters/Tsukasa.png" }, { id: "emu", name: "오토리 에무", img: "/icons/characters/Emu.png" }, { id: "nene", name: "쿠사나기 네네", img: "/icons/characters/Nene.png" }, { id: "rui", name: "카미시로 루이", img: "/icons/characters/Rui.png" }, { id: "miku_w", name: "하츠네 미쿠", img: "/icons/characters/MIKU_w.png", isVirtual: true, matchKeys: ["미쿠"] }, { id: "rin_w", name: "카가미네 린", img: "/icons/characters/RIN_w.png", isVirtual: true, matchKeys: ["린"] }, { id: "len_w", name: "카가미네 렌", img: "/icons/characters/LEN_w.png", isVirtual: true, matchKeys: ["렌"] }, { id: "luka_w", name: "메구리네 루카", img: "/icons/characters/LUKA_w.png", isVirtual: true, matchKeys: ["루카"] }, { id: "meiko_w", name: "MEIKO", img: "/icons/characters/MEIKO_w.png", isVirtual: true, matchKeys: ["메이코", "MEIKO"] }, { id: "kaito_w", name: "KAITO", img: "/icons/characters/KAITO_w.png", isVirtual: true, matchKeys: ["카이토", "KAITO"] } ] },
+  { id: "n25", name: "25시, 나이트코드에서.", logo: "/icons/Niigo.png", chars: [ { id: "kanade", name: "요이사키 카나데", img: "/icons/characters/Kanade.png" }, { id: "mafuyu", name: "아사히나 마후유", img: "/icons/characters/Mafuyu.png" }, { id: "ena", name: "시노노메 에나", img: "/icons/characters/Ena.png" }, { id: "mizuki", name: "아키야마 미즈키", img: "/icons/characters/Mizuki.png" }, { id: "miku_n", name: "하츠네 미쿠", img: "/icons/characters/MIKU_n.png", isVirtual: true, matchKeys: ["미쿠"] }, { id: "rin_n", name: "카가미네 린", img: "/icons/characters/RIN_n.png", isVirtual: true, matchKeys: ["린"] }, { id: "len_n", name: "카가미네 렌", img: "/icons/characters/LEN_n.png", isVirtual: true, matchKeys: ["렌"] }, { id: "luka_n", name: "메구리네 루카", img: "/icons/characters/LUKA_n.png", isVirtual: true, matchKeys: ["루카"] }, { id: "meiko_n", name: "MEIKO", img: "/icons/characters/MEIKO_n.png", isVirtual: true, matchKeys: ["메이코", "MEIKO"] }, { id: "kaito_n", name: "KAITO", img: "/icons/characters/KAITO_n.png", isVirtual: true, matchKeys: ["카이토", "KAITO"] } ] }
 ];
 
 const ATTR_FILTERS: AttrDef[] = [
@@ -686,9 +697,12 @@ const HAIR_FILTERS: HairFilterDef[] = [
   { id: "hair_x", name: "헤어 X", img: "/icons/status/hair_x.png" }
 ];
 
+// 🌟 [수정됨] 콜라보 ID 중복 문제 해결 완료!
 const COLLAB_FILTERS = [
   { id: "collab_evil", name: "에빌", matchKeys: ["에빌", "악의", "대죄", "evillious"] },
   { id: "collab_sanrio", name: "산리오", matchKeys: ["산리오", "sanrio", "SEKAI에서 Hello♡ 멋진 만남"] },
   { id: "collab_enstar", name: "앙스타", matchKeys: ["앙스타", "앙상블", "ensemble"] },
-  { id: "collab_tamagotchi", name: "다마고치", matchKeys: ["다마고치", "tamagotchi"] }
+  { id: "collab_tamagotchi", name: "다마고치", matchKeys: ["다마고치", "tamagotchi"] },
+  { id: "collab_touhou", name: "동방", matchKeys: ["뒤섞이는 경계", "동방"] },
+  { id: "collab_movie", name: "극장판", matchKeys: ["창의 세카이에서", "극장판"] }
 ];

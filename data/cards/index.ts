@@ -5,7 +5,7 @@ import type { FinalCardInfo } from "./template";
 // ==========================================
 import { MikuCards } from "./VS/MIKU";
 import { RinCards } from "./VS/RIN";
-import { RenCards } from "./VS/REN";
+import { LenCards } from "./VS/LEN";
 // import { LukaCards } from "./VS/LUKA";
 // import { MeikoCards } from "./VS/MEIKO";
 // import { KaitoCards } from "./VS/KAITO";
@@ -13,7 +13,7 @@ import { RenCards } from "./VS/REN";
 const VS_CARDS = [
   ...MikuCards,
   ...RinCards,
-  ...RenCards,
+  ...LenCards,
   // ...LukaCards,
   // ...MeikoCards,
   // ...KaitoCards,
