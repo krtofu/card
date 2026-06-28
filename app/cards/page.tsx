@@ -17,28 +17,44 @@ const getSkillBonusPercentage = (skillType: string, level: number, unit: string,
   const safeLevel = Math.max(1, Math.min(4, level)); 
   const idx = safeLevel - 1;
   
-  switch(skillType) {
-    case "스업": return [100, 105, 110, 120][idx];
-    case "퍼스업": return [110, 115, 120, 130][idx];
-    case "굿스업": return [120, 125, 130, 140][idx];
-    case "체스업": return [120, 125, 130, 140][idx];
-    case "판강": return [80, 85, 90, 100][idx];
-    case "힐": return [80, 85, 90, 100][idx];
-    case "팀스업": return [130, 135, 140, 150][idx]; 
-    case "블페": 
-      if (isAwakened) {
-        const bases = [90, 95, 100, 110];
-        const maxLimits = [140, 145, 150, 160];
-        const base = bases[idx];
-        const maxLimit = maxLimits[idx];
-        const bloomBonus = Math.floor(charRank / 2);
-        return Math.min(maxLimit, base + bloomBonus);
-      }
-      const isVS = unit === "무소속 / VIRTUAL SINGER" || unit.includes("버싱") || unit.includes("VS") || unit.toLowerCase().includes("virtual");
-      if (isVS) return [130, 135, 140, 150][idx];
-      return [120, 130, 140, 150][idx];
-    default: return 0;
+  // 1. 띄어쓰기나 대소문자 문제로 매칭이 실패하는 것을 원천 차단!
+  const skill = (skillType || "").replace(/\s+/g, "").toLowerCase();
+
+  // 🌸 블룸 페스 (블페) 완벽 처리
+  if (skill.includes("블페") || skill.includes("블룸")) {
+    const isVS = unit === "무소속 / VIRTUAL SINGER" || unit.includes("버싱") || unit.includes("VS") || unit.toLowerCase().includes("virtual");
+    const fesBaseScore = isVS ? [130, 135, 140, 150][idx] : [120, 130, 140, 150][idx];
+
+    if (isAwakened) {
+      const bases = [90, 95, 100, 110];
+      const maxLimits = [140, 145, 150, 160];
+      const bloomBonus = Math.floor(charRank / 2);
+      const awakenedScore = Math.min(maxLimits[idx], bases[idx] + bloomBonus);
+      
+      // 만약 랭크가 너무 낮아서 각후(110%)가 각전(150%)보다 점수가 낮아지는 
+      // 기현상이 발생하면, 둘 중 더 높은 점수를 유지하도록 보정합니다.
+      return Math.max(fesBaseScore, awakenedScore);
+    }
+    // 각전일 때는 기본 페스 수치 반환
+    return fesBaseScore;
   }
+
+  // ✨ 나머지 일반 스킬들 (글자가 포함되기만 하면 무조건 매칭)
+  if (skill.includes("스업") && !skill.includes("퍼스업") && !skill.includes("굿스업") && !skill.includes("체스업") && !skill.includes("팀스업")) return [100, 105, 110, 120][idx];
+  if (skill.includes("퍼스업")) return [110, 115, 120, 130][idx];
+  if (skill.includes("굿스업")) return [120, 125, 130, 140][idx];
+  if (skill.includes("체스업")) return [120, 125, 130, 140][idx];
+  if (skill.includes("팀스업")) return [130, 135, 140, 150][idx];
+  if (skill.includes("판강") || skill.includes("판정")) return [80, 85, 90, 100][idx];
+  if (skill.includes("힐") || skill.includes("회복")) return [80, 85, 90, 100][idx];
+
+  // 혹시라도 블랑 페스(구 페스)가 섞여 있다면
+  if (skill.includes("블랑") || skill.includes("초기페스")) {
+    const isVS = unit === "무소속 / VIRTUAL SINGER" || unit.includes("버싱") || unit.includes("VS");
+    return isVS ? [130, 135, 140, 150][idx] : [120, 130, 140, 150][idx];
+  }
+
+  return 0; // 매칭 실패 시 0
 };
 
 const getMockEventBonus = (card: FinalCardInfo) => {
