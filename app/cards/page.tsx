@@ -14,8 +14,8 @@ export type UserCardState = {
   skillLevel: number;
 };
 
-// 🌟 [복구 완료] 증발했던 스업 수치 계산기 부활!
-const getSkillBonusPercentage = (skillType: string, level: number, unit: string) => {
+// 🌟 [수정됨] 1. 각후 상태(isAwakened)를 파라미터로 받도록 통로를 뚫었습니다!
+const getSkillBonusPercentage = (skillType: string, level: number, unit: string, isAwakened: boolean) => {
   const safeLevel = Math.max(1, Math.min(4, level)); 
   const idx = safeLevel - 1;
   
@@ -28,6 +28,11 @@ const getSkillBonusPercentage = (skillType: string, level: number, unit: string)
     case "힐": return [80, 85, 90, 100][idx];
     case "팀스업": return [130, 135, 140, 150][idx]; 
     case "블페": 
+      // 🌟 2. 각후 상태라면 160%가 포함된 새로운 계산식을 탑니다!
+      if (isAwakened) {
+        return [130, 140, 150, 160][idx]; // 각후(특훈 후) 수치
+      }
+      // 각전 상태일 때의 기존 수치
       const isVS = unit === "무소속 / VIRTUAL SINGER" || unit.includes("버싱") || unit.includes("VS") || unit.toLowerCase().includes("virtual");
       if (isVS) return [130, 135, 140, 150][idx];
       return [120, 130, 140, 150][idx];
@@ -35,7 +40,6 @@ const getSkillBonusPercentage = (skillType: string, level: number, unit: string)
   }
 };
 
-// 🌟 [복구 완료] 증발했던 이벤포 보너스 계산기 부활!
 const getMockEventBonus = (card: FinalCardInfo) => {
   let bonus = 0;
   if (card.attribute === "cute") bonus += 25; 
@@ -226,8 +230,9 @@ export default function MyCardsPage() {
     else if (sortOrder === "score") {
       const levelA = cardStates[a.id]?.isOwned ? (cardStates[a.id].skillLevel || 1) : refSkillLevel;
       const levelB = cardStates[b.id]?.isOwned ? (cardStates[b.id].skillLevel || 1) : refSkillLevel;
-      const scoreA = getSkillBonusPercentage(a.skillType || "", levelA, a.unit || "");
-      const scoreB = getSkillBonusPercentage(b.skillType || "", levelB, b.unit || "");
+      // 🌟 3. 정렬할 때도 showPostAwake(각후 토글 상태)를 넘겨줍니다!
+      const scoreA = getSkillBonusPercentage(a.skillType || "", levelA, a.unit || "", showPostAwake);
+      const scoreB = getSkillBonusPercentage(b.skillType || "", levelB, b.unit || "", showPostAwake);
       if (scoreB !== scoreA) return scoreB - scoreA;
       return (b.releaseDate || "1970-01-01").localeCompare(a.releaseDate || "1970-01-01");
     }
@@ -581,7 +586,8 @@ export default function MyCardsPage() {
                   userState={userState}
                   showPostAwake={showPostAwake}
                   sortOrder={sortOrder}
-                  scoreBonus={getSkillBonusPercentage(card.skillType || "", levelToUse, card.unit || "")}
+                  // 🌟 4. 카드를 렌더링할 때도 각후(showPostAwake) 상태를 넘겨줍니다!
+                  scoreBonus={getSkillBonusPercentage(card.skillType || "", levelToUse, card.unit || "", showPostAwake)}
                   eventBonus={getMockEventBonus(card)}
                   onClick={setActiveModalCard}
                 />
