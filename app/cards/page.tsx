@@ -17,30 +17,27 @@ const getSkillBonusPercentage = (skillType: string, level: number, unit: string,
   const safeLevel = Math.max(1, Math.min(4, level)); 
   const idx = safeLevel - 1;
   
-  // 1. 띄어쓰기나 대소문자 문제로 매칭이 실패하는 것을 원천 차단!
   const skill = (skillType || "").replace(/\s+/g, "").toLowerCase();
 
-  // 🌸 블룸 페스 (블페) 완벽 처리
+  // 🌸 블룸 페스 (블페)
   if (skill.includes("블페") || skill.includes("블룸")) {
-    const isVS = unit === "무소속 / VIRTUAL SINGER" || unit.includes("버싱") || unit.includes("VS") || unit.toLowerCase().includes("virtual");
-    const fesBaseScore = isVS ? [130, 135, 140, 150][idx] : [120, 130, 140, 150][idx];
-
     if (isAwakened) {
+      // 🌟 [수정됨] 각전 수치와 비교하지 않고, 각후 수치를 "있는 그대로" 반환합니다!
       const bases = [90, 95, 100, 110];
       const maxLimits = [140, 145, 150, 160];
       const bloomBonus = Math.floor(charRank / 2);
-      const awakenedScore = Math.min(maxLimits[idx], bases[idx] + bloomBonus);
       
-      // 만약 랭크가 너무 낮아서 각후(110%)가 각전(150%)보다 점수가 낮아지는 
-      // 기현상이 발생하면, 둘 중 더 높은 점수를 유지하도록 보정합니다.
-      return Math.max(fesBaseScore, awakenedScore);
+      // 랭크 6이면 110 + 3 = 113% 정확히 반환!
+      return Math.min(maxLimits[idx], bases[idx] + bloomBonus);
     }
-    // 각전일 때는 기본 페스 수치 반환
-    return fesBaseScore;
+    
+    // 각전 상태
+    const isVS = unit === "무소속 / VIRTUAL SINGER" || unit.includes("버싱") || unit.includes("VS") || unit.toLowerCase().includes("virtual");
+    return isVS ? [130, 135, 140, 150][idx] : [120, 130, 140, 150][idx];
   }
 
-  // ✨ 나머지 일반 스킬들 (글자가 포함되기만 하면 무조건 매칭)
-  if (skill.includes("스업") && !skill.includes("퍼스업") && !skill.includes("굿스업") && !skill.includes("체스업") && !skill.includes("팀스업")) return [100, 105, 110, 120][idx];
+  // ✨ 나머지 일반 스킬들
+  if (skill.includes("스업") && !skill.includes("퍼스업") && !skill.includes("굿스업") && !skill.includes("체스업") && !skill.includes("팀스업") && !skill.includes("조건부")) return [100, 105, 110, 120][idx];
   if (skill.includes("퍼스업")) return [110, 115, 120, 130][idx];
   if (skill.includes("굿스업")) return [120, 125, 130, 140][idx];
   if (skill.includes("체스업")) return [120, 125, 130, 140][idx];
@@ -50,7 +47,7 @@ const getSkillBonusPercentage = (skillType: string, level: number, unit: string,
 
   // 혹시라도 블랑 페스(구 페스)가 섞여 있다면
   if (skill.includes("블랑") || skill.includes("초기페스")) {
-    const isVS = unit === "무소속 / VIRTUAL SINGER" || unit.includes("버싱") || unit.includes("VS");
+    const isVS = unit === "무소속 / VIRTUAL SINGER" || unit.includes("버싱") || unit.includes("VS") || unit.toLowerCase().includes("virtual");
     return isVS ? [130, 135, 140, 150][idx] : [120, 130, 140, 150][idx];
   }
 
