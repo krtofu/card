@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { ALL_CARDS } from "@/data/cards"; 
 import { FinalCardInfo } from "@/data/cards/template"; 
 import CardDetailModal from "@/components/CardDetailModal";
-import CardItem from "@/components/CardItem"; // 🌟 분리한 부품 불러오기!
+import CardItem from "@/components/CardItem"; 
 
 export type UserCardState = {
   isOwned: boolean;
@@ -14,7 +14,35 @@ export type UserCardState = {
   skillLevel: number;
 };
 
-// 🌟 수많은 상수(배열)들은 읽기 편하게 맨 아래로 내렸습니다. (스크롤 쭉 내려보세요!)
+// 🌟 [복구 완료] 증발했던 스업 수치 계산기 부활!
+const getSkillBonusPercentage = (skillType: string, level: number, unit: string) => {
+  const safeLevel = Math.max(1, Math.min(4, level)); 
+  const idx = safeLevel - 1;
+  
+  switch(skillType) {
+    case "스업": return [100, 105, 110, 120][idx];
+    case "퍼스업": return [110, 115, 120, 130][idx];
+    case "굿스업": return [120, 125, 130, 140][idx];
+    case "체스업": return [120, 125, 130, 140][idx];
+    case "판강": return [80, 85, 90, 100][idx];
+    case "힐": return [80, 85, 90, 100][idx];
+    case "팀스업": return [130, 135, 140, 150][idx]; 
+    case "블페": 
+      const isVS = unit === "무소속 / VIRTUAL SINGER" || unit.includes("버싱") || unit.includes("VS") || unit.toLowerCase().includes("virtual");
+      if (isVS) return [130, 135, 140, 150][idx];
+      return [120, 130, 140, 150][idx];
+    default: return 0;
+  }
+};
+
+// 🌟 [복구 완료] 증발했던 이벤포 보너스 계산기 부활!
+const getMockEventBonus = (card: FinalCardInfo) => {
+  let bonus = 0;
+  if (card.attribute === "cute") bonus += 25; 
+  if (card.character === "호시노 이치카") bonus += 25; 
+  if (bonus === 50) bonus += 20; 
+  return bonus > 0 ? bonus + 20 : 0; 
+};
 
 export default function MyCardsPage() {
   const [cardStates, setCardStates] = useState<Record<string, UserCardState>>({});
@@ -255,7 +283,6 @@ export default function MyCardsPage() {
                     const isSelected = selectedStatuses.includes(status.id);
                     const opacityClass = !isAnyStatusSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100 text-white bg-zinc-900";
                     
-                    // 🌟 목표 버튼 색상을 노란색(amber)으로 완벽 통일!
                     const activeClass = status.id === "target" 
                       ? "bg-amber-500/20 text-amber-300 border border-amber-400/50 shadow-[0_0_10px_rgba(245,158,11,0.15)] scale-105" 
                       : status.id === "owned" 
@@ -543,7 +570,6 @@ export default function MyCardsPage() {
           <div className="flex flex-col items-center justify-center py-20 text-zinc-500"><p>선택한 조건에 맞는 카드가 없습니다.</p></div>
         ) : (
           <div className="grid grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-y-6 gap-x-4 w-full">
-            {/* 🌟 40줄짜리 더러운 코드가 단 한 줄의 만능 카드 조각으로 바뀌었습니다! 🌟 */}
             {sortedCards.map((card) => {
               const userState = cardStates[card.id];
               const levelToUse = userState?.isOwned ? (userState?.skillLevel || 1) : refSkillLevel;
@@ -630,31 +656,3 @@ const COLLAB_FILTERS = [
   { id: "collab_enstar", name: "앙스타", matchKeys: ["앙스타", "앙상블", "ensemble"] },
   { id: "collab_tamagotchi", name: "다마고치", matchKeys: ["다마고치", "tamagotchi"] }
 ];
-
-const getSkillBonusPercentage = (skillType: string, level: number, unit: string) => {
-  const safeLevel = Math.max(1, Math.min(4, level)); 
-  const idx = safeLevel - 1;
-  
-  switch(skillType) {
-    case "스업": return [100, 105, 110, 120][idx];
-    case "퍼스업": return [110, 115, 120, 130][idx];
-    case "굿스업": return [120, 125, 130, 140][idx];
-    case "체스업": return [120, 125, 130, 140][idx];
-    case "판강": return [80, 85, 90, 100][idx];
-    case "힐": return [80, 85, 90, 100][idx];
-    case "팀스업": return [130, 135, 140, 150][idx]; 
-    case "블페": 
-      const isVS = unit === "무소속 / VIRTUAL SINGER" || unit.includes("버싱") || unit.includes("VS") || unit.toLowerCase().includes("virtual");
-      if (isVS) return [130, 135, 140, 150][idx];
-      return [120, 130, 140, 150][idx];
-    default: return 0;
-  }
-};
-
-const getMockEventBonus = (card: FinalCardInfo) => {
-  let bonus = 0;
-  if (card.attribute === "cute") bonus += 25; 
-  if (card.character === "호시노 이치카") bonus += 25; 
-  if (bonus === 50) bonus += 20; 
-  return bonus > 0 ? bonus + 20 : 0; 
-};
