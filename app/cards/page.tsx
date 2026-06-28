@@ -187,7 +187,7 @@ export default function MyCardsPage() {
         } else {
           matchCollab = COLLAB_FILTERS.some(collab => {
             if (!selectedTypes.includes(collab.id)) return false;
-            const searchStr = (card.gachaPoolName + " " + card.eventName).toLowerCase();
+            const searchStr = (card.gachaPoolName + " " + card.eventName + " " + card.cardName).toLowerCase();
             return collab.matchKeys.some(key => searchStr.includes(key.toLowerCase()));
           });
         }
@@ -699,7 +699,7 @@ const HAIR_FILTERS: HairFilterDef[] = [
 
 // 🌟 [수정됨] 콜라보 ID 중복 문제 해결 완료!
 const COLLAB_FILTERS = [
-  { id: "collab_evil", name: "에빌", matchKeys: ["에빌", "악의", "대죄", "evillious"] },
+  { id: "collab_evil", name: "에빌", matchKeys: ["에빌", "죄의 회고록", "evillious"] },
   { id: "collab_sanrio", name: "산리오", matchKeys: ["산리오", "sanrio", "SEKAI에서 Hello♡ 멋진 만남"] },
   { id: "collab_enstar", name: "앙스타", matchKeys: ["앙스타", "앙상블", "ensemble"] },
   { id: "collab_tamagotchi", name: "다마고치", matchKeys: ["다마고치", "tamagotchi"] },
