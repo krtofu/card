@@ -1,4 +1,3 @@
-// src/app/cards/page.tsx
 "use client";
 
 import { useState, useEffect } from "react"; 
@@ -6,8 +5,6 @@ import { ALL_CARDS } from "@/data/cards";
 import { FinalCardInfo } from "@/data/cards/template"; 
 import CardDetailModal from "@/components/CardDetailModal";
 import CardItem from "@/components/CardItem"; 
-// 🌟 1. 설정 모달 임포트! (경로 확인해주세요)
-import CharacterSettingsModal from "@/components/CharacterSettingsModal";
 
 export type UserCardState = {
   isOwned: boolean;
@@ -16,7 +13,6 @@ export type UserCardState = {
   skillLevel: number;
 };
 
-// 🌟 2. [수정됨] 파라미터에 charRank 추가 & 블페 각후 완벽 계산식 적용!
 const getSkillBonusPercentage = (skillType: string, level: number, unit: string, isAwakened: boolean, charRank: number = 1) => {
   const safeLevel = Math.max(1, Math.min(4, level)); 
   const idx = safeLevel - 1;
@@ -31,7 +27,6 @@ const getSkillBonusPercentage = (skillType: string, level: number, unit: string,
     case "팀스업": return [130, 135, 140, 150][idx]; 
     case "블페": 
       if (isAwakened) {
-        // 🌸 인게임 팩트 완벽 반영: (기본수치) + (랭크/2) -> 최대치 제한
         const bases = [90, 95, 100, 110];
         const maxLimits = [140, 145, 150, 160];
         const base = bases[idx];
@@ -39,7 +34,6 @@ const getSkillBonusPercentage = (skillType: string, level: number, unit: string,
         const bloomBonus = Math.floor(charRank / 2);
         return Math.min(maxLimit, base + bloomBonus);
       }
-      // 각전 상태
       const isVS = unit === "무소속 / VIRTUAL SINGER" || unit.includes("버싱") || unit.includes("VS") || unit.toLowerCase().includes("virtual");
       if (isVS) return [130, 135, 140, 150][idx];
       return [120, 130, 140, 150][idx];
@@ -61,8 +55,6 @@ export default function MyCardsPage() {
   const [mounted, setMounted] = useState(false);
   const [showPostAwake, setShowPostAwake] = useState(false);
   
-  // 🌟 3. 모달 열림 상태 & 캐릭터 랭크 전역 상태 추가!
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [characterRanks, setCharacterRanks] = useState<Record<string, number>>({});
   
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest" | "score" | "bonus">("newest");
@@ -90,32 +82,29 @@ export default function MyCardsPage() {
 
   useEffect(() => {
     setMounted(true);
-    // 카드 상태 로드
     const savedCards = localStorage.getItem("sekard_user_card_states");
     if (savedCards) try { setCardStates(JSON.parse(savedCards)); } catch (e) { console.error(e); }
     
-    // 🌟 4. 저장된 캐릭터 랭크 로드
-    const savedRanks = localStorage.getItem("sekard_character_ranks");
-    if (savedRanks) try { setCharacterRanks(JSON.parse(savedRanks)); } catch(e) { console.error(e); }
+    // 🌟 실시간 랭크 연동 마법
+    const loadRanks = () => {
+      const savedRanks = localStorage.getItem("sekard_character_ranks");
+      if (savedRanks) try { setCharacterRanks(JSON.parse(savedRanks)); } catch(e) { console.error(e); }
+    };
+    loadRanks();
+    window.addEventListener("sekard_ranks_updated", loadRanks);
+    return () => window.removeEventListener("sekard_ranks_updated", loadRanks);
   }, []);
 
   useEffect(() => {
-    if (isMobileFilterOpen || isSettingsOpen) document.body.style.overflow = "hidden";
+    if (isMobileFilterOpen) document.body.style.overflow = "hidden";
     else document.body.style.overflow = "auto";
     return () => { document.body.style.overflow = "auto"; };
-  }, [isMobileFilterOpen, isSettingsOpen]);
+  }, [isMobileFilterOpen]);
 
   const handleUpdateCardState = (id: string, newState: Partial<UserCardState>) => {
     const updated = { ...cardStates, [id]: { ...(cardStates[id] || { isOwned: false, isTarget: false, masterRank: 0, skillLevel: 1 }), ...newState } };
     setCardStates(updated);
     localStorage.setItem("sekard_user_card_states", JSON.stringify(updated));
-  };
-
-  // 🌟 5. 랭크 업데이트 및 로컬 스토리지 저장 함수
-  const updateCharacterRank = (charName: string, rank: number) => {
-    const newRanks = { ...characterRanks, [charName]: rank };
-    setCharacterRanks(newRanks);
-    localStorage.setItem("sekard_character_ranks", JSON.stringify(newRanks));
   };
 
   const toggleFilter = (list: string[], setList: (val: string[]) => void, id: string) => {
@@ -254,7 +243,6 @@ export default function MyCardsPage() {
       const levelA = cardStates[a.id]?.isOwned ? (cardStates[a.id].skillLevel || 1) : refSkillLevel;
       const levelB = cardStates[b.id]?.isOwned ? (cardStates[b.id].skillLevel || 1) : refSkillLevel;
       
-      // 🌟 6. 정렬 로직에도 랭크(charRank) 넘겨주기!
       const rankA = characterRanks[a.character] || 1;
       const rankB = characterRanks[b.character] || 1;
       const scoreA = getSkillBonusPercentage(a.skillType || "", levelA, a.unit || "", showPostAwake, rankA);
@@ -592,22 +580,6 @@ export default function MyCardsPage() {
               {excludeCollab ? '🚫' : '🤝'}
             </button>
 
-            {/* 🌟 6. 새로 추가된 [⚙️ 설정] 버튼! (모바일/PC 반응형) */}
-            <button
-              onClick={() => setIsSettingsOpen(true)}
-              className="hidden sm:flex items-center justify-center gap-1.5 h-[34px] px-3 rounded-full bg-zinc-800/80 hover:bg-zinc-700 text-zinc-300 hover:text-white font-bold transition-all shadow-sm border border-white/10 text-[12px]"
-              title="엔진 설정"
-            >
-              ⚙️ 설정
-            </button>
-            <button
-              onClick={() => setIsSettingsOpen(true)}
-              className="sm:hidden flex items-center justify-center w-[34px] h-[34px] rounded-full bg-zinc-800/80 border border-white/10 text-zinc-400 text-[14px] shadow-sm transition-all"
-              title="엔진 설정"
-            >
-              ⚙️
-            </button>
-
             {/* 썸네일 전환 버튼 */}
             <button onClick={() => setShowPostAwake(!showPostAwake)} className="p-1 rounded-full bg-zinc-900 border border-white/10 shrink-0 ml-auto sm:ml-0" aria-label="썸네일 전환">
               <img src={showPostAwake ? "/icons/post_star.png" : "/icons/pre_star.png"} alt="스위치" className="h-8 w-auto object-contain block" />
@@ -622,8 +594,6 @@ export default function MyCardsPage() {
             {sortedCards.map((card) => {
               const userState = cardStates[card.id];
               const levelToUse = userState?.isOwned ? (userState?.skillLevel || 1) : refSkillLevel;
-              
-              {/* 🌟 7. 카드 렌더링 시에도 해당 카드의 캐릭터 랭크를 찾아서 보냅니다! */}
               const charRank = characterRanks[card.character] || 1;
               
               return (
@@ -645,13 +615,6 @@ export default function MyCardsPage() {
 
       <CardDetailModal card={activeModalCard} userState={cardStates[activeModalCard?.id || ""] || { isOwned: false, isTarget: false, masterRank: 0, skillLevel: 1 }} onUpdateState={handleUpdateCardState} onClose={() => setActiveModalCard(null)} />
       
-      {/* 🌟 8. 설정 모달창 바닥에 장착! */}
-      <CharacterSettingsModal
-        isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
-        ranks={characterRanks}
-        onUpdateRank={updateCharacterRank}
-      />
     </div>
   );
 }
@@ -688,7 +651,7 @@ const ATTR_FILTERS: AttrDef[] = [
 const SKILL_FILTERS: SkillDef[] = [
   { id: "score", name: "스업", img: "/icons/skills/score_x.png", matchKeys: ["스업"] },
   { id: "condition_group", name: "조건부 스업", img: "/icons/skills/condition_x.png", 
-    subs: [ { id: "cond_perfect", name: "퍼스업", matchKeys: ["퍼스업"] }, { id: "cond_good", name: "굿스업", matchKeys: ["굿스업"] }, { id: "cond_life", name: "체스업", matchKeys: ["체스업"] }, { id: "cond_bp", name: "블페", matchKeys: ["블페"] }, { id: "cond_team", name: "팀스업", matchKeys: ["팀스업"] } ] 
+    subs: [ { id: "cond_perfect", name: "퍼스업", matchKeys: ["퍼스업"] }, { id: "cond_good", name: "굿스업", matchKeys: ["굿스업"] }, { id: "cond_life", name: "체스업", matchKeys: ["체스업"] }, { id: "cond_bp", name: "블페", matchKeys: ["블페", "블룸페스"] }, { id: "cond_team", name: "팀스업", matchKeys: ["팀스업"] } ] 
   },
   { id: "perfect", name: "판정 강화", img: "/icons/skills/perfect_x.png", matchKeys: ["판강"] },
   { id: "heal", name: "라이프 회복", img: "/icons/skills/heal_x.png", matchKeys: ["힐"] }
