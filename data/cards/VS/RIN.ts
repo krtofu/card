@@ -25,7 +25,115 @@ const RinOriginal = defineCharacterCards("버싱", "카가미네 린", "VS", "RI
             hasHair: true,
           },
         },
-    
+        {
+          info: {
+            id: "VS_RIN_011",
+            cardName: "[화해의 가교]",
+            attribute: "cool",
+            gachaType: "페스",
+            gachaPoolName: "[전 세계 3900만 명 돌파 기념] 컬러풀 페스티벌 뽑기",
+            skillType: "체스업",
+            releaseDate: "2024-03-30",
+          },
+          media: {
+            gachaBannerPath: "/gachas/24y/banner_24_f09.png",
+          },
+          costume: {
+            hasCostume: true,
+            costumeName: "기도의 홀리 드레스",
+            hasHair: true,
+          },
+        },
+        {
+          info: {
+            id: "VS_RIN_017",
+            cardName: "[맨 앞줄에서 응원!]",
+            attribute: "happy",
+            gachaType: "월링",
+            gachaPoolName: "Melody of Wishes 뽑기",
+            eventName: "너와 세카이의 시작에서",
+            skillType: "스업",
+            releaseDate: "2025-08-17",
+          },
+          media: {
+            gachaBannerPath: "/gachas/25y/banner_25_24_0.png",
+            eventBannerPath: "/events/25y/banner_25_24_0.png",
+            songName: "아임 마인",
+            songJacketPath: "/jacket/24y/Im_Mine.png",
+          },
+          costume: {
+            hasCostume: true,
+            costumeName: "컴퍼스 세일러복",
+          },
+        },
+        {
+          info: {
+            id: "VS_RIN_018",
+            cardName: "[내가 모르는 '나'들]",
+            attribute: "pure",
+            gachaType: "페스",
+            gachaPoolName: "[Brand New Your World 기념] 블룸 페스티벌 드림 픽 뽑기",
+            eventName: "마음을 담아! Dream Stage",
+            skillType: "블페",
+            releaseDate: "2025-09-28",
+          },
+          media: {
+            gachaBannerPath: "/gachas/25y/banner_25_f15.png",
+            eventBannerPath: "/events/25y/banner_25_28.png",
+            songName: "열풍",
+            songJacketPath: "/jacket/25y/Neppuu.png",
+          },
+          costume: {
+            hasCostume: true,
+            costumeName: "아나크로니즘 드레스",
+            hasHair: true,
+          },
+        },
+        {
+          info: {
+            id: "VS_RIN_023",
+            cardName: "[회전목마에서 예~이!]",
+            attribute: "cute",
+            gachaType: "월링",
+            gachaPoolName: "Velvet Afternoon 뽑기",
+            eventName: "Link the Beats!",
+            skillType: "스업",
+            releaseDate: "2026-09-06",
+          },
+          media: {
+            gachaBannerPath: "/gachas/26y/jbanner_26_26_0.png",
+            eventBannerPath: "/events/26y/jbanner_26_26_0.png",
+            songName: "킬러",
+            songJacketPath: "/jacket/25y/KILLER.png",
+          },
+          costume: {
+            hasCostume: true,
+            costumeName: "Classical Lipstick",
+          },
+        },
+        {
+          info: {
+            id: "VS_RIN_027",
+            cardName: "[흉내쟁이 댄싱♪]",
+            attribute: "cool",
+            gachaType: "월링",
+            gachaPoolName: "Vie for the Title 뽑기",
+            eventName: "Great Yell for Dreamers!",
+            skillType: "스업",
+            releaseDate: "2027-05-17",
+          },
+          media: {
+            gachaBannerPath: "/gachas/27y/jbanner_27_15.png",
+            eventBannerPath: "/events/27y/jbanner_27_15.png",
+            songName: "드리머즈 비트",
+            songJacketPath: "/jacket/27y/Dreamers_Beat.png",
+          },
+          costume: {
+            hasCostume: true,
+            costumeName: "Sunny Dancer",
+            hasHair: true,
+          },
+        },
   ]
 });
 
@@ -55,7 +163,91 @@ const RinLeoneed = defineCharacterCards("레오니", "카가미네 린", "VS", "
             costumeName: "프티 레인보우 코트",
           },
         },
-
+        {
+          info: {
+            id: "VS_RIN_014",
+            cardName: "[추억을 들려줘]",
+            attribute: "pure",
+            gachaType: "통상",
+            gachaPoolName: "창공에 울리는 소리 뽑기",
+            eventName: "Stick to your faith",
+            skillType: "스업",
+            releaseDate: "2024-10-22",
+          },
+          media: {
+            gachaBannerPath: "/gachas/24y/banner_24_30_l.png",
+            eventBannerPath: "/events/24y/banner_24_30_l.png",
+            songName: "purpose",
+            songJacketPath: "/jacket/24y/purpose.png",
+          },
+          costume: {
+            hasCostume: true,
+            costumeName: "웜 선샤인",
+          },
+        },
+        {
+          info: {
+            id: "VS_RIN_019",
+            cardName: "[산더미 같은 포도에 부푸는 꿈]",
+            attribute: "mysterious",
+            gachaType: "통상",
+            gachaPoolName: "낙엽이 흩날리는 티 룸에서 뽑기",
+            eventName: "다시 나뭇잎이 물들 즈음에",
+            skillType: "퍼스업",
+            releaseDate: "2025-11-10",
+          },
+          media: {
+            gachaBannerPath: "/gachas/25y/banner_25_32.png",
+            eventBannerPath: "/events/25y/banner_25_32.png",
+          },
+          costume: {
+            hasCostume: true,
+            costumeName: "어여쁜 잎사귀의 옷 (무늬 검열)",
+          },
+        },
+        {
+          info: {
+            id: "VS_RIN_021",
+            cardName: "[어린애 취급은 사양할래!]",
+            attribute: "pure",
+            gachaType: "한정",
+            gachaPoolName: "지키기 위한 끝없는 싸움 뽑기",
+            eventName: "Connect hearts message",
+            skillType: "팀스업",
+            releaseDate: "2026-02-28",
+          },
+          media: {
+            gachaBannerPath: "/gachas/26y/banner_26_07.png",
+            eventBannerPath: "/events/26y/banner_26_07.png",
+          },
+          costume: {
+            hasCostume: true,
+            costumeName: "골드 시프 솔저",
+            hasHair: true,
+          },
+        },
+        {
+          info: {
+            id: "VS_RIN_022",
+            cardName: "[기대 위원의 진가 발휘♪]",
+            attribute: "cute",
+            gachaType: "통상",
+            gachaPoolName: "Seeking my way 뽑기",
+            eventName: "Unsteady, still steady step",
+            skillType: "판강",
+            releaseDate: "2026-07-15",
+          },
+          media: {
+            gachaBannerPath: "/gachas/26y/jbanner_26_20_l.png",
+            eventBannerPath: "/events/26y/jbanner_26_20_l.png",
+            songName: "투명한 팔레트",
+            songJacketPath: "/jacket/26y/Transparent_Palette.png",
+          },
+          costume: {
+            hasCostume: true,
+            costumeName: "Cheer of neighbor",
+          },
+        },
   ]
 });
 
@@ -152,6 +344,49 @@ const RinVbs = defineCharacterCards("비배스", "카가미네 린", "VS", "RIN"
             costumeName: "My Little Shine",
           },
         },
+        {
+          info: {
+            id: "VS_RIN_012",
+            cardName: "[린 일행에게 맡겨!]",
+            attribute: "cute",
+            gachaType: "통상",
+            gachaPoolName: "One's Dear Ones 뽑기",
+            eventName: "Light Up the Fire",
+            skillType: "스업",
+            releaseDate: "2024-06-10",
+          },
+          media: {
+            gachaBannerPath: "/gachas/24y/banner_24_17_v.png",
+            eventBannerPath: "/events/24y/banner_24_17_v.png",
+            songName: "하극상",
+            songJacketPath: "/jacket/24y/Gekokujou.png",
+          },
+          costume: {
+            hasCostume: true,
+            costumeName: "Spirit of Wish",
+          },
+        },
+        {
+          info: {
+            id: "VS_RIN_025",
+            cardName: "[노력하는 너에게 응원을]",
+            attribute: "cool",
+            gachaType: "한정",
+            gachaPoolName: "이상향을 떠도는 오니 뽑기",
+            eventName: "새해를 축복하는, 기원의 춤",
+            skillType: "팀스업",
+            releaseDate: "2027-01-04",
+          },
+          media: {
+            gachaBannerPath: "/gachas/27y/jbanner_27_01.png",
+            eventBannerPath: "/events/27y/jbanner_27_01.png",
+          },
+          costume: {
+            hasCostume: true,
+            costumeName: "장난꾸러기 꼬마 오니 옷",
+            hasHair: true,
+          },
+        },
   ]
 });
 
@@ -200,7 +435,72 @@ const RinWxs = defineCharacterCards("원더쇼", "카가미네 린", "VS", "RIN"
             hasHair: true,
           },
         },
-
+        {
+          info: {
+            id: "VS_RIN_015",
+            cardName: "[스크린에 비친]",
+            attribute: "happy",
+            gachaType: "통상",
+            gachaPoolName: "Punk Night TOKYO 뽑기",
+            eventName: "역광의 렌즈 플레어",
+            skillType: "판강",
+            releaseDate: "2025-01-23",
+          },
+          media: {
+            gachaBannerPath: "/gachas/25y/banner_25_03_w.png",
+            eventBannerPath: "/events/25y/banner_25_03_w.png",
+            songName: "사이버펑크 데드 보이",
+            songJacketPath: "/jacket/25y/CYBER_PUNK_DEAD_BOY.png",
+          },
+          costume: {
+            hasCostume: true,
+            costumeName: "observer:R",
+          },
+        },
+        {
+          info: {
+            id: "VS_RIN_024",
+            cardName: "[작은 수호자]",
+            attribute: "cute",
+            gachaType: "통상",
+            gachaPoolName: "Get my bright wings 뽑기",
+            eventName: "초극의 프로타고니스타",
+            skillType: "판강",
+            releaseDate: "2026-11-10",
+          },
+          media: {
+            gachaBannerPath: "/gachas/26y/jbanner_26_31_w.png",
+            eventBannerPath: "/events/26y/jbanner_26_31_w.png",
+            songName: "나아가라",
+            songJacketPath: "/jacket/26y/Yuke.png",
+          },
+          costume: {
+            hasCostume: true,
+            costumeName: "Wings of watch",
+          },
+        },
+        {
+          info: {
+            id: "VS_RIN_026",
+            cardName: "[린이 곁에 있어!]",
+            attribute: "mysterious",
+            gachaType: "통상",
+            gachaPoolName: "Rabbit Kingdom♡ 뽑기",
+            eventName: "CHANGE! 에무는 왕녀님?!",
+            skillType: "퍼스업",
+            releaseDate: "2027-02-19",
+          },
+          media: {
+            gachaBannerPath: "/gachas/27y/jbanner_27_06_w.png",
+            eventBannerPath: "/events/27y/jbanner_27_06_w.png",
+            songName: "뛰어나가라! 원더뾰이",
+            songJacketPath: "/jacket/27y/Tobidase_Wonderpyoi.png",
+          },
+          costume: {
+            hasCostume: true,
+            costumeName: "Soft fur attendant",
+          },
+        },
   ]
 });
 
@@ -246,6 +546,69 @@ const RinNigo = defineCharacterCards("니고", "카가미네 린", "VS", "RIN", 
           costume: {
             hasCostume: true,
             costumeName: "파스토랄 클로스",
+          },
+        },
+        {
+          info: {
+            id: "VS_RIN_013",
+            cardName: "[또 하나의 나]",
+            attribute: "cute",
+            gachaType: "한정",
+            gachaPoolName: "마음을 연주하는 마칭 퍼레이드 뽑기",
+            eventName: "세카이에 울려 퍼져라! Your Song",
+            skillType: "팀스업",
+            releaseDate: "2024-08-31",
+          },
+          media: {
+            gachaBannerPath: "/gachas/24y/banner_24_25_0.png",
+            eventBannerPath: "/events/24y/banner_24_25_0.png",
+          },
+          costume: {
+            hasCostume: true,
+            costumeName: "릴리브 마칭",
+            hasHair: true,
+          },
+        },
+        {
+          info: {
+            id: "VS_RIN_016",
+            cardName: "[처음 듣는 굉음]",
+            attribute: "pure",
+            gachaType: "통상",
+            gachaPoolName: "Reknit Relation 뽑기",
+            eventName: "등불의 기억을 더듬으며",
+            skillType: "힐",
+            releaseDate: "2025-06-20",
+          },
+          media: {
+            gachaBannerPath: "/gachas/25y/banner_25_18_n.png",
+            eventBannerPath: "/events/25y/banner_25_18_n.png",
+            songName: "엠퍼플",
+            songJacketPath: "/jacket/25y/Empurple.png",
+          },
+          costume: {
+            hasCostume: true,
+            costumeName: "mend a tear",
+          },
+        },
+        {
+          info: {
+            id: "VS_RIN_020",
+            cardName: "[꾸미기는 어려워]",
+            attribute: "cool",
+            gachaType: "통상",
+            gachaPoolName: "DoII dream 뽑기",
+            eventName: "Show your shine",
+            skillType: "스업",
+            releaseDate: "2026-01-21",
+          },
+          media: {
+            gachaBannerPath: "/gachas/26y/banner_26_03.png",
+            eventBannerPath: "/events/26y/banner_26_03.png",
+          },
+          costume: {
+            hasCostume: true,
+            costumeName: "시크릿 롤리타",
           },
         },
   ]
