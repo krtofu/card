@@ -34,7 +34,6 @@ interface FutureEventCardProps {
   userStates: Record<string, UserCardState>; 
   onCardClick: (card: FinalCardInfo) => void; 
   showPostAwake: boolean;
-  // 🌟 반투명 효과를 위한 필터 상태 Props 추가!
   isFilterActive: boolean; 
   isEventMatched: boolean; 
   matchedCardIds: string[]; 
@@ -50,7 +49,6 @@ export default function FutureEventCard({
     .map((cardId) => ALL_CARDS.find((c: any) => c.id === cardId || (c.info && c.info.id === cardId)))
     .filter((c) => c !== undefined) as any[];
 
-  // 🌟 유저님의 천재적인 아이디어 적용: 필터 활성화 시 매칭 안된 이벤트는 반투명 흑백 처리!
   const fadeClass = isFilterActive && !isEventMatched 
     ? "opacity-30 grayscale hover:opacity-60 transition-opacity duration-300" 
     : "opacity-100 transition-opacity duration-300";
@@ -58,16 +56,26 @@ export default function FutureEventCard({
   return (
     <div className={`flex flex-col md:flex-row items-center gap-8 ${isLeft ? '' : 'md:flex-row-reverse'} ${fadeClass}`}>
       
-      {/* 가챠 배너 영역 */}
-      <div className="flex-1 w-full relative z-10 flex justify-center">
-        <div className={`w-full max-w-[500px] bg-zinc-900 border border-white/10 rounded-2xl overflow-hidden shadow-xl transition-transform hover:scale-[1.02] ${isLeft ? 'md:mr-auto' : 'md:ml-auto'}`}>
-          <div className="relative aspect-[21/9] w-full bg-zinc-800 flex items-center justify-center border-b border-white/10">
+      {/* 🌟 가챠 배너 영역 (이미지 렌더링 적용!) */}
+      <div className="flex-1 w-full relative z-10 flex justify-center group/banner">
+        <div className={`w-full max-w-[500px] bg-zinc-900 border border-white/10 rounded-2xl overflow-hidden shadow-xl transition-transform duration-500 hover:scale-[1.02] ${isLeft ? 'md:mr-auto' : 'md:ml-auto'}`}>
+          
+          <div className="relative aspect-[21/9] w-full bg-zinc-800 flex items-center justify-center border-b border-white/10 overflow-hidden">
+            {/* 👉 텍스트를 날리고 진짜 이미지를 띄웁니다! */}
             {event.gacha.bannerPath ? (
-              <span className="text-zinc-500 text-xs">[이미지 자리] {event.gacha.bannerPath}</span>
+              <img 
+                src={event.gacha.bannerPath} 
+                alt={`${event.name} 배너`}
+                className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover/banner:scale-105 opacity-90 group-hover/banner:opacity-100"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none'; // 이미지 오류 시 숨김
+                }}
+              />
             ) : (
-              <span className="text-zinc-500 text-sm">No Banner Image</span>
+              <span className="text-zinc-600 text-sm font-bold tracking-widest">NO BANNER IMAGE</span>
             )}
             
+            {/* 배너 위쪽 좌/우 뱃지들 */}
             <div className="absolute top-3 left-3 flex gap-2 z-20">
               {event.gacha.types.map((type, idx) => (
                 <span key={idx} className={`px-2 py-0.5 text-xs font-bold rounded shadow-md backdrop-blur-md ${getGachaBadgeStyle(type)}`}>
@@ -75,7 +83,6 @@ export default function FutureEventCard({
                 </span>
               ))}
             </div>
-            {/* 이벤트 타입 뱃지 추가 */}
             {event.eventType && event.eventType !== "없음" && (
               <div className="absolute top-3 right-3 flex z-20">
                 <span className={`px-2 py-0.5 text-[10px] font-bold rounded border shadow-md backdrop-blur-md ${getEventTypeBadgeStyle(event.eventType)}`}>
@@ -85,7 +92,8 @@ export default function FutureEventCard({
             )}
           </div>
           
-          <div className="p-4 bg-zinc-950/80 backdrop-blur-sm">
+          {/* 배너 하단 텍스트 정보 */}
+          <div className="p-4 bg-zinc-950/90 backdrop-blur-sm relative z-20">
             <h3 className="text-lg font-bold text-white mb-1 truncate">{event.name}</h3>
             <p className="text-sm font-medium text-zinc-400">
               🕒 {event.period.start} ~ {event.period.end}
@@ -109,7 +117,6 @@ export default function FutureEventCard({
               const realId = card.info ? card.info.id : card.id;
               const myState = userStates[realId]; 
               
-              // 🌟 매치된 이벤트 안에서도 '조건에 맞는 카드'만 강조하고 안 맞는 건 어둡게 처리!
               const isCardMatched = !isFilterActive || matchedCardIds.includes(realId);
 
               return (

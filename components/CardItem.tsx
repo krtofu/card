@@ -9,13 +9,11 @@ interface CardItemProps {
   userState?: UserCardState;
   showPostAwake?: boolean;
   onClick: (card: FinalCardInfo) => void;
-  // 🌟 추가된 정렬 데이터들
   sortOrder?: "newest" | "oldest" | "score" | "bonus";
   scoreBonus?: number;
   eventBonus?: number;
 }
 
-// 🌟 [복구 완료] 스킬 아이콘 찾는 함수
 const getSkillIconPath = (skill: string) => {
   if (skill === "스업") return "/icons/skills/score_x.png";
   if (["퍼스업", "굿스업", "체스업", "블페", "팀스업"].includes(skill)) return "/icons/skills/condition_x.png";
@@ -24,7 +22,6 @@ const getSkillIconPath = (skill: string) => {
   return "";
 };
 
-// 🌟 [복구 완료] sortOrder, scoreBonus 등을 함수에서 제대로 받아옵니다!
 export default function CardItem({ 
   card, 
   userState, 
@@ -37,17 +34,15 @@ export default function CardItem({
   const isOwned = userState?.isOwned;
   const isTarget = userState?.isTarget;
   
-  // 🇰🇷 그리드에도 출시 여부 판단 로직 (보존 완료!)
   const isReleased = card.releaseDate ? new Date(card.releaseDate) <= new Date() : false;
 
-  // 🌟 썸네일 탐색기 (보존 완료!)
   const thumbPre = (card as any).media?.thumbPrePath || card.thumbPrePath || `/thumbnails/${card.id}.png`;
   const thumbPost = (card as any).media?.thumbPostPath || card.thumbPostPath || `/thumbnails/${card.id}.png`;
 
   return (
     <div onClick={() => onClick(card)} className="relative p-1 cursor-pointer transition-all hover:scale-[1.05] flex flex-col items-center text-center group min-w-0">
       
-      {/* 🌟 각전/각후 썸네일 호버 애니메이션 (보존 완료!) */}
+      {/* 썸네일 구역 */}
       <div className="relative h-[100px] w-fit flex justify-center bg-zinc-900 rounded-lg">
         <img 
           src={showPostAwake ? thumbPost : thumbPre} 
@@ -61,9 +56,24 @@ export default function CardItem({
           className="absolute top-0 h-[100px] w-auto max-w-full object-contain transition-opacity duration-300 ease-in-out opacity-0 group-hover:opacity-100 rounded-lg border border-white/10 group-hover:border-white/30 z-20" 
           onError={(e) => { e.currentTarget.style.display = 'none'; }} 
         />
+
+        {/* 🌟 [우선순위 1-B] 가시성 1000% 뱃지 추가! (썸네일 우측 상단) */}
+        {(isOwned || isTarget) && (
+          <div className="absolute -top-2 -right-2 z-30 flex flex-col gap-1 drop-shadow-md">
+            {isOwned ? (
+              <span className="bg-emerald-500 text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded shadow-sm border border-emerald-400">
+                ✓ 보유
+              </span>
+            ) : (
+              <span className="bg-amber-500 text-amber-950 text-[10px] font-extrabold px-1.5 py-0.5 rounded shadow-sm border border-amber-400">
+                ⭐ 목표
+              </span>
+            )}
+          </div>
+        )}
       </div>
       
-      {/* 🌟 [복구 완료] 정렬 상태에 따라 스업(%)이나 이벤포(%)를 띄워주는 UI 로직 부활! */}
+      {/* 정보 텍스트 구역 */}
       <div className="mt-2.5 h-[36px] flex flex-col items-center justify-start w-full px-1">
         {sortOrder === "score" ? (
           <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md shadow-sm mt-1 transition-all ${isOwned ? "bg-zinc-900/90 border border-[#00FFD1]/70 shadow-[0_0_8px_rgba(0,255,209,0.25)]" : isTarget ? "bg-amber-500/10 border border-amber-400/50 shadow-[0_0_8px_rgba(245,158,11,0.2)] text-amber-300" : "bg-zinc-900/80 border border-white/5"}`}>
@@ -76,7 +86,6 @@ export default function CardItem({
             <span className={`text-[12px] font-bold tracking-tight ${isOwned ? 'text-pink-300' : isTarget ? 'text-amber-300' : 'text-zinc-400'}`}>{eventBonus}%</span>
           </div>
         ) : (
-          /* 🌟 기존 노란색(amber-400) 타겟 통일 상태 보존 완료! */
           <>
             <p className={`text-[11px] font-semibold truncate w-full max-w-[100px] transition-colors flex items-center justify-center gap-0.5 ${isOwned ? "text-[#00FFD1]" : isTarget ? "text-amber-400" : "text-zinc-200 group-hover:text-white"}`}>
               <span className="truncate">{card.cardName}</span>
