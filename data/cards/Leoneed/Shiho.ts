@@ -2,7 +2,7 @@ import { defineCharacterCards } from "../template"; // 경로에 맞게 ../../ �
 
 // 🎸 Leo/need (레오니) 시호
 // -> 얼굴 아이콘: Shiho.png 자동 매핑
-const ShihoLeoneed = defineCharacterCards("레오니", "히노모리 시호", "ln", "Shiho", {
+const ShihoLeoneed = defineCharacterCards("레오니", "히노모리 시호", "Leoneed", "Shiho", {
   cards: [
         {
           info: {

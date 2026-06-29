@@ -2,7 +2,7 @@ import { defineCharacterCards } from "../template"; // Leoneed 폴더 위치에 
 
 // 🎸 Leo/need (레오니) 사키
 // -> 얼굴 아이콘: Saki.png 자동 매핑
-const SakiLeoneed = defineCharacterCards("레오니", "텐마 사키", "ln", "Saki", {
+const SakiLeoneed = defineCharacterCards("레오니", "텐마 사키", "Leoneed", "Saki", {
   cards: [
         {
           info: {
