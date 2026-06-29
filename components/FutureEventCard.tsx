@@ -8,24 +8,32 @@ import CardItem from "@/components/CardItem";
 import { UserCardState } from "@/app/cards/page";
 import { FinalCardInfo } from "@/data/cards/template";
 
-// 🌟 [수정됨] 투명도를 완전히 빼고 원색 배경 + 흰색 글씨로 가시성 대폭발!
-const getGachaBadgeStyle = (gachaType: string) => {
+// 🌟 [프리미엄 뱃지 스타일] 유저님이 주신 메인 탭 유닛 뱃지의 '빛 반사 + 텍스트 음영' 스타일을 완벽 이식!
+const PREMIUM_BADGE_STYLE: React.CSSProperties = {
+  borderColor: "rgba(255,255,255,0.35)",
+  backgroundImage: "linear-gradient(180deg, rgba(255,255,255,0.18), rgba(255,255,255,0) 55%)",
+  textShadow: "0px 1px 2px rgba(24, 24, 27, 0.5), 0px 0px 3px rgba(24, 24, 27, 0.2)",
+};
+
+const PREMIUM_BADGE_CLASS = "inline-flex items-center justify-center rounded-full border px-3 py-1 text-[11px] font-bold text-white shadow-md";
+
+const getGachaBadgeBg = (gachaType: string) => {
   switch (gachaType) {
-    case "통상": return "bg-sky-500 text-white border-sky-400 shadow-md";
-    case "한정": return "bg-pink-500 text-white border-pink-400 shadow-md";
-    case "페스": return "bg-violet-500 text-white border-violet-400 shadow-md";
-    case "월링": return "bg-emerald-500 text-white border-emerald-400 shadow-md";
-    case "콜라보": return "bg-amber-500 text-white border-amber-400 shadow-md";
-    default: return "bg-zinc-600 text-white border-zinc-500 shadow-md";
+    case "통상": return "bg-sky-500";
+    case "한정": return "bg-pink-500";
+    case "페스": return "bg-violet-500";
+    case "월링": return "bg-emerald-500";
+    case "콜라보": return "bg-amber-500";
+    default: return "bg-zinc-600";
   }
 };
 
-const getEventTypeBadgeStyle = (eventType?: string) => {
+const getEventTypeBadgeBg = (eventType?: string) => {
   switch (eventType) {
-    case "하코": return "bg-rose-500 text-white border-rose-400 shadow-md";
-    case "혼합": return "bg-indigo-500 text-white border-indigo-400 shadow-md";
-    case "월링": return "bg-emerald-500 text-white border-emerald-400 shadow-md";
-    default: return "bg-zinc-600 text-white border-zinc-500 shadow-md";
+    case "하코": return "bg-rose-500";
+    case "혼합": return "bg-indigo-500";
+    case "월링": return "bg-emerald-500";
+    default: return "bg-zinc-600";
   }
 };
 
@@ -56,9 +64,8 @@ export default function FutureEventCard({
   return (
     <div className={`flex flex-col md:flex-row items-center gap-8 ${fadeClass}`}>
       
-      {/* 🌟 좌측 구역: 가챠 배너 영역 */}
+      {/* 가챠 배너 영역 */}
       <div className="flex-1 w-full relative z-10 flex justify-center md:px-4">
-        {/* 🌟 [수정됨] 480px -> 520px로 넓혀서 인선 칸과 동일한 밸런스 유지! */}
         <div className="w-full max-w-[520px] bg-zinc-900 border border-white/10 rounded-2xl overflow-hidden shadow-xl">
           <div className="relative aspect-[21/9] w-full bg-zinc-800 flex items-center justify-center border-b border-white/10 overflow-hidden">
             {event.gacha.bannerPath ? (
@@ -72,17 +79,26 @@ export default function FutureEventCard({
               <span className="text-zinc-600 text-sm font-bold tracking-widest">NO BANNER IMAGE</span>
             )}
             
-            {/* 🌟 눈에 확 띄는 원색 뱃지 렌더링 */}
+            {/* 🌟 좌측 상단: 가챠 타입 프리미엄 뱃지 */}
             <div className="absolute top-3 left-3 flex gap-2 z-20">
               {event.gacha.types.map((type, idx) => (
-                <span key={idx} className={`px-2 py-0.5 text-xs font-bold rounded border ${getGachaBadgeStyle(type)}`}>
+                <span 
+                  key={idx} 
+                  className={`${PREMIUM_BADGE_CLASS} ${getGachaBadgeBg(type)}`}
+                  style={PREMIUM_BADGE_STYLE}
+                >
                   {type}
                 </span>
               ))}
             </div>
+
+            {/* 🌟 우측 상단: 이벤트 타입 프리미엄 뱃지 */}
             {event.eventType && event.eventType !== "없음" && (
               <div className="absolute top-3 right-3 flex z-20">
-                <span className={`px-2 py-0.5 text-[10px] font-bold rounded border ${getEventTypeBadgeStyle(event.eventType)}`}>
+                <span 
+                  className={`${PREMIUM_BADGE_CLASS} ${getEventTypeBadgeBg(event.eventType)}`}
+                  style={PREMIUM_BADGE_STYLE}
+                >
                   {event.eventType}
                 </span>
               </div>
@@ -100,14 +116,13 @@ export default function FutureEventCard({
         </div>
       </div>
 
-      {/* 가운데: 타임라인 중앙 점 */}
+      {/* 타임라인 중앙 점 */}
       <div className="hidden md:flex flex-col items-center justify-center relative z-20 w-6">
         <div className={`w-4 h-4 rounded-full border-4 border-zinc-950 shadow-[0_0_15px_rgba(255,255,255,0.5)] ${isFilterActive && !isEventMatched ? 'bg-zinc-600' : 'bg-white'}`} />
       </div>
 
-      {/* 🌟 우측 구역: 픽업 캐릭터 썸네일 영역 */}
+      {/* 픽업 캐릭터 썸네일 영역 */}
       <div className="flex-1 w-full relative z-10 flex justify-center md:px-4">
-        {/* 🌟 [수정됨] 480px -> 520px로 넓혀서 카드가 4장일 때 한 줄에 쏙 들어가게 수정! */}
         <div className="bg-zinc-900/30 border border-white/5 rounded-3xl p-6 w-full max-w-[520px]">
           <h4 className="text-sm font-bold text-zinc-300 mb-4 pb-2 border-b border-white/10 text-center md:text-left">✨ 픽업 멤버</h4>
           
@@ -124,6 +139,7 @@ export default function FutureEventCard({
                     userState={myState} 
                     onClick={onCardClick} 
                     showPostAwake={showPostAwake} 
+                    showTextBadge={true} // 미래시에선 무조건 텍스트 뱃지 켜기!
                   />
                 </div>
               );

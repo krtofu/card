@@ -12,6 +12,7 @@ interface CardItemProps {
   sortOrder?: "newest" | "oldest" | "score" | "bonus";
   scoreBonus?: number;
   eventBonus?: number;
+  showTextBadge?: boolean; // 🌟 신규: 텍스트 뱃지를 켤지 말지 결정하는 스위치!
 }
 
 const getSkillIconPath = (skill: string) => {
@@ -35,6 +36,7 @@ export default function CardItem({
   sortOrder = "newest",
   scoreBonus = 0,
   eventBonus = 0,
+  showTextBadge = false, // 🌟 기본적으로는 꺼둠 (내 카드 탭에서는 안 보임!)
   onClick 
 }: CardItemProps) {
   const isOwned = userState?.isOwned || false;
@@ -48,7 +50,6 @@ export default function CardItem({
   return (
     <div onClick={() => onClick(card)} className="relative p-1 cursor-pointer transition-all hover:scale-[1.05] flex flex-col items-center text-center group min-w-0">
       
-      {/* 썸네일 구역 */}
       <div className="relative h-[100px] w-fit flex justify-center bg-zinc-900 rounded-lg overflow-hidden border border-transparent group-hover:border-white/10 transition-colors">
         <img 
           src={showPostAwake ? thumbPost : thumbPre} 
@@ -64,7 +65,6 @@ export default function CardItem({
         />
       </div>
       
-      {/* 정보 텍스트 및 뱃지 구역 */}
       <div className="mt-2.5 h-[64px] flex flex-col items-center justify-start w-full px-1">
         {sortOrder === "score" ? (
           <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md shadow-sm mt-1 transition-all w-[90px] justify-center ${isOwned ? "bg-zinc-900/90 border border-[#00FFD1]/70 shadow-[0_0_8px_rgba(0,255,209,0.25)]" : isTarget ? "bg-amber-500/10 border border-amber-400/50 shadow-[0_0_8px_rgba(245,158,11,0.2)] text-amber-300" : "bg-zinc-900/80 border border-white/5"}`}>
@@ -83,10 +83,12 @@ export default function CardItem({
               {isReleased && <span className="text-[10px] shrink-0 drop-shadow-sm" title="한국 서버 출시됨">🇰🇷</span>}
             </p>
             
-            {/* 🌟 [수정됨] 뱃지 좌우 크기(w-[90px])를 고정하여 썸네일/텍스트와 블록처럼 차곡차곡 쌓이는 느낌 구현! */}
-            <span className={`mt-1.5 w-[90px] text-center rounded-md py-[3px] text-[10px] font-extrabold border tracking-tight ${getStateBadgeStyle(isOwned, isTarget)}`}>
-              {isOwned ? "✓ 보유" : isTarget ? "⭐ 목표" : "미보유"}
-            </span>
+            {/* 🌟 스위치가 켜져 있을 때만 보여줍니다! */}
+            {showTextBadge && (
+              <span className={`mt-1.5 w-[90px] text-center rounded-md py-[3px] text-[10px] font-extrabold border tracking-tight ${getStateBadgeStyle(isOwned, isTarget)}`}>
+                {isOwned ? "✓ 보유" : isTarget ? "⭐ 목표" : "미보유"}
+              </span>
+            )}
 
             <p className="text-[10px] text-zinc-500 mt-1 truncate w-full max-w-[100px]">{card.character}</p>
           </>
