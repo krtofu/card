@@ -1,13 +1,13 @@
 // src/app/future/page.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react"; // 🌟 useRef 추가!
 import { FUTURE_EVENTS } from "@/data/events";
-import { ALL_CARDS } from "@/data/cards"; // 🌟 추가: 카드 데이터를 검색하기 위해 필요함!
+import { ALL_CARDS } from "@/data/cards";
 import FutureEventCard from "@/components/FutureEventCard";
 import CardDetailModal from "@/components/CardDetailModal";
 import { FinalCardInfo } from "@/data/cards/template";
-import { UserCardState } from "@/app/cards/page";
+import { UserCardState } from "@/app/cards/page"; 
 
 export default function FuturePage() {
   const [cardStates, setCardStates] = useState<Record<string, UserCardState>>({});
@@ -17,7 +17,7 @@ export default function FuturePage() {
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [spinDeg, setSpinDeg] = useState(0);
 
-  // 🌟 필터 상태들 (내 카드 탭 + 이벤트 타입)
+  // 필터 상태들
   const [excludeCollab, setExcludeCollab] = useState(false);
   const [isStatusExpanded, setIsStatusExpanded] = useState(true);
   const [isEventTypeExpanded, setIsEventTypeExpanded] = useState(true);
@@ -27,12 +27,15 @@ export default function FuturePage() {
   const [isCharExpanded, setIsCharExpanded] = useState(true);
 
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]); 
-  const [selectedEventTypes, setSelectedEventTypes] = useState<string[]>([]); // 🌟 이벤트 타입(하코/혼합/월링) 필터
+  const [selectedEventTypes, setSelectedEventTypes] = useState<string[]>([]);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedHairs, setSelectedHairs] = useState<string[]>([]);
   const [selectedChars, setSelectedChars] = useState<string[]>([]);
   const [selectedAttrs, setSelectedAttrs] = useState<string[]>([]);
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+
+  // 🌟 스크롤 이동을 위한 참조(Ref) 객체
+  const yearRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   useEffect(() => {
     setMounted(true);
@@ -55,7 +58,6 @@ export default function FuturePage() {
     localStorage.setItem("sekard_user_card_states", JSON.stringify(updated));
   };
 
-  // --- 필터 조작 함수들 ---
   const toggleFilter = (list: string[], setList: (val: string[]) => void, id: string) => {
     setList(list.includes(id) ? list.filter(item => item !== id) : [...list, id]);
   };
@@ -95,16 +97,13 @@ export default function FuturePage() {
     else setSelectedChars([...new Set([...selectedChars, ...specificIds])]);
   };
 
-  // 🌟 단일 카드 필터 매칭 엔진
   const checkCardMatch = (card: any) => {
     if (excludeCollab && card.gachaType === "콜라보") return false;
-
     if (selectedStatuses.length > 0) {
       const isOwned = cardStates[card.id]?.isOwned || false;
       const isTarget = cardStates[card.id]?.isTarget || false;
       if (!( (selectedStatuses.includes("owned") && isOwned) || (selectedStatuses.includes("unowned") && !isOwned) || (selectedStatuses.includes("target") && isTarget) )) return false;
     }
-
     if (selectedTypes.length > 0) {
       const matchNormal = selectedTypes.includes("normal") && card.gachaType === "통상";
       const matchLimited = selectedTypes.includes("limited") && ["한정", "페스", "월링"].includes(card.gachaType);
@@ -115,11 +114,9 @@ export default function FuturePage() {
       }
       if (!(matchNormal || matchLimited || matchCollab)) return false;
     }
-
     if (selectedHairs.length > 0) {
       if (!( (selectedHairs.includes("hair_o") && card.hasHair) || (selectedHairs.includes("hair_x") && !card.hasHair) )) return false;
     }
-    
     if (selectedChars.length > 0) {
       const matchesChar = selectedChars.some(selId => {
         const parentUnit = UNIT_FILTERS.find(u => u.chars.some(c => c.id === selId));
@@ -141,16 +138,22 @@ export default function FuturePage() {
       });
       if (!matchesChar) return false;
     }
-    
     if (selectedAttrs.length > 0) {
       if (!selectedAttrs.some(selId => (card.attribute || "").toLowerCase() === selId || (card.attribute || "").toLowerCase() === ATTR_FILTERS.find(a => a.id === selId)?.name)) return false;
     }
-
     if (selectedSkills.length > 0) {
       if (!selectedSkills.some(selId => ALL_SKILL_TARGETS.find(t => t.id === selId)?.matchKeys?.includes(card.skillType || ""))) return false;
     }
-    
     return true; 
+  };
+
+  // 🌟 존재하는 이벤트들의 '연도'를 뽑아내서 버튼 만들기용 데이터로 생성
+  const uniqueYears = Array.from(new Set(FUTURE_EVENTS.map(e => e.period.start.split('-')[0]))).sort();
+
+  const scrollToYear = (year: string) => {
+    const element = yearRefs.current[year];
+    // 부드럽게 스크롤 이동!
+    if (element) element.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   if (!mounted) return null;
@@ -163,13 +166,14 @@ export default function FuturePage() {
   const isAnySkillSelected = selectedSkills.length > 0;
   const isAnyCharSelected = selectedChars.length > 0;
 
-  // 🌟 필터가 하나라도 켜져 있는지 확인
   const isFilterActive = isAnyStatusSelected || isAnyTypeSelected || isAnyEventTypeSelected || isAnyHairSelected || isAnyAttrSelected || isAnySkillSelected || isAnyCharSelected || excludeCollab;
 
   const condSubs = SKILL_FILTERS.find(s => s.id === "condition_group")?.subs || [];
   const condIds = condSubs.map(s => s.id);
   const isAllCondSelected = condIds.length > 0 && condIds.every(id => selectedSkills.includes(id));
   
+  let lastRenderedYear = ""; // 타임라인 그릴 때 연도 바뀜 감지용
+
   return (
     <div className="flex flex-col md:flex-row gap-6 px-4 md:px-8 py-6 min-h-screen text-zinc-100 max-w-[1920px] mx-auto w-full">
       
@@ -188,8 +192,7 @@ export default function FuturePage() {
         </div>
 
         <div className="space-y-6 md:mt-6">
-          
-          {/* 1. STATUS 구역 */}
+          {/* STATUS 구역 */}
           <div className="space-y-2">
             <button onClick={() => setIsStatusExpanded(!isStatusExpanded)} className="w-full flex items-center justify-between group pb-1 cursor-pointer">
               <span className="text-[12px] md:text-[11px] font-bold text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-300 transition-colors">STATUS & TYPE</span>
@@ -232,7 +235,7 @@ export default function FuturePage() {
             )}
           </div>
 
-          {/* 🌟 2. EVENT TYPE 구역 (미래시 전용) */}
+          {/* EVENT TYPE 구역 */}
           <div className="space-y-2 pt-2 border-t border-white/5">
             <button onClick={() => setIsEventTypeExpanded(!isEventTypeExpanded)} className="w-full flex items-center justify-between group pt-2 pb-1 cursor-pointer">
               <span className="text-[12px] md:text-[11px] font-bold text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-300 transition-colors">EVENT TYPE</span>
@@ -254,7 +257,7 @@ export default function FuturePage() {
             )}
           </div>
 
-          {/* 3. COLLAB 구역 */}
+          {/* COLLAB 구역 */}
           <div className="space-y-2 pt-2 border-t border-white/5">
             <button onClick={() => setIsCollabExpanded(!isCollabExpanded)} className="w-full flex items-center justify-between group pt-2 pb-1 cursor-pointer">
               <span className="text-[12px] md:text-[11px] font-bold text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-300 transition-colors">COLLAB</span>
@@ -429,7 +432,7 @@ export default function FuturePage() {
       {/* ========================================= */}
       <div className="flex-1 flex flex-col min-w-0 bg-zinc-900/30 rounded-3xl p-4 md:p-6 border border-white/5 relative">
         
-        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-10 relative z-40">
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-4 relative z-40">
           <div>
             <h1 className="text-xl font-bold tracking-tight text-white mb-1">📅 미래시 타임라인</h1>
             <p className="text-xs text-zinc-400">앞으로 다가올 가챠 일정과 픽업 멤버를 확인해보세요.</p>
@@ -439,6 +442,20 @@ export default function FuturePage() {
             <button onClick={() => setIsMobileFilterOpen(true)} className="md:hidden flex items-center justify-center gap-1.5 h-[34px] px-3 rounded-full bg-zinc-800/80 border border-white/10 text-[12px] font-bold text-zinc-300 hover:text-white transition-colors shadow-sm">
               🔍 필터
             </button>
+
+            {/* 🌟 연도 이동 버튼 (우측 상단에 배치!) */}
+            <div className="hidden sm:flex bg-zinc-800/80 rounded-full border border-white/10 overflow-hidden shadow-sm mr-2">
+               {uniqueYears.map(year => (
+                 <button
+                   key={year}
+                   onClick={() => scrollToYear(year)}
+                   className="px-3.5 py-1.5 text-[11px] font-bold text-zinc-400 hover:text-white hover:bg-zinc-700 transition-colors border-r border-white/5 last:border-0"
+                 >
+                   {year}년
+                 </button>
+               ))}
+            </div>
+
             <button 
               onClick={() => setExcludeCollab(!excludeCollab)}
               className={`hidden sm:flex items-center gap-1.5 h-[34px] px-3 rounded-full text-[12px] font-bold transition-all shadow-sm border ${
@@ -456,28 +473,30 @@ export default function FuturePage() {
           </div>
         </div>
 
+        {/* 🌟 타임라인 본문 (연도 이정표 포함) */}
         <div className="relative pt-4">
           <div className="absolute left-1/2 top-0 bottom-0 w-px bg-white/10 -translate-x-1/2 hidden md:block" />
           
-          <div className="space-y-16">
+          <div className="space-y-12 pb-20">
             {FUTURE_EVENTS.map((event, index) => {
-              // 🌟 매칭 로직 핵심: 이 이벤트가 필터를 통과하는가?
+              
+              // 🌟 연도 추출 및 이정표 출력 로직
+              const eventYear = event.period.start.split('-')[0];
+              const showYearMarker = eventYear !== lastRenderedYear;
+              if (showYearMarker) lastRenderedYear = eventYear;
+
               let isEventMatched = true;
               let matchedCardIds: string[] = [];
 
               if (isFilterActive) {
-                // 1. 이벤트 타입 필터 체크
                 const passEventType = !isAnyEventTypeSelected || selectedEventTypes.includes(event.eventType || "없음");
-                
-                // 2. 픽업 카드 중 필터 통과하는 카드 찾기
                 const eventCards = event.gacha.featuredCardIds
                   .map(id => ALL_CARDS.find(c => c.id === id || ((c as any).info && (c as any).info.id === id)))
-                  .filter(c => c !== undefined) as any[]; // 🌟 as any[]를 붙여서 undefined가 아님을 확정!
-                  
+                  .filter(c => c !== undefined) as any[];
+                
                 const matchedCards = eventCards.filter(c => checkCardMatch(c));
                 matchedCardIds = matchedCards.map(c => (c as any).info ? (c as any).info.id : c.id);
 
-                // 카드 필터가 켜져있는데 매칭된 카드가 없거나, 이벤트 타입 필터를 통과 못하면 이벤트 통째로 탈락(반투명)
                 const hasCardFilters = isAnyStatusSelected || isAnyTypeSelected || isAnyHairSelected || isAnyAttrSelected || isAnySkillSelected || isAnyCharSelected || excludeCollab;
                 if (!passEventType || (hasCardFilters && matchedCardIds.length === 0)) {
                   isEventMatched = false;
@@ -485,18 +504,30 @@ export default function FuturePage() {
               }
 
               return (
-                <FutureEventCard 
-                  key={event.id} 
-                  event={event} 
-                  index={index} 
-                  userStates={cardStates} 
-                  onCardClick={setActiveModalCard} 
-                  showPostAwake={showPostAwake}
-                  // 🌟 반투명 효과를 위해 계산된 값을 배너에 전달!
-                  isFilterActive={isFilterActive}
-                  isEventMatched={isEventMatched}
-                  matchedCardIds={matchedCardIds}
-                />
+                <div key={event.id} className="relative">
+                  {/* 🌟 연도가 바뀔 때마다 중앙선 위에 박히는 큼직한 이정표! */}
+                  {showYearMarker && (
+                    <div 
+                      ref={(el) => { yearRefs.current[eventYear] = el; }} 
+                      className="flex justify-center my-10 relative z-30 scroll-mt-24"
+                    >
+                      <span className="bg-zinc-900 border-2 border-white/20 text-white font-black px-6 py-1.5 rounded-full text-sm shadow-xl tracking-widest">
+                        {eventYear}
+                      </span>
+                    </div>
+                  )}
+
+                  <FutureEventCard 
+                    event={event} 
+                    index={index} 
+                    userStates={cardStates} 
+                    onCardClick={setActiveModalCard} 
+                    showPostAwake={showPostAwake}
+                    isFilterActive={isFilterActive}
+                    isEventMatched={isEventMatched}
+                    matchedCardIds={matchedCardIds}
+                  />
+                </div>
               );
             })}
           </div>
@@ -509,7 +540,7 @@ export default function FuturePage() {
 }
 
 // =========================================================================================
-// (아래 UNIT_FILTERS 등 배열 데이터는 기존과 100% 동일하게 놔두시면 됩니다!)
+// (아래 필터 배열 데이터는 그대로 둡니다!)
 // =========================================================================================
 type CharDef = { id: string; name: string; img: string; isVirtual?: boolean; matchKeys?: string[] };
 type UnitDef = { id: string; name: string; logo: string; chars: CharDef[] };

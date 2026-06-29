@@ -30,7 +30,7 @@ const getEventTypeBadgeStyle = (eventType?: string) => {
 
 interface FutureEventCardProps {
   event: EventData;
-  index: number;
+  index: number; // 이제 지그재그용으로는 안 쓰지만 맵핑 키용으로 유지
   userStates: Record<string, UserCardState>; 
   onCardClick: (card: FinalCardInfo) => void; 
   showPostAwake: boolean;
@@ -40,13 +40,12 @@ interface FutureEventCardProps {
 }
 
 export default function FutureEventCard({ 
-  event, index, userStates, onCardClick, showPostAwake, 
+  event, userStates, onCardClick, showPostAwake, 
   isFilterActive, isEventMatched, matchedCardIds 
 }: FutureEventCardProps) {
-  const isLeft = index % 2 === 0;
 
   const pickupCards = event.gacha.featuredCardIds
-    .map((cardId) => ALL_CARDS.find((c: any) => c.id === cardId || (c.info && c.info.id === cardId)))
+    .map((cardId) => ALL_CARDS.find((c: any) => c.id === cardId || ((c as any).info && (c as any).info.id === cardId)))
     .filter((c) => c !== undefined) as any[];
 
   const fadeClass = isFilterActive && !isEventMatched 
@@ -54,29 +53,24 @@ export default function FutureEventCard({
     : "opacity-100 transition-opacity duration-300";
 
   return (
-    <div className={`flex flex-col md:flex-row items-center gap-8 ${isLeft ? '' : 'md:flex-row-reverse'} ${fadeClass}`}>
+    // 🌟 md:flex-row-reverse 삭제! 무조건 배너(좌) - 인선(우) 유지
+    <div className={`flex flex-col md:flex-row items-center gap-8 ${fadeClass}`}>
       
-      {/* 🌟 가챠 배너 영역 (동적 효과 완전히 제거, 빳빳하고 평평한 배너!) */}
-      <div className="flex-1 w-full relative z-10 flex justify-center">
-        {/* 기존에 있던 hover:scale, transition 관련 클래스를 전부 날렸습니다. */}
-        <div className="w-full max-w-[500px] bg-zinc-900 border border-white/10 rounded-2xl overflow-hidden shadow-xl">
-          
+      {/* 🌟 좌측: 가챠 배너 영역 */}
+      <div className="flex-1 w-full relative z-10 flex md:justify-end justify-center md:pr-4">
+        <div className="w-full max-w-[480px] bg-zinc-900 border border-white/10 rounded-2xl overflow-hidden shadow-xl">
           <div className="relative aspect-[21/9] w-full bg-zinc-800 flex items-center justify-center border-b border-white/10 overflow-hidden">
             {event.gacha.bannerPath ? (
               <img 
                 src={event.gacha.bannerPath} 
                 alt={`${event.name} 배너`}
-                // 이미지 확대(scale), 투명도(opacity) 변환 애니메이션 싹 다 제거!
                 className="absolute inset-0 w-full h-full object-cover"
-                onError={(e) => {
-                  e.currentTarget.style.display = 'none';
-                }}
+                onError={(e) => { e.currentTarget.style.display = 'none'; }}
               />
             ) : (
               <span className="text-zinc-600 text-sm font-bold tracking-widest">NO BANNER IMAGE</span>
             )}
             
-            {/* 🌟 좌/우측 상단 뱃지 볼드(font-bold) 해제! 깔끔하게 읽힙니다. */}
             <div className="absolute top-3 left-3 flex gap-2 z-20">
               {event.gacha.types.map((type, idx) => (
                 <span key={idx} className={`px-2 py-0.5 text-xs rounded shadow-md backdrop-blur-md ${getGachaBadgeStyle(type)}`}>
@@ -104,21 +98,20 @@ export default function FutureEventCard({
         </div>
       </div>
 
-      {/* 가운데 시간 점 */}
-      <div className="hidden md:flex flex-col items-center justify-center relative z-20">
+      {/* 가운데: 타임라인 중앙 점 */}
+      <div className="hidden md:flex flex-col items-center justify-center relative z-20 w-6">
         <div className={`w-4 h-4 rounded-full border-4 border-zinc-950 shadow-[0_0_15px_rgba(255,255,255,0.5)] ${isFilterActive && !isEventMatched ? 'bg-zinc-600' : 'bg-white'}`} />
       </div>
 
-      {/* 픽업 캐릭터 썸네일 영역 */}
-      <div className="flex-1 w-full relative z-10 flex justify-center">
-        <div className="bg-zinc-900/30 border border-white/5 rounded-3xl p-6 w-full max-w-[500px]">
+      {/* 🌟 우측: 픽업 캐릭터 썸네일 영역 */}
+      <div className="flex-1 w-full relative z-10 flex md:justify-start justify-center md:pl-4">
+        <div className="bg-zinc-900/30 border border-white/5 rounded-3xl p-6 w-full max-w-[480px]">
           <h4 className="text-sm font-bold text-zinc-300 mb-4 pb-2 border-b border-white/10">✨ 픽업 멤버</h4>
           
           <div className="flex flex-wrap gap-4">
             {pickupCards.map((card, idx) => {
               const realId = card.info ? card.info.id : card.id;
               const myState = userStates[realId]; 
-              
               const isCardMatched = !isFilterActive || matchedCardIds.includes(realId);
 
               return (
