@@ -68,6 +68,9 @@ export default function MyCardsPage() {
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [spinDeg, setSpinDeg] = useState(0);
 
+  // 🌟 [검색창 1단계] 검색어 텍스트를 저장할 상태 추가!
+  const [searchQuery, setSearchQuery] = useState("");
+
   const [excludeCollab, setExcludeCollab] = useState(false);
   const [hideUnreleased, setHideUnreleased] = useState(false);
   const [isStatusExpanded, setIsStatusExpanded] = useState(true);
@@ -131,6 +134,7 @@ export default function MyCardsPage() {
     setSelectedChars([]); setSelectedAttrs([]); setSelectedSkills([]); 
     setSelectedStatuses([]); setSelectedTypes([]); setSelectedHairs([]);
     setExcludeCollab(false); setHideUnreleased(false);
+    setSearchQuery(""); // 🌟 검색어도 함께 초기화!
   };
 
   const allVsCharIds = UNIT_FILTERS.flatMap(u => u.chars.filter(c => c.isVirtual).map(c => c.id));
@@ -149,6 +153,17 @@ export default function MyCardsPage() {
   };
 
   const filteredCards = ALL_CARDS.filter(card => {
+    // 🌟 [검색창 2단계] 텍스트 매칭 엔진 가동! (이름, 의상명, 이벤트명 등 모두 검사)
+    if (searchQuery.trim() !== "") {
+      const q = searchQuery.toLowerCase().trim();
+      const matchName = card.cardName?.toLowerCase().includes(q);
+      const matchChar = card.character?.toLowerCase().includes(q);
+      const matchCostume = (card as any).costumeName?.toLowerCase().includes(q);
+      const matchEvent = card.eventName?.toLowerCase().includes(q);
+      const matchGacha = card.gachaPoolName?.toLowerCase().includes(q);
+      if (!(matchName || matchChar || matchCostume || matchEvent || matchGacha)) return false;
+    }
+
     if (hideUnreleased && card.releaseDate && new Date(card.releaseDate) > new Date()) return false;
     if (excludeCollab && card.gachaType === "콜라보") return false;
 
@@ -393,7 +408,6 @@ export default function MyCardsPage() {
                     const isSelected = selectedSkills.includes(sub.id);
                     const opacityClass = !isAnySkillSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100 text-white bg-zinc-900";
                     return (
-                      // 🌟 [수정됨] 텍스트 버튼 버그 원인 해결! 비활성화 상태에도 투명한 border 두께를 유지시킵니다.
                       <button key={sub.id} onClick={() => toggleFilter(selectedSkills, setSelectedSkills, sub.id)}
                         className={`py-2.5 md:py-2 px-1 text-[12px] font-medium tracking-tight rounded-lg transition-all duration-300 text-white ${isSelected ? "bg-zinc-700 scale-105 shadow-md border border-white/20" : "bg-zinc-900 hover:bg-zinc-800 scale-95 border border-transparent"} ${opacityClass}`}>
                         {sub.name}
@@ -486,6 +500,26 @@ export default function MyCardsPage() {
             <button onClick={() => setIsMobileFilterOpen(true)} className="md:hidden flex items-center justify-center gap-1.5 h-[34px] px-3 rounded-full bg-zinc-800/80 border border-white/10 text-[12px] font-bold text-zinc-300 hover:text-white transition-colors shadow-sm">
               🔍 필터
             </button>
+
+            {/* 🌟 [검색창 3단계] 우측 상단에 배치되는 세련된 검색 바 UI */}
+            <div className="relative flex items-center w-full sm:w-48 lg:w-64">
+              <span className="absolute left-3 text-zinc-400 text-sm">🔍</span>
+              <input
+                type="text"
+                placeholder="이름, 의상명, 픽업명 검색..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full h-[34px] bg-zinc-800/80 border border-white/10 text-white text-xs rounded-full pl-8 pr-8 focus:outline-none focus:border-sky-500 transition-all shadow-sm placeholder:text-zinc-500"
+              />
+              {searchQuery && (
+                <button 
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-3 text-zinc-400 hover:text-white text-xs font-bold"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
 
             {sortOrder === "score" && (
               <div className="flex items-center bg-zinc-800 border border-white/10 rounded-full p-1 animate-fade-in shadow-sm">
@@ -581,7 +615,7 @@ export default function MyCardsPage() {
   );
 }
 
-// (아래 UNIT_FILTERS 등은 기존과 100% 동일하므로 생략 없이 풀로 복사해주세요!)
+// (아래 UNIT_FILTERS 등은 기존과 100% 동일합니다)
 type CharDef = { id: string; name: string; img: string; isVirtual?: boolean; matchKeys?: string[] };
 type UnitDef = { id: string; name: string; logo: string; chars: CharDef[] };
 type AttrDef = { id: string; name: string; img: string };
