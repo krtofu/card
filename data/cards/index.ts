@@ -6,7 +6,7 @@ import type { FinalCardInfo } from "./template";
 import { MikuCards } from "./VS/MIKU";
 import { RinCards } from "./VS/RIN";
 import { LenCards } from "./VS/LEN";
-// import { LukaCards } from "./VS/LUKA";
+import { LukaCards } from "./VS/LUKA";
 // import { MeikoCards } from "./VS/MEIKO";
 // import { KaitoCards } from "./VS/KAITO";
 
@@ -14,7 +14,7 @@ const VS_CARDS = [
   ...MikuCards,
   ...RinCards,
   ...LenCards,
-  // ...LukaCards,
+  ...LukaCards,
   // ...MeikoCards,
   // ...KaitoCards,
 ];
@@ -23,15 +23,15 @@ const VS_CARDS = [
 // 🎸 2. Leo/need (Leoneed)
 // ==========================================
 import { IchikaCards } from "./Leoneed/Ichika";
-// import { SakiCards } from "./Leoneed/Saki";
+import { SakiCards } from "./Leoneed/Saki";
 // import { HonamiCards } from "./Leoneed/Honami";
-// import { ShihoCards } from "./Leoneed/Shiho";
+import { ShihoCards } from "./Leoneed/Shiho";
 
 const Leoneed_CARDS = [
   ...IchikaCards,
-  // ...SakiCards,
+  ...SakiCards,
   // ...HonamiCards,
-  // ...ShihoCards,
+  ...ShihoCards,
 ];
 
 // ==========================================
@@ -82,13 +82,13 @@ const Wds_CARDS = [
 // ==========================================
 // 🎧 6. 25시, 나이트코드에서. (Niigo)
 // ==========================================
-// import { KanadeCards } from "./Niigo/Kanade"; // 👈 폴더 경로도 완벽하게 Niigo로 동기화!
+import { KanadeCards } from "./Niigo/Kanade"; // 👈 폴더 경로도 완벽하게 Niigo로 동기화!
 // import { MafuyuCards } from "./Niigo/Mafuyu";
 // import { EnaCards } from "./Niigo/Ena";
 // import { MizukiCards } from "./Niigo/Mizuki";
 
 const Niigo_CARDS = [
-  // ...KanadeCards,
+  ...KanadeCards,
   // ...MafuyuCards,
   // ...EnaCards,
   // ...MizukiCards,
