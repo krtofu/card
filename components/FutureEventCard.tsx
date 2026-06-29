@@ -8,7 +8,6 @@ import CardItem from "@/components/CardItem";
 import { UserCardState } from "@/app/cards/page";
 import { FinalCardInfo } from "@/data/cards/template";
 
-// 가챠 타입 뱃지 스타일 (배너 좌측 상단용)
 const getGachaBadgeStyle = (gachaType: string) => {
   switch (gachaType) {
     case "통상": return "border-sky-300/45 bg-sky-400/16 text-sky-100 shadow-[0_0_0_1px_rgba(56,189,248,0.18)]";
@@ -20,27 +19,44 @@ const getGachaBadgeStyle = (gachaType: string) => {
   }
 };
 
+const getEventTypeBadgeStyle = (eventType?: string) => {
+  switch (eventType) {
+    case "하코": return "bg-rose-500/20 text-rose-300 border-rose-400/50";
+    case "혼합": return "bg-indigo-500/20 text-indigo-300 border-indigo-400/50";
+    case "월링": return "bg-emerald-500/20 text-emerald-300 border-emerald-400/50";
+    default: return "bg-zinc-800 text-zinc-400 border-white/10";
+  }
+};
+
 interface FutureEventCardProps {
   event: EventData;
   index: number;
   userStates: Record<string, UserCardState>; 
   onCardClick: (card: FinalCardInfo) => void; 
-  // 🌟 각전/각후 상태를 받는 통로 추가!
-  showPostAwake: boolean; 
+  showPostAwake: boolean;
+  // 🌟 반투명 효과를 위한 필터 상태 Props 추가!
+  isFilterActive: boolean; 
+  isEventMatched: boolean; 
+  matchedCardIds: string[]; 
 }
 
-export default function FutureEventCard({ event, index, userStates, onCardClick, showPostAwake }: FutureEventCardProps) {
+export default function FutureEventCard({ 
+  event, index, userStates, onCardClick, showPostAwake, 
+  isFilterActive, isEventMatched, matchedCardIds 
+}: FutureEventCardProps) {
   const isLeft = index % 2 === 0;
 
-  // 마법의 강철 연동 코드 (카드 데이터 찾기)
   const pickupCards = event.gacha.featuredCardIds
-    .map((cardId) => 
-      ALL_CARDS.find((c: any) => c.id === cardId || (c.info && c.info.id === cardId))
-    )
+    .map((cardId) => ALL_CARDS.find((c: any) => c.id === cardId || (c.info && c.info.id === cardId)))
     .filter((c) => c !== undefined) as any[];
 
+  // 🌟 유저님의 천재적인 아이디어 적용: 필터 활성화 시 매칭 안된 이벤트는 반투명 흑백 처리!
+  const fadeClass = isFilterActive && !isEventMatched 
+    ? "opacity-30 grayscale hover:opacity-60 transition-opacity duration-300" 
+    : "opacity-100 transition-opacity duration-300";
+
   return (
-    <div className={`flex flex-col md:flex-row items-center gap-8 ${isLeft ? '' : 'md:flex-row-reverse'}`}>
+    <div className={`flex flex-col md:flex-row items-center gap-8 ${isLeft ? '' : 'md:flex-row-reverse'} ${fadeClass}`}>
       
       {/* 가챠 배너 영역 */}
       <div className="flex-1 w-full relative z-10 flex justify-center">
@@ -59,6 +75,14 @@ export default function FutureEventCard({ event, index, userStates, onCardClick,
                 </span>
               ))}
             </div>
+            {/* 이벤트 타입 뱃지 추가 */}
+            {event.eventType && event.eventType !== "없음" && (
+              <div className="absolute top-3 right-3 flex z-20">
+                <span className={`px-2 py-0.5 text-[10px] font-bold rounded border shadow-md backdrop-blur-md ${getEventTypeBadgeStyle(event.eventType)}`}>
+                  {event.eventType}
+                </span>
+              </div>
+            )}
           </div>
           
           <div className="p-4 bg-zinc-950/80 backdrop-blur-sm">
@@ -72,7 +96,7 @@ export default function FutureEventCard({ event, index, userStates, onCardClick,
 
       {/* 가운데 시간 점 */}
       <div className="hidden md:flex flex-col items-center justify-center relative z-20">
-        <div className="w-4 h-4 rounded-full bg-white border-4 border-zinc-950 shadow-[0_0_15px_rgba(255,255,255,0.5)]" />
+        <div className={`w-4 h-4 rounded-full border-4 border-zinc-950 shadow-[0_0_15px_rgba(255,255,255,0.5)] ${isFilterActive && !isEventMatched ? 'bg-zinc-600' : 'bg-white'}`} />
       </div>
 
       {/* 픽업 캐릭터 썸네일 영역 */}
@@ -83,17 +107,18 @@ export default function FutureEventCard({ event, index, userStates, onCardClick,
           <div className="flex flex-wrap gap-4">
             {pickupCards.map((card, idx) => {
               const realId = card.info ? card.info.id : card.id;
-              
-              // 현재 카드의 진짜 내 상태(보유/목표) 가져오기
               const myState = userStates[realId]; 
+              
+              // 🌟 매치된 이벤트 안에서도 '조건에 맞는 카드'만 강조하고 안 맞는 건 어둡게 처리!
+              const isCardMatched = !isFilterActive || matchedCardIds.includes(realId);
 
               return (
-                <div key={realId || idx} className="w-[100px] shrink-0">
+                <div key={realId || idx} className={`w-[100px] shrink-0 transition-all duration-300 ${!isCardMatched ? 'opacity-30 grayscale-[80%]' : ''}`}>
                   <CardItem 
                     card={card} 
                     userState={myState} 
                     onClick={onCardClick} 
-                    showPostAwake={showPostAwake} // 🌟 2. 진짜 카드 조각에 신호 전달!
+                    showPostAwake={showPostAwake} 
                   />
                 </div>
               );

@@ -1,5 +1,3 @@
-// src/data/events.ts
-
 export interface EventData {
   id: string;
   name: string; // 가챠/이벤트 이름
@@ -19,7 +17,7 @@ export const FUTURE_EVENTS: EventData[] = [
     name: "서비스 시작 기념 뽑기",
     eventName: "", // 이벤트 없음
     eventType: "없음",
-    period: { start: "2022-05-20 12:00", end: "2022-05-29 14:59" },
+    period: { start: "2022-05-20. 12:00", end: "2022-05-29. 14:59" },
     gacha: {
       bannerPath: "/gachas/22y/banner_22_01.png",
       types: ["통상"],
@@ -27,7 +25,7 @@ export const FUTURE_EVENTS: EventData[] = [
         "ln_Ichika_001",
         "VS_MIKU_001",
         "VS_RIN_001",
-        "VS_REN_001"
+        "VS_LEN_001"
       ]
     }
   }
