@@ -1,7 +1,7 @@
 // src/app/future/page.tsx
 "use client";
 
-import { useState, useEffect, useRef } from "react"; // 🌟 useRef 추가!
+import { useState, useEffect, useRef } from "react";
 import { FUTURE_EVENTS } from "@/data/events";
 import { ALL_CARDS } from "@/data/cards";
 import FutureEventCard from "@/components/FutureEventCard";
@@ -13,11 +13,14 @@ export default function FuturePage() {
   const [cardStates, setCardStates] = useState<Record<string, UserCardState>>({});
   const [activeModalCard, setActiveModalCard] = useState<FinalCardInfo | null>(null);
   const [mounted, setMounted] = useState(false);
+  
   const [showPostAwake, setShowPostAwake] = useState(false);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+  // 🌟 가로 드롭다운 애니메이션을 위한 상태 추가!
+  const [isYearMenuOpen, setIsYearMenuOpen] = useState(false); 
   const [spinDeg, setSpinDeg] = useState(0);
 
-  // 필터 상태들
+  // 필터 상태들 (기존 동일)
   const [excludeCollab, setExcludeCollab] = useState(false);
   const [isStatusExpanded, setIsStatusExpanded] = useState(true);
   const [isEventTypeExpanded, setIsEventTypeExpanded] = useState(true);
@@ -34,7 +37,6 @@ export default function FuturePage() {
   const [selectedAttrs, setSelectedAttrs] = useState<string[]>([]);
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
 
-  // 🌟 스크롤 이동을 위한 참조(Ref) 객체
   const yearRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   useEffect(() => {
@@ -147,13 +149,13 @@ export default function FuturePage() {
     return true; 
   };
 
-  // 🌟 존재하는 이벤트들의 '연도'를 뽑아내서 버튼 만들기용 데이터로 생성
   const uniqueYears = Array.from(new Set(FUTURE_EVENTS.map(e => e.period.start.split('-')[0]))).sort();
 
   const scrollToYear = (year: string) => {
     const element = yearRefs.current[year];
-    // 부드럽게 스크롤 이동!
-    if (element) element.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
   };
 
   if (!mounted) return null;
@@ -172,13 +174,13 @@ export default function FuturePage() {
   const condIds = condSubs.map(s => s.id);
   const isAllCondSelected = condIds.length > 0 && condIds.every(id => selectedSkills.includes(id));
   
-  let lastRenderedYear = ""; // 타임라인 그릴 때 연도 바뀜 감지용
+  let lastRenderedYear = "";
 
   return (
     <div className="flex flex-col md:flex-row gap-6 px-4 md:px-8 py-6 min-h-screen text-zinc-100 max-w-[1920px] mx-auto w-full">
       
       {/* ========================================= */}
-      {/* 👈 좌측 영역: 스마트 필터칸 */}
+      {/* 👈 좌측 영역: 스마트 필터칸 (기존과 동일하므로 생략 없이 풀코드 유지) */}
       {/* ========================================= */}
       <div className={`flex flex-col shrink-0 md:w-[280px] md:relative md:block md:bg-transparent md:p-0 md:h-auto md:z-0 ${isMobileFilterOpen ? 'fixed inset-0 z-[100] bg-zinc-950 p-6 overflow-y-auto' : 'hidden'}`}>
         <div className="flex items-center justify-between border-b border-white/10 pb-3 mb-6 md:mb-0">
@@ -192,7 +194,8 @@ export default function FuturePage() {
         </div>
 
         <div className="space-y-6 md:mt-6">
-          {/* STATUS 구역 */}
+          
+          {/* 1. STATUS 구역 */}
           <div className="space-y-2">
             <button onClick={() => setIsStatusExpanded(!isStatusExpanded)} className="w-full flex items-center justify-between group pb-1 cursor-pointer">
               <span className="text-[12px] md:text-[11px] font-bold text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-300 transition-colors">STATUS & TYPE</span>
@@ -235,7 +238,7 @@ export default function FuturePage() {
             )}
           </div>
 
-          {/* EVENT TYPE 구역 */}
+          {/* 2. EVENT TYPE 구역 */}
           <div className="space-y-2 pt-2 border-t border-white/5">
             <button onClick={() => setIsEventTypeExpanded(!isEventTypeExpanded)} className="w-full flex items-center justify-between group pt-2 pb-1 cursor-pointer">
               <span className="text-[12px] md:text-[11px] font-bold text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-300 transition-colors">EVENT TYPE</span>
@@ -257,7 +260,7 @@ export default function FuturePage() {
             )}
           </div>
 
-          {/* COLLAB 구역 */}
+          {/* 3. COLLAB 구역 */}
           <div className="space-y-2 pt-2 border-t border-white/5">
             <button onClick={() => setIsCollabExpanded(!isCollabExpanded)} className="w-full flex items-center justify-between group pt-2 pb-1 cursor-pointer">
               <span className="text-[12px] md:text-[11px] font-bold text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-300 transition-colors">COLLAB</span>
@@ -430,7 +433,7 @@ export default function FuturePage() {
       {/* ========================================= */}
       {/* 👉 우측 영역: 미래시 타임라인 본문 */}
       {/* ========================================= */}
-      <div className="flex-1 flex flex-col min-w-0 bg-zinc-900/30 rounded-3xl p-4 md:p-6 border border-white/5 relative">
+      <div className="flex-1 flex flex-col min-w-0 bg-zinc-900/30 rounded-3xl p-4 md:p-6 border border-white/5 relative overflow-hidden">
         
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-4 relative z-40">
           <div>
@@ -443,17 +446,29 @@ export default function FuturePage() {
               🔍 필터
             </button>
 
-            {/* 🌟 연도 이동 버튼 (우측 상단에 배치!) */}
-            <div className="hidden sm:flex bg-zinc-800/80 rounded-full border border-white/10 overflow-hidden shadow-sm mr-2">
-               {uniqueYears.map(year => (
-                 <button
-                   key={year}
-                   onClick={() => scrollToYear(year)}
-                   className="px-3.5 py-1.5 text-[11px] font-bold text-zinc-400 hover:text-white hover:bg-zinc-700 transition-colors border-r border-white/5 last:border-0"
-                 >
-                   {year}년
-                 </button>
-               ))}
+            {/* 🌟 흰 바탕 + 검정 글씨의 시각성 폭발 연도 드롭다운 버튼! */}
+            <div className="hidden sm:flex relative items-center mr-1">
+              <button
+                onClick={() => setIsYearMenuOpen(!isYearMenuOpen)}
+                className="px-3.5 py-1.5 text-[12px] font-black bg-white text-zinc-950 hover:bg-zinc-200 transition-all shadow-md rounded-md z-20 flex items-center gap-1"
+              >
+                연도 이동 {isYearMenuOpen ? '◀' : '▶'}
+              </button>
+
+              {/* 가로로 열리는 드롭다운 애니메이션 메뉴 */}
+              <div className={`flex items-center transition-all duration-300 ease-in-out origin-left overflow-hidden ${isYearMenuOpen ? 'max-w-[500px] opacity-100 ml-2' : 'max-w-0 opacity-0 ml-0'}`}>
+                <div className="flex bg-zinc-800 border border-white/20 rounded-md shadow-lg overflow-hidden shrink-0">
+                   {uniqueYears.map(year => (
+                     <button
+                       key={year}
+                       onClick={() => { scrollToYear(year); setIsYearMenuOpen(false); }}
+                       className="px-4 py-1.5 text-[12px] font-bold text-white hover:bg-white hover:text-black transition-colors border-r border-white/10 last:border-0 whitespace-nowrap"
+                     >
+                       {year}년
+                     </button>
+                   ))}
+                </div>
+              </div>
             </div>
 
             <button 
@@ -464,9 +479,7 @@ export default function FuturePage() {
             >
               {excludeCollab ? '🚫 콜라보 제외' : '🤝 콜라보 포함'}
             </button>
-            <button onClick={() => setExcludeCollab(!excludeCollab)} className={`sm:hidden flex items-center justify-center w-[34px] h-[34px] rounded-full text-[14px] transition-all shadow-sm border ${excludeCollab ? 'bg-red-500/20 text-red-300 border-red-400/50' : 'bg-zinc-800/80 border-white/10 text-zinc-400'}`} title="콜라보 제외">
-              {excludeCollab ? '🚫' : '🤝'}
-            </button>
+            
             <button onClick={() => setShowPostAwake(!showPostAwake)} className="p-1 rounded-full bg-zinc-900 border border-white/10 shrink-0 ml-auto sm:ml-0" aria-label="썸네일 전환">
               <img src={showPostAwake ? "/icons/post_star.png" : "/icons/pre_star.png"} alt="스위치" className="h-8 w-auto object-contain block" />
             </button>
@@ -480,7 +493,6 @@ export default function FuturePage() {
           <div className="space-y-12 pb-20">
             {FUTURE_EVENTS.map((event, index) => {
               
-              // 🌟 연도 추출 및 이정표 출력 로직
               const eventYear = event.period.start.split('-')[0];
               const showYearMarker = eventYear !== lastRenderedYear;
               if (showYearMarker) lastRenderedYear = eventYear;
@@ -505,7 +517,7 @@ export default function FuturePage() {
 
               return (
                 <div key={event.id} className="relative">
-                  {/* 🌟 연도가 바뀔 때마다 중앙선 위에 박히는 큼직한 이정표! */}
+                  {/* 연도가 바뀔 때마다 중앙선 위에 박히는 큼직한 이정표! */}
                   {showYearMarker && (
                     <div 
                       ref={(el) => { yearRefs.current[eventYear] = el; }} 
@@ -540,7 +552,7 @@ export default function FuturePage() {
 }
 
 // =========================================================================================
-// (아래 필터 배열 데이터는 그대로 둡니다!)
+// 필터 배열 데이터 (이전과 동일)
 // =========================================================================================
 type CharDef = { id: string; name: string; img: string; isVirtual?: boolean; matchKeys?: string[] };
 type UnitDef = { id: string; name: string; logo: string; chars: CharDef[] };

@@ -30,7 +30,7 @@ const getEventTypeBadgeStyle = (eventType?: string) => {
 
 interface FutureEventCardProps {
   event: EventData;
-  index: number; // 이제 지그재그용으로는 안 쓰지만 맵핑 키용으로 유지
+  index: number;
   userStates: Record<string, UserCardState>; 
   onCardClick: (card: FinalCardInfo) => void; 
   showPostAwake: boolean;
@@ -53,11 +53,10 @@ export default function FutureEventCard({
     : "opacity-100 transition-opacity duration-300";
 
   return (
-    // 🌟 md:flex-row-reverse 삭제! 무조건 배너(좌) - 인선(우) 유지
     <div className={`flex flex-col md:flex-row items-center gap-8 ${fadeClass}`}>
       
-      {/* 🌟 좌측: 가챠 배너 영역 */}
-      <div className="flex-1 w-full relative z-10 flex md:justify-end justify-center md:pr-4">
+      {/* 🌟 좌측 구역: 각각의 공간(flex-1) 내에서 완벽한 중앙 정렬(justify-center) 유지! */}
+      <div className="flex-1 w-full relative z-10 flex justify-center md:px-4">
         <div className="w-full max-w-[480px] bg-zinc-900 border border-white/10 rounded-2xl overflow-hidden shadow-xl">
           <div className="relative aspect-[21/9] w-full bg-zinc-800 flex items-center justify-center border-b border-white/10 overflow-hidden">
             {event.gacha.bannerPath ? (
@@ -103,8 +102,8 @@ export default function FutureEventCard({
         <div className={`w-4 h-4 rounded-full border-4 border-zinc-950 shadow-[0_0_15px_rgba(255,255,255,0.5)] ${isFilterActive && !isEventMatched ? 'bg-zinc-600' : 'bg-white'}`} />
       </div>
 
-      {/* 🌟 우측: 픽업 캐릭터 썸네일 영역 */}
-      <div className="flex-1 w-full relative z-10 flex md:justify-start justify-center md:pl-4">
+      {/* 🌟 우측 구역: 인선 영역도 자신의 공간 안에서 예쁘게 중앙 정렬! */}
+      <div className="flex-1 w-full relative z-10 flex justify-center md:px-4">
         <div className="bg-zinc-900/30 border border-white/5 rounded-3xl p-6 w-full max-w-[480px]">
           <h4 className="text-sm font-bold text-zinc-300 mb-4 pb-2 border-b border-white/10">✨ 픽업 멤버</h4>
           
