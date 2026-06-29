@@ -8,30 +8,30 @@ import CardItem from "@/components/CardItem";
 import { UserCardState } from "@/app/cards/page";
 import { FinalCardInfo } from "@/data/cards/template";
 
-// 🌟 [수정됨] 색상이 칙칙했던 문제 해결! 모달/필터와 동일한 '영롱한 네온 컬러'로 통일했습니다.
+// 🌟 [수정됨] 투명도를 완전히 빼고 원색 배경 + 흰색 글씨로 가시성 대폭발!
 const getGachaBadgeStyle = (gachaType: string) => {
   switch (gachaType) {
-    case "통상": return "bg-sky-500/20 text-sky-300 border-sky-400/50";
-    case "한정": return "bg-pink-500/20 text-pink-300 border-pink-400/50";
-    case "페스": return "bg-violet-500/20 text-violet-300 border-violet-400/50";
-    case "월링": return "bg-emerald-500/20 text-emerald-300 border-emerald-400/50";
-    case "콜라보": return "bg-amber-500/20 text-amber-300 border-amber-400/50";
-    default: return "bg-zinc-800 text-zinc-400 border-white/10";
+    case "통상": return "bg-sky-500 text-white border-sky-400 shadow-md";
+    case "한정": return "bg-pink-500 text-white border-pink-400 shadow-md";
+    case "페스": return "bg-violet-500 text-white border-violet-400 shadow-md";
+    case "월링": return "bg-emerald-500 text-white border-emerald-400 shadow-md";
+    case "콜라보": return "bg-amber-500 text-white border-amber-400 shadow-md";
+    default: return "bg-zinc-600 text-white border-zinc-500 shadow-md";
   }
 };
 
 const getEventTypeBadgeStyle = (eventType?: string) => {
   switch (eventType) {
-    case "하코": return "bg-rose-500/20 text-rose-300 border-rose-400/50";
-    case "혼합": return "bg-indigo-500/20 text-indigo-300 border-indigo-400/50";
-    case "월링": return "bg-emerald-500/20 text-emerald-300 border-emerald-400/50";
-    default: return "bg-zinc-800 text-zinc-400 border-white/10";
+    case "하코": return "bg-rose-500 text-white border-rose-400 shadow-md";
+    case "혼합": return "bg-indigo-500 text-white border-indigo-400 shadow-md";
+    case "월링": return "bg-emerald-500 text-white border-emerald-400 shadow-md";
+    default: return "bg-zinc-600 text-white border-zinc-500 shadow-md";
   }
 };
 
 interface FutureEventCardProps {
   event: EventData;
-  index: number; 
+  index: number;
   userStates: Record<string, UserCardState>; 
   onCardClick: (card: FinalCardInfo) => void; 
   showPostAwake: boolean;
@@ -58,7 +58,8 @@ export default function FutureEventCard({
       
       {/* 🌟 좌측 구역: 가챠 배너 영역 */}
       <div className="flex-1 w-full relative z-10 flex justify-center md:px-4">
-        <div className="w-full max-w-[480px] bg-zinc-900 border border-white/10 rounded-2xl overflow-hidden shadow-xl">
+        {/* 🌟 [수정됨] 480px -> 520px로 넓혀서 인선 칸과 동일한 밸런스 유지! */}
+        <div className="w-full max-w-[520px] bg-zinc-900 border border-white/10 rounded-2xl overflow-hidden shadow-xl">
           <div className="relative aspect-[21/9] w-full bg-zinc-800 flex items-center justify-center border-b border-white/10 overflow-hidden">
             {event.gacha.bannerPath ? (
               <img 
@@ -71,17 +72,17 @@ export default function FutureEventCard({
               <span className="text-zinc-600 text-sm font-bold tracking-widest">NO BANNER IMAGE</span>
             )}
             
-            {/* 🌟 뱃지에 테두리(border)를 추가해서 훨씬 선명하게 보이게 패치! */}
+            {/* 🌟 눈에 확 띄는 원색 뱃지 렌더링 */}
             <div className="absolute top-3 left-3 flex gap-2 z-20">
               {event.gacha.types.map((type, idx) => (
-                <span key={idx} className={`px-2 py-0.5 text-xs rounded border shadow-sm backdrop-blur-md ${getGachaBadgeStyle(type)}`}>
+                <span key={idx} className={`px-2 py-0.5 text-xs font-bold rounded border ${getGachaBadgeStyle(type)}`}>
                   {type}
                 </span>
               ))}
             </div>
             {event.eventType && event.eventType !== "없음" && (
               <div className="absolute top-3 right-3 flex z-20">
-                <span className={`px-2 py-0.5 text-[10px] rounded border shadow-sm backdrop-blur-md ${getEventTypeBadgeStyle(event.eventType)}`}>
+                <span className={`px-2 py-0.5 text-[10px] font-bold rounded border ${getEventTypeBadgeStyle(event.eventType)}`}>
                   {event.eventType}
                 </span>
               </div>
@@ -106,11 +107,10 @@ export default function FutureEventCard({
 
       {/* 🌟 우측 구역: 픽업 캐릭터 썸네일 영역 */}
       <div className="flex-1 w-full relative z-10 flex justify-center md:px-4">
-        {/* 픽업 멤버 텍스트 부분은 타이틀로서 꽉 찬 폭(w-full) 유지 */}
-        <div className="bg-zinc-900/30 border border-white/5 rounded-3xl p-6 w-full max-w-[480px]">
+        {/* 🌟 [수정됨] 480px -> 520px로 넓혀서 카드가 4장일 때 한 줄에 쏙 들어가게 수정! */}
+        <div className="bg-zinc-900/30 border border-white/5 rounded-3xl p-6 w-full max-w-[520px]">
           <h4 className="text-sm font-bold text-zinc-300 mb-4 pb-2 border-b border-white/10 text-center md:text-left">✨ 픽업 멤버</h4>
           
-          {/* 🌟 [핵심 수정] justify-center 추가! 카드가 5개면 아래 1개가 예쁘게 중앙으로 정렬됩니다! */}
           <div className="flex flex-wrap justify-center md:justify-start gap-4">
             {pickupCards.map((card, idx) => {
               const realId = card.info ? card.info.id : card.id;
