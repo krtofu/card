@@ -83,13 +83,13 @@ const Wds_CARDS = [
 // 🎧 6. 25시, 나이트코드에서. (Niigo)
 // ==========================================
 import { KanadeCards } from "./Niigo/Kanade"; // 👈 폴더 경로도 완벽하게 Niigo로 동기화!
-// import { MafuyuCards } from "./Niigo/Mafuyu";
+import { MafuyuCards } from "./Niigo/Mafuyu";
 // import { EnaCards } from "./Niigo/Ena";
 // import { MizukiCards } from "./Niigo/Mizuki";
 
 const Niigo_CARDS = [
   ...KanadeCards,
-  // ...MafuyuCards,
+  ...MafuyuCards,
   // ...EnaCards,
   // ...MizukiCards,
 ];
