@@ -1,3 +1,4 @@
+// src/app/cards/page.tsx
 "use client";
 
 import { useState, useEffect } from "react"; 
@@ -13,33 +14,23 @@ export type UserCardState = {
   skillLevel: number;
 };
 
-// 🌟 [수정됨] isOwned 파라미터 추가! 미보유/목표중일 때는 최대 효율(maxLimits)을 쏴줍니다.
 const getSkillBonusPercentage = (skillType: string, level: number, unit: string, isAwakened: boolean, charRank: number = 1, isOwned: boolean = false) => {
   const safeLevel = Math.max(1, Math.min(4, level)); 
   const idx = safeLevel - 1;
-  
   const skill = (skillType || "").replace(/\s+/g, "").toLowerCase();
 
-  // 🌸 블룸 페스 (블페)
   if (skill.includes("블페") || skill.includes("블룸")) {
     if (isAwakened) {
       const maxLimits = [140, 145, 150, 160];
-      
-      // 🌟 [핵심] 미보유 카드면 내 캐릭터 랭크를 무시하고 해당 레벨의 "최대치"를 반환!
       if (!isOwned) return maxLimits[idx];
-      
-      // 보유 중일 때만 내 랭크를 반영한 찐 실전 스탯 반환
       const bases = [90, 95, 100, 110];
       const bloomBonus = Math.floor(charRank / 2);
       return Math.min(maxLimits[idx], bases[idx] + bloomBonus);
     }
-    
-    // 각전 상태
     const isVS = unit === "무소속 / VIRTUAL SINGER" || unit.includes("버싱") || unit.includes("VS") || unit.toLowerCase().includes("virtual");
     return isVS ? [130, 135, 140, 150][idx] : [120, 130, 140, 150][idx];
   }
 
-  // ✨ 나머지 일반 스킬들
   if (skill.includes("스업") && !skill.includes("퍼스업") && !skill.includes("굿스업") && !skill.includes("체스업") && !skill.includes("팀스업") && !skill.includes("조건부")) return [100, 105, 110, 120][idx];
   if (skill.includes("퍼스업")) return [110, 115, 120, 130][idx];
   if (skill.includes("굿스업")) return [120, 125, 130, 140][idx];
@@ -48,13 +39,12 @@ const getSkillBonusPercentage = (skillType: string, level: number, unit: string,
   if (skill.includes("판강") || skill.includes("판정")) return [80, 85, 90, 100][idx];
   if (skill.includes("힐") || skill.includes("회복")) return [80, 85, 90, 100][idx];
 
-  // 혹시라도 블랑 페스(구 페스)가 섞여 있다면
   if (skill.includes("블랑") || skill.includes("초기페스")) {
     const isVS = unit === "무소속 / VIRTUAL SINGER" || unit.includes("버싱") || unit.includes("VS") || unit.toLowerCase().includes("virtual");
     return isVS ? [130, 135, 140, 150][idx] : [120, 130, 140, 150][idx];
   }
 
-  return 0; // 매칭 실패 시 0
+  return 0;
 };
 
 const getMockEventBonus = (card: FinalCardInfo) => {
@@ -72,17 +62,14 @@ export default function MyCardsPage() {
   const [showPostAwake, setShowPostAwake] = useState(false);
   
   const [characterRanks, setCharacterRanks] = useState<Record<string, number>>({});
-  
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest" | "score" | "bonus">("newest");
   const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
   const [refSkillLevel, setRefSkillLevel] = useState<number>(1);
-  
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [spinDeg, setSpinDeg] = useState(0);
 
   const [excludeCollab, setExcludeCollab] = useState(false);
   const [hideUnreleased, setHideUnreleased] = useState(false);
-
   const [isStatusExpanded, setIsStatusExpanded] = useState(true);
   const [isCollabExpanded, setIsCollabExpanded] = useState(true);
   const [isAttrExpanded, setIsAttrExpanded] = useState(true);
@@ -101,7 +88,6 @@ export default function MyCardsPage() {
     const savedCards = localStorage.getItem("sekard_user_card_states");
     if (savedCards) try { setCardStates(JSON.parse(savedCards)); } catch (e) { console.error(e); }
     
-    // 🌟 실시간 랭크 연동 마법
     const loadRanks = () => {
       const savedRanks = localStorage.getItem("sekard_character_ranks");
       if (savedRanks) try { setCharacterRanks(JSON.parse(savedRanks)); } catch(e) { console.error(e); }
@@ -158,7 +144,6 @@ export default function MyCardsPage() {
   const toggleSpecificVS = (matchKey: string) => {
     const specificIds = UNIT_FILTERS.flatMap(u => u.chars).filter(c => c.isVirtual && c.matchKeys?.includes(matchKey)).map(c => c.id);
     const isAllSpecificSelected = specificIds.length > 0 && specificIds.every(id => selectedChars.includes(id));
-    
     if (isAllSpecificSelected) setSelectedChars(selectedChars.filter(id => !specificIds.includes(id)));
     else setSelectedChars([...new Set([...selectedChars, ...specificIds])]);
   };
@@ -175,38 +160,24 @@ export default function MyCardsPage() {
       const matchTarget = selectedStatuses.includes("target") && isTarget;
       if (!(matchOwned || matchUnowned || matchTarget)) return false;
     }
-
     if (selectedTypes.length > 0) {
       const matchNormal = selectedTypes.includes("normal") && card.gachaType === "통상";
       const matchLimited = selectedTypes.includes("limited") && ["한정", "페스", "월링"].includes(card.gachaType);
-      
       let matchCollab = false;
       if (card.gachaType === "콜라보") {
-        if (selectedTypes.includes("collab_all")) {
-          matchCollab = true;
-        } else {
-          matchCollab = COLLAB_FILTERS.some(collab => {
-            if (!selectedTypes.includes(collab.id)) return false;
-            const searchStr = (card.gachaPoolName + " " + card.eventName + " " + card.cardName).toLowerCase();
-            return collab.matchKeys.some(key => searchStr.includes(key.toLowerCase()));
-          });
-        }
+        if (selectedTypes.includes("collab_all")) matchCollab = true;
+        else matchCollab = COLLAB_FILTERS.some(collab => selectedTypes.includes(collab.id) && collab.matchKeys.some(key => (card.gachaPoolName + " " + card.eventName + " " + card.cardName).toLowerCase().includes(key.toLowerCase())));
       }
       if (!(matchNormal || matchLimited || matchCollab)) return false;
     }
-
     if (selectedHairs.length > 0) {
-      const matchHairO = selectedHairs.includes("hair_o") && card.hasHair;
-      const matchHairX = selectedHairs.includes("hair_x") && !card.hasHair;
-      if (!(matchHairO || matchHairX)) return false;
+      if (!( (selectedHairs.includes("hair_o") && card.hasHair) || (selectedHairs.includes("hair_x") && !card.hasHair) )) return false;
     }
-    
     if (selectedChars.length > 0) {
       const matchesChar = selectedChars.some(selId => {
         const parentUnit = UNIT_FILTERS.find(u => u.chars.some(c => c.id === selId));
         const charObj = parentUnit?.chars.find(c => c.id === selId);
         if (!charObj) return false;
-
         if (charObj.isVirtual && charObj.matchKeys) {
           const cleanUnit = (card.unit || "").trim().toLowerCase();
           const targetUnitId = parentUnit?.id || "";
@@ -223,24 +194,12 @@ export default function MyCardsPage() {
       });
       if (!matchesChar) return false;
     }
-    
     if (selectedAttrs.length > 0) {
-      const matchesAttr = selectedAttrs.some(selId => {
-        const cardAttr = (card.attribute || "").toLowerCase();
-        const attrObj = ATTR_FILTERS.find(a => a.id === selId);
-        return cardAttr === selId || cardAttr === attrObj?.name;
-      });
-      if (!matchesAttr) return false;
+      if (!selectedAttrs.some(selId => (card.attribute || "").toLowerCase() === selId || (card.attribute || "").toLowerCase() === ATTR_FILTERS.find(a => a.id === selId)?.name)) return false;
     }
-
     if (selectedSkills.length > 0) {
-      const matchesSkill = selectedSkills.some(selId => {
-        const targetObj = ALL_SKILL_TARGETS.find(t => t.id === selId);
-        return targetObj?.matchKeys?.includes(card.skillType || "") ?? false;
-      });
-      if (!matchesSkill) return false;
+      if (!selectedSkills.some(selId => ALL_SKILL_TARGETS.find(t => t.id === selId)?.matchKeys?.includes(card.skillType || ""))) return false;
     }
-    
     return true; 
   });
 
@@ -256,19 +215,15 @@ export default function MyCardsPage() {
       return dateA.localeCompare(dateB); 
     }
     else if (sortOrder === "score") {
-      // 🌟 2. 정렬 시에도 보유 여부를 추출해서 보냅니다!
       const isOwnedA = cardStates[a.id]?.isOwned || false;
       const isOwnedB = cardStates[b.id]?.isOwned || false;
-
       const levelA = isOwnedA ? (cardStates[a.id].skillLevel || 1) : refSkillLevel;
       const levelB = isOwnedB ? (cardStates[b.id].skillLevel || 1) : refSkillLevel;
-      
       const rankA = characterRanks[a.character] || 1;
       const rankB = characterRanks[b.character] || 1;
       
       const scoreA = getSkillBonusPercentage(a.skillType || "", levelA, a.unit || "", showPostAwake, rankA, isOwnedA);
       const scoreB = getSkillBonusPercentage(b.skillType || "", levelB, b.unit || "", showPostAwake, rankB, isOwnedB);
-      
       if (scoreB !== scoreA) return scoreB - scoreA;
       return (b.releaseDate || "1970-01-01").localeCompare(a.releaseDate || "1970-01-01");
     }
@@ -296,8 +251,6 @@ export default function MyCardsPage() {
   
   return (
     <div className="flex flex-col md:flex-row gap-6 px-4 md:px-8 py-6 min-h-screen text-zinc-100 max-w-[1920px] mx-auto w-full">
-      
-      {/* 필터 영역 */}
       <div className={`flex flex-col shrink-0 md:w-[280px] md:relative md:block md:bg-transparent md:p-0 md:h-auto md:z-0 ${isMobileFilterOpen ? 'fixed inset-0 z-[100] bg-zinc-950 p-6 overflow-y-auto' : 'hidden'}`}>
         <div className="flex items-center justify-between border-b border-white/10 pb-3 mb-6 md:mb-0">
           <h2 className="text-lg md:text-sm font-bold text-zinc-300 tracking-wider uppercase">🔍 필터</h2>
@@ -310,8 +263,6 @@ export default function MyCardsPage() {
         </div>
 
         <div className="space-y-6 md:mt-6">
-          
-          {/* 1. STATUS 구역 */}
           <div className="space-y-2">
             <button onClick={() => setIsStatusExpanded(!isStatusExpanded)} className="w-full flex items-center justify-between group pb-1 cursor-pointer">
               <span className="text-[12px] md:text-[11px] font-bold text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-300 transition-colors">STATUS</span>
@@ -323,13 +274,7 @@ export default function MyCardsPage() {
                   {[ { id: "owned", label: "✓ 보유" }, { id: "unowned", label: "❌ 미보유" }, { id: "target", label: "⭐ 목표" } ].map(status => {
                     const isSelected = selectedStatuses.includes(status.id);
                     const opacityClass = !isAnyStatusSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100 text-white bg-zinc-900";
-                    
-                    const activeClass = status.id === "target" 
-                      ? "bg-amber-500/20 text-amber-300 border border-amber-400/50 shadow-[0_0_10px_rgba(245,158,11,0.15)] scale-105" 
-                      : status.id === "owned" 
-                        ? "bg-emerald-500/20 text-emerald-300 border border-emerald-400/50 shadow-[0_0_10px_rgba(52,211,153,0.15)] scale-105" 
-                        : "bg-zinc-700 text-zinc-100 border border-zinc-500 shadow-md scale-105";
-                    
+                    const activeClass = status.id === "target" ? "bg-amber-500/20 text-amber-300 border border-amber-400/50 shadow-[0_0_10px_rgba(245,158,11,0.15)] scale-105" : status.id === "owned" ? "bg-emerald-500/20 text-emerald-300 border border-emerald-400/50 shadow-[0_0_10px_rgba(52,211,153,0.15)] scale-105" : "bg-zinc-700 text-zinc-100 border border-zinc-500 shadow-md scale-105";
                     return (
                       <button key={status.id} onClick={() => toggleFilter(selectedStatuses, setSelectedStatuses, status.id)}
                         className={`py-2.5 md:py-2 px-1 text-[13px] md:text-[12px] font-bold tracking-tight rounded-lg transition-all duration-300 text-white ${isSelected ? activeClass : "bg-zinc-900 hover:bg-zinc-800 border border-transparent scale-95"} ${opacityClass}`}>
@@ -360,7 +305,6 @@ export default function MyCardsPage() {
             )}
           </div>
 
-          {/* 2. COLLAB 구역 */}
           <div className="space-y-2 pt-2 border-t border-white/5">
             <button onClick={() => setIsCollabExpanded(!isCollabExpanded)} className="w-full flex items-center justify-between group pt-2 pb-1 cursor-pointer">
               <span className="text-[12px] md:text-[11px] font-bold text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-300 transition-colors">COLLAB</span>
@@ -372,11 +316,8 @@ export default function MyCardsPage() {
                   onClick={() => {
                     const allCollabIds = COLLAB_FILTERS.map(c => c.id);
                     const isAllCollab = selectedTypes.includes("collab_all") || allCollabIds.every(id => selectedTypes.includes(id));
-                    if (isAllCollab) {
-                      setSelectedTypes(selectedTypes.filter(id => id !== "collab_all" && !allCollabIds.includes(id)));
-                    } else {
-                      setSelectedTypes([...new Set([...selectedTypes, "collab_all", ...allCollabIds])]);
-                    }
+                    if (isAllCollab) setSelectedTypes(selectedTypes.filter(id => id !== "collab_all" && !allCollabIds.includes(id)));
+                    else setSelectedTypes([...new Set([...selectedTypes, "collab_all", ...allCollabIds])]);
                   }}
                   className={`w-full py-1.5 rounded-lg text-[11px] font-bold transition-all duration-300 border ${
                     (selectedTypes.includes("collab_all") || COLLAB_FILTERS.every(c => selectedTypes.includes(c.id)))
@@ -452,8 +393,9 @@ export default function MyCardsPage() {
                     const isSelected = selectedSkills.includes(sub.id);
                     const opacityClass = !isAnySkillSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100 text-white bg-zinc-900";
                     return (
+                      // 🌟 [수정됨] 텍스트 버튼 버그 원인 해결! 비활성화 상태에도 투명한 border 두께를 유지시킵니다.
                       <button key={sub.id} onClick={() => toggleFilter(selectedSkills, setSelectedSkills, sub.id)}
-                        className={`py-2.5 md:py-2 px-1 text-[12px] font-medium tracking-tight rounded-lg transition-all duration-300 text-white ${isSelected ? "bg-zinc-700 scale-105 shadow-md" : "bg-zinc-900 hover:bg-zinc-800 scale-95 border border-transparent"} ${opacityClass}`}>
+                        className={`py-2.5 md:py-2 px-1 text-[12px] font-medium tracking-tight rounded-lg transition-all duration-300 text-white ${isSelected ? "bg-zinc-700 scale-105 shadow-md border border-white/20" : "bg-zinc-900 hover:bg-zinc-800 scale-95 border border-transparent"} ${opacityClass}`}>
                         {sub.name}
                       </button>
                     )
@@ -601,7 +543,6 @@ export default function MyCardsPage() {
               {excludeCollab ? '🚫' : '🤝'}
             </button>
 
-            {/* 썸네일 전환 버튼 */}
             <button onClick={() => setShowPostAwake(!showPostAwake)} className="p-1 rounded-full bg-zinc-900 border border-white/10 shrink-0 ml-auto sm:ml-0" aria-label="썸네일 전환">
               <img src={showPostAwake ? "/icons/post_star.png" : "/icons/pre_star.png"} alt="스위치" className="h-8 w-auto object-contain block" />
             </button>
@@ -614,7 +555,6 @@ export default function MyCardsPage() {
           <div className="grid grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-y-6 gap-x-4 w-full">
             {sortedCards.map((card) => {
               const userState = cardStates[card.id];
-              // 🌟 3. CardItem으로 넘겨주기 위해 보유 여부(isOwned) 명시적 추출!
               const isOwned = userState?.isOwned || false;
               const levelToUse = isOwned ? (userState?.skillLevel || 1) : refSkillLevel;
               const charRank = characterRanks[card.character] || 1;
@@ -626,7 +566,6 @@ export default function MyCardsPage() {
                   userState={userState}
                   showPostAwake={showPostAwake}
                   sortOrder={sortOrder}
-                  // 🌟 4. 보유 여부도 함께 넘겨줍니다!
                   scoreBonus={getSkillBonusPercentage(card.skillType || "", levelToUse, card.unit || "", showPostAwake, charRank, isOwned)}
                   eventBonus={getMockEventBonus(card)}
                   onClick={setActiveModalCard}
@@ -638,15 +577,11 @@ export default function MyCardsPage() {
       </div>
 
       <CardDetailModal card={activeModalCard} userState={cardStates[activeModalCard?.id || ""] || { isOwned: false, isTarget: false, masterRank: 0, skillLevel: 1 }} onUpdateState={handleUpdateCardState} onClose={() => setActiveModalCard(null)} />
-      
     </div>
   );
 }
 
-// =========================================================================================
-// 🌟 여기서부터는 메인 컴포넌트의 가독성을 위해 화면 맨 아래로 내려둔 설정값(배열)들입니다!
-// =========================================================================================
-
+// (아래 UNIT_FILTERS 등은 기존과 100% 동일하므로 생략 없이 풀로 복사해주세요!)
 type CharDef = { id: string; name: string; img: string; isVirtual?: boolean; matchKeys?: string[] };
 type UnitDef = { id: string; name: string; logo: string; chars: CharDef[] };
 type AttrDef = { id: string; name: string; img: string };
@@ -697,7 +632,6 @@ const HAIR_FILTERS: HairFilterDef[] = [
   { id: "hair_x", name: "헤어 X", img: "/icons/status/hair_x.png" }
 ];
 
-// 🌟 [수정됨] 콜라보 ID 중복 문제 해결 완료!
 const COLLAB_FILTERS = [
   { id: "collab_evil", name: "에빌", matchKeys: ["에빌", "죄의 회고록", "evillious"] },
   { id: "collab_sanrio", name: "산리오", matchKeys: ["산리오", "sanrio", "SEKAI에서 Hello♡ 멋진 만남"] },

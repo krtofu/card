@@ -16,11 +16,12 @@ export default function FuturePage() {
   
   const [showPostAwake, setShowPostAwake] = useState(false);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
-  // 🌟 가로 드롭다운 애니메이션을 위한 상태 추가!
-  const [isYearMenuOpen, setIsYearMenuOpen] = useState(false); 
   const [spinDeg, setSpinDeg] = useState(0);
+  
+  // 🌟 타임라인 중앙에서 어떤 연도 마커의 드롭다운이 열려있는지 추적하는 상태!
+  const [openYearMarker, setOpenYearMarker] = useState<string | null>(null);
 
-  // 필터 상태들 (기존 동일)
+  // 필터 상태들
   const [excludeCollab, setExcludeCollab] = useState(false);
   const [isStatusExpanded, setIsStatusExpanded] = useState(true);
   const [isEventTypeExpanded, setIsEventTypeExpanded] = useState(true);
@@ -180,7 +181,7 @@ export default function FuturePage() {
     <div className="flex flex-col md:flex-row gap-6 px-4 md:px-8 py-6 min-h-screen text-zinc-100 max-w-[1920px] mx-auto w-full">
       
       {/* ========================================= */}
-      {/* 👈 좌측 영역: 스마트 필터칸 (기존과 동일하므로 생략 없이 풀코드 유지) */}
+      {/* 👈 좌측 영역: 스마트 필터칸 */}
       {/* ========================================= */}
       <div className={`flex flex-col shrink-0 md:w-[280px] md:relative md:block md:bg-transparent md:p-0 md:h-auto md:z-0 ${isMobileFilterOpen ? 'fixed inset-0 z-[100] bg-zinc-950 p-6 overflow-y-auto' : 'hidden'}`}>
         <div className="flex items-center justify-between border-b border-white/10 pb-3 mb-6 md:mb-0">
@@ -195,7 +196,7 @@ export default function FuturePage() {
 
         <div className="space-y-6 md:mt-6">
           
-          {/* 1. STATUS 구역 */}
+          {/* STATUS 구역 */}
           <div className="space-y-2">
             <button onClick={() => setIsStatusExpanded(!isStatusExpanded)} className="w-full flex items-center justify-between group pb-1 cursor-pointer">
               <span className="text-[12px] md:text-[11px] font-bold text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-300 transition-colors">STATUS & TYPE</span>
@@ -238,7 +239,7 @@ export default function FuturePage() {
             )}
           </div>
 
-          {/* 2. EVENT TYPE 구역 */}
+          {/* EVENT TYPE 구역 */}
           <div className="space-y-2 pt-2 border-t border-white/5">
             <button onClick={() => setIsEventTypeExpanded(!isEventTypeExpanded)} className="w-full flex items-center justify-between group pt-2 pb-1 cursor-pointer">
               <span className="text-[12px] md:text-[11px] font-bold text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-300 transition-colors">EVENT TYPE</span>
@@ -260,7 +261,7 @@ export default function FuturePage() {
             )}
           </div>
 
-          {/* 3. COLLAB 구역 */}
+          {/* COLLAB 구역 */}
           <div className="space-y-2 pt-2 border-t border-white/5">
             <button onClick={() => setIsCollabExpanded(!isCollabExpanded)} className="w-full flex items-center justify-between group pt-2 pb-1 cursor-pointer">
               <span className="text-[12px] md:text-[11px] font-bold text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-300 transition-colors">COLLAB</span>
@@ -349,8 +350,9 @@ export default function FuturePage() {
                     const isSelected = selectedSkills.includes(sub.id);
                     const opacityClass = !isAnySkillSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100 text-white bg-zinc-900";
                     return (
+                      // 🌟 [수정됨] 텍스트 버튼 버그 원인 해결! 비활성화 상태에도 투명한 border를 유지합니다.
                       <button key={sub.id} onClick={() => toggleFilter(selectedSkills, setSelectedSkills, sub.id)}
-                        className={`py-2.5 md:py-2 px-1 text-[12px] font-medium tracking-tight rounded-lg transition-all duration-300 text-white ${isSelected ? "bg-zinc-700 scale-105 shadow-md" : "bg-zinc-900 hover:bg-zinc-800 scale-95 border border-transparent"} ${opacityClass}`}>
+                        className={`py-2.5 md:py-2 px-1 text-[12px] font-medium tracking-tight rounded-lg transition-all duration-300 text-white ${isSelected ? "bg-zinc-700 scale-105 shadow-md border border-white/20" : "bg-zinc-900 hover:bg-zinc-800 scale-95 border border-transparent"} ${opacityClass}`}>
                         {sub.name}
                       </button>
                     )
@@ -437,39 +439,28 @@ export default function FuturePage() {
         
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-4 relative z-40">
           <div>
-            <h1 className="text-xl font-bold tracking-tight text-white mb-1">📅 미래시 타임라인</h1>
-            <p className="text-xs text-zinc-400">앞으로 다가올 가챠 일정과 픽업 멤버를 확인해보세요.</p>
+            <h1 className="text-xl font-bold tracking-tight text-white mb-2">📅 미래시 타임라인</h1>
+            
+            {/* 🌟 좌측 상단으로 이동한 연도 탭 버튼! */}
+            <div className="flex flex-wrap gap-2 mt-1 mb-2">
+              {uniqueYears.map(year => (
+                <button
+                  key={year}
+                  onClick={() => scrollToYear(year)}
+                  className="px-3 py-1 bg-zinc-800 border border-white/10 hover:bg-white hover:text-black text-zinc-300 text-[11px] font-bold rounded-md transition-all shadow-sm"
+                >
+                  {year}년
+                </button>
+              ))}
+            </div>
+
+            <p className="text-xs text-zinc-400 mt-2">앞으로 다가올 가챠 일정과 픽업 멤버를 확인해보세요.</p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto relative w-full sm:w-auto">
             <button onClick={() => setIsMobileFilterOpen(true)} className="md:hidden flex items-center justify-center gap-1.5 h-[34px] px-3 rounded-full bg-zinc-800/80 border border-white/10 text-[12px] font-bold text-zinc-300 hover:text-white transition-colors shadow-sm">
               🔍 필터
             </button>
-
-            {/* 🌟 흰 바탕 + 검정 글씨의 시각성 폭발 연도 드롭다운 버튼! */}
-            <div className="hidden sm:flex relative items-center mr-1">
-              <button
-                onClick={() => setIsYearMenuOpen(!isYearMenuOpen)}
-                className="px-3.5 py-1.5 text-[12px] font-black bg-white text-zinc-950 hover:bg-zinc-200 transition-all shadow-md rounded-md z-20 flex items-center gap-1"
-              >
-                연도 이동 {isYearMenuOpen ? '◀' : '▶'}
-              </button>
-
-              {/* 가로로 열리는 드롭다운 애니메이션 메뉴 */}
-              <div className={`flex items-center transition-all duration-300 ease-in-out origin-left overflow-hidden ${isYearMenuOpen ? 'max-w-[500px] opacity-100 ml-2' : 'max-w-0 opacity-0 ml-0'}`}>
-                <div className="flex bg-zinc-800 border border-white/20 rounded-md shadow-lg overflow-hidden shrink-0">
-                   {uniqueYears.map(year => (
-                     <button
-                       key={year}
-                       onClick={() => { scrollToYear(year); setIsYearMenuOpen(false); }}
-                       className="px-4 py-1.5 text-[12px] font-bold text-white hover:bg-white hover:text-black transition-colors border-r border-white/10 last:border-0 whitespace-nowrap"
-                     >
-                       {year}년
-                     </button>
-                   ))}
-                </div>
-              </div>
-            </div>
 
             <button 
               onClick={() => setExcludeCollab(!excludeCollab)}
@@ -486,7 +477,7 @@ export default function FuturePage() {
           </div>
         </div>
 
-        {/* 🌟 타임라인 본문 (연도 이정표 포함) */}
+        {/* 타임라인 본문 (연도 이정표 포함) */}
         <div className="relative pt-4">
           <div className="absolute left-1/2 top-0 bottom-0 w-px bg-white/10 -translate-x-1/2 hidden md:block" />
           
@@ -517,15 +508,36 @@ export default function FuturePage() {
 
               return (
                 <div key={event.id} className="relative">
-                  {/* 연도가 바뀔 때마다 중앙선 위에 박히는 큼직한 이정표! */}
+                  {/* 🌟 중앙 타임라인 연도 이정표 (흰 배경 + 각진 뱃지 + 우측 드롭다운!) */}
                   {showYearMarker && (
                     <div 
                       ref={(el) => { yearRefs.current[eventYear] = el; }} 
                       className="flex justify-center my-10 relative z-30 scroll-mt-24"
                     >
-                      <span className="bg-zinc-900 border-2 border-white/20 text-white font-black px-6 py-1.5 rounded-full text-sm shadow-xl tracking-widest">
-                        {eventYear}
-                      </span>
+                      <div className="relative flex items-center justify-center">
+                        <button 
+                          onClick={() => setOpenYearMarker(openYearMarker === eventYear ? null : eventYear)}
+                          className="bg-white text-zinc-950 font-black px-5 py-1.5 rounded-sm text-sm shadow-xl tracking-widest z-20 hover:bg-zinc-200 transition-colors flex items-center gap-1.5"
+                        >
+                          {eventYear}
+                          <span className="text-[10px]">{openYearMarker === eventYear ? '◀' : '▶'}</span>
+                        </button>
+
+                        {/* 가로 드롭다운 메뉴 (타임라인 중앙에서 우측으로 스르륵 열림) */}
+                        <div className={`absolute left-full top-1/2 -translate-y-1/2 flex items-center transition-all duration-300 ease-in-out origin-left overflow-hidden ml-2 ${openYearMarker === eventYear ? 'max-w-[500px] opacity-100' : 'max-w-0 opacity-0 pointer-events-none'}`}>
+                          <div className="flex bg-zinc-800 border border-white/20 rounded-sm shadow-lg overflow-hidden shrink-0">
+                             {uniqueYears.filter(y => y !== eventYear).map(year => (
+                               <button
+                                 key={year}
+                                 onClick={() => { scrollToYear(year); setOpenYearMarker(null); }}
+                                 className="px-4 py-1.5 text-[12px] font-bold text-white hover:bg-white hover:text-black transition-colors border-r border-white/10 last:border-0 whitespace-nowrap"
+                               >
+                                 {year}년
+                               </button>
+                             ))}
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   )}
 
@@ -552,7 +564,7 @@ export default function FuturePage() {
 }
 
 // =========================================================================================
-// 필터 배열 데이터 (이전과 동일)
+// (아래 UNIT_FILTERS 등은 기존과 100% 동일하게 놔두시면 됩니다!)
 // =========================================================================================
 type CharDef = { id: string; name: string; img: string; isVirtual?: boolean; matchKeys?: string[] };
 type UnitDef = { id: string; name: string; logo: string; chars: CharDef[] };
