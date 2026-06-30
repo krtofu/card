@@ -109,24 +109,26 @@ export default function FuturePage() {
     if (searchQuery.trim() !== "") {
       const q = searchQuery.toLowerCase().trim();
       
-      // 🌟 [핵심 방패] 데이터가 배열이든 숫자든 에러 없이 무조건 소문자 글자로 변환!
+      // 🌟 [핵심 해결] 알맹이 데이터(FinalCardInfo 템플릿)를 정확히 타겟팅!
+      const targetCard = card.info ? card.info : card;
+      
       const getStr = (val: any) => {
         if (val === null || val === undefined) return "";
         if (Array.isArray(val)) return val.join(" ").toLowerCase();
         return String(val).toLowerCase();
       };
       
-      const matchName = getStr(card.cardName).includes(q);
-      const matchChar = getStr(card.character).includes(q);
-      const matchEvent = getStr(card.eventName).includes(q);
-      const matchGacha = getStr(card.gachaPoolName).includes(q);
+      const matchName = getStr(targetCard.cardName).includes(q);
+      const matchChar = getStr(targetCard.character).includes(q);
+      const matchEvent = getStr(targetCard.eventName).includes(q);
+      const matchGacha = getStr(targetCard.gachaPoolName).includes(q);
       
-      // 악곡이나 의상이 여러 개(배열) 들어있어도 무조건 검색에 다 걸립니다!
-      const matchCostume = getStr((card as any).costumeName).includes(q) || getStr((card as any).costume).includes(q);
-      const matchSong = getStr((card as any).song).includes(q) || getStr((card as any).relatedSong).includes(q);
-      const matchSkill = getStr((card as any).skillName).includes(q) || getStr(card.skillType).includes(q);
-      const matchUnit = getStr(card.unit).includes(q);
-      const matchSupportUnit = getStr((card as any).supportUnit).includes(q);
+      // 🌟 템플릿(FinalCardInfo) 양식에 있는 변수명 그대로 완벽 매칭!
+      const matchCostume = getStr(targetCard.costumeName).includes(q) || getStr(targetCard.costume).includes(q);
+      const matchSong = getStr(targetCard.releaseSong).includes(q) || getStr(targetCard.relatedSong).includes(q) || getStr(targetCard.song).includes(q);
+      const matchSkill = getStr(targetCard.skillName).includes(q) || getStr(targetCard.skillType).includes(q);
+      const matchUnit = getStr(targetCard.unit).includes(q);
+      const matchSupportUnit = getStr(targetCard.supportUnit).includes(q);
       
       if (!(matchName || matchChar || matchEvent || matchGacha || matchCostume || matchSong || matchSkill || matchUnit || matchSupportUnit)) {
         return false;
