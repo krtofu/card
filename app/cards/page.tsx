@@ -159,10 +159,17 @@ export default function MyCardsPage() {
       const q = searchQuery.toLowerCase().trim();
       const matchName = card.cardName?.toLowerCase().includes(q);
       const matchChar = card.character?.toLowerCase().includes(q);
-      const matchCostume = (card as any).costumeName?.toLowerCase().includes(q);
       const matchEvent = card.eventName?.toLowerCase().includes(q);
       const matchGacha = card.gachaPoolName?.toLowerCase().includes(q);
-      if (!(matchName || matchChar || matchCostume || matchEvent || matchGacha)) return false;
+      
+      // 🌟 [추가됨] 의상, 악곡, 스킬, 유닛명까지 모조리 잡아내는 투망식 검색!
+      const matchCostume = (card as any).costumeName?.toLowerCase().includes(q) || (card as any).costume?.toLowerCase().includes(q);
+      const matchSong = (card as any).song?.toLowerCase().includes(q) || (card as any).relatedSong?.toLowerCase().includes(q);
+      const matchSkillName = (card as any).skillName?.toLowerCase().includes(q);
+      const matchUnit = card.unit?.toLowerCase().includes(q);
+      const matchSupportUnit = (card as any).supportUnit?.toLowerCase().includes(q);
+      
+      if (!(matchName || matchChar || matchEvent || matchGacha || matchCostume || matchSong || matchSkillName || matchUnit || matchSupportUnit)) return false;
     }
 
     if (hideUnreleased && card.releaseDate && new Date(card.releaseDate) > new Date()) return false;
