@@ -8,6 +8,7 @@ import { ALL_CARDS } from "@/data/cards";
 import CardItem from "@/components/CardItem"; 
 import { UserCardState } from "@/app/cards/page";
 import { FinalCardInfo } from "@/data/cards/template";
+import { calculateCardEventBonus } from "@/lib/bonusCalculator";
 
 const PREMIUM_BADGE_STYLE: React.CSSProperties = {
   borderColor: "rgba(255,255,255,0.35)",
@@ -62,17 +63,49 @@ const matchUnit = (cardUnit: string, targetUnit: string) => {
   return c.includes(t) || t.includes(c);
 };
 
-// 🌟 [추가됨] 중앙선에 띄워줄 유닛 로고 가져오기
 const getUnitLogo = (unitName: string) => {
   if (!unitName) return null;
   const u = unitName.toLowerCase().replace(/[^a-z0-9가-힣]/g, "");
   if (u.includes("leo") || u.includes("레오니")) return "/icons/Leoneed_icon.png";
   if (u.includes("more") || u.includes("모모점")) return "/icons/MMJ_icon.png";
   if (u.includes("vivid") || u.includes("비배스")) return "/icons/VBS_icon.png";
-  if (u.includes("Wds") || u.includes("원더쇼")) return "/icons/Wds_icon.png";
-  if (u.includes("ng") || u.includes("니고")) return "/icons/Niigo_icon.png";
+  if (u.includes("wonder") || u.includes("원더쇼")) return "/icons/Wds_icon.png";
+  if (u.includes("25") || u.includes("니고")) return "/icons/Niigo_icon.png";
   if (u.includes("virtual") || u.includes("버싱")) return "/icons/VS_icon.png";
   return null;
+};
+
+// 🌟 [추가됨] 스업 수치 계산 헬퍼 함수
+const getSkillBonusPercentage = (skillType: string, level: number, unit: string, isAwakened: boolean, charRank: number = 1, isOwned: boolean = false) => {
+  const safeLevel = Math.max(1, Math.min(4, level)); 
+  const idx = safeLevel - 1;
+  const skill = (skillType || "").replace(/\s+/g, "").toLowerCase();
+
+  if (skill.includes("블페") || skill.includes("블룸")) {
+    if (isAwakened) {
+      const maxLimits = [140, 145, 150, 160];
+      if (!isOwned) return maxLimits[idx];
+      const bases = [90, 95, 100, 110];
+      const bloomBonus = Math.floor(charRank / 2);
+      return Math.min(maxLimits[idx], bases[idx] + bloomBonus);
+    }
+    const isVS = unit === "무소속 / VIRTUAL SINGER" || unit.includes("버싱") || unit.includes("VS") || unit.toLowerCase().includes("virtual");
+    return isVS ? [130, 135, 140, 150][idx] : [120, 130, 140, 150][idx];
+  }
+
+  if (skill.includes("스업") && !skill.includes("퍼스업") && !skill.includes("굿스업") && !skill.includes("체스업") && !skill.includes("팀스업") && !skill.includes("조건부")) return [100, 105, 110, 120][idx];
+  if (skill.includes("퍼스업")) return [110, 115, 120, 130][idx];
+  if (skill.includes("굿스업")) return [120, 125, 130, 140][idx];
+  if (skill.includes("체스업")) return [120, 125, 130, 140][idx];
+  if (skill.includes("팀스업")) return [130, 135, 140, 150][idx];
+  if (skill.includes("판강") || skill.includes("판정")) return [80, 85, 90, 100][idx];
+  if (skill.includes("힐") || skill.includes("회복")) return [80, 85, 90, 100][idx];
+
+  if (skill.includes("블랑") || skill.includes("초기페스")) {
+    const isVS = unit === "무소속 / VIRTUAL SINGER" || unit.includes("버싱") || unit.includes("VS") || unit.toLowerCase().includes("virtual");
+    return isVS ? [130, 135, 140, 150][idx] : [120, 130, 140, 150][idx];
+  }
+  return 0;
 };
 
 interface FutureEventCardProps {
@@ -92,13 +125,29 @@ export default function FutureEventCard({
 }: FutureEventCardProps) {
   
   const [isEventMode, setIsEventMode] = useState(false);
+  
+  // 🌟 [추가됨] 정렬 모드 (이벤포순 vs 스업순)
+  const [sortMode, setSortMode] = useState<"bonus" | "score">("bonus");
+  
+  // 🌟 기준치 상태 관리
+  const [refMasterRank, setRefMasterRank] = useState<number>(0);
+  const [refSkillLevel, setRefSkillLevel] = useState<number>(1);
 
+  // 1. 픽업 카드 처리
   const pickupCards = event.gacha.featuredCardIds
     .map((cardId) => ALL_CARDS.find((c: any) => c.id === cardId || ((c as any).info && (c as any).info.id === cardId)))
-    .filter((c) => c !== undefined) as any[];
+    .filter((c) => c !== undefined)
+    .map(card => {
+      const realId = (card as any).info ? (card as any).info.id : (card as any).id;
+      const myState = userStates[realId];
+      return { card, myState, bonus: 0, score: 0 };
+    });
 
+  // 2. 이벤트 보너스 카드 처리
   const getBonusCards = () => {
     if (!event.bonus) return [];
+    
+    // 1차: 속성/유닛 매칭
     const matchingCards = ALL_CARDS.filter(card => {
       if (!matchAttribute(card.attribute || "", event.bonus!.attribute)) return false;
       const matchesUnit = event.bonus!.unit && matchUnit(card.unit || "", event.bonus!.unit);
@@ -106,22 +155,41 @@ export default function FutureEventCard({
       return matchesUnit || matchesChar;
     });
 
-    return matchingCards.sort((a, b) => {
-      const stateA = userStates[(a as any).info ? (a as any).info.id : a.id];
-      const stateB = userStates[(b as any).info ? (b as any).info.id : b.id];
-      const valA = stateA?.isOwned ? 2 : (stateA?.isTarget ? 1 : 0);
-      const valB = stateB?.isOwned ? 2 : (stateB?.isTarget ? 1 : 0);
+    // 2차: 보너스 및 스코어 계산
+    const cardsWithValues = matchingCards.map(card => {
+      const realId = (card as any).info ? (card as any).info.id : (card as any).id;
+      const myState = userStates[realId];
+      
+      const fakeState = myState?.isOwned ? myState : { 
+        isOwned: true, 
+        masterRank: refMasterRank, 
+        skillLevel: refSkillLevel, 
+        isTarget: myState?.isTarget 
+      };
+      
+      const bonus = calculateCardEventBonus(card as any, fakeState, event);
+      const score = getSkillBonusPercentage((card as any).skillType || "", fakeState.skillLevel, (card as any).unit || "", showPostAwake, 1, fakeState.isOwned);
+      
+      return { card, myState, bonus, score };
+    });
+
+    // 3차: 모드에 따른 정렬
+    return cardsWithValues.sort((a, b) => {
+      if (sortMode === "score") {
+        if (b.score !== a.score) return b.score - a.score;
+      } else {
+        if (b.bonus !== a.bonus) return b.bonus - a.bonus;
+      }
+      const valA = a.myState?.isOwned ? 2 : (a.myState?.isTarget ? 1 : 0);
+      const valB = b.myState?.isOwned ? 2 : (b.myState?.isTarget ? 1 : 0);
       if (valA !== valB) return valB - valA;
-      return (b.releaseDate || "").localeCompare(a.releaseDate || "");
+      return ((b.card as any).releaseDate || "").localeCompare((a.card as any).releaseDate || "");
     });
   };
 
   const bonusCards = getBonusCards();
-  
-  const displayCards = isEventMode ? bonusCards : pickupCards;
+  const displayItems = isEventMode ? bonusCards : pickupCards;
   const displayBanner = isEventMode && event.eventBannerPath ? event.eventBannerPath : event.gacha.bannerPath;
-  
-  // 🌟 [추가됨] 하코 이벤트면서 이벤트 모드일 때 띄울 유닛 로고!
   const unitLogo = isEventMode && event.eventType === "하코" && event.bonus?.unit ? getUnitLogo(event.bonus?.unit) : null;
 
   const fadeClass = isFilterActive && !isEventMatched 
@@ -133,28 +201,28 @@ export default function FutureEventCard({
       
       {/* ================= 좌측: 배너 영역 ================= */}
       <div className="flex-1 w-full relative z-10 flex justify-center md:px-4">
-        {/* 🌟 overflow-visible로 변경하여 전환 버튼이 배너 바깥으로 삐져나올 수 있게 수정! */}
         <div className="w-full max-w-[520px] bg-zinc-900 border border-white/10 rounded-2xl overflow-visible shadow-xl flex flex-col relative">
           
-          {/* 🌟 가챠 <-> 이벤트 전환 버튼 (배너의 좌측 세로 중앙!) */}
           {event.bonus && (
-             <button
-               onClick={() => setIsEventMode(!isEventMode)}
-               className="absolute -left-4 md:-left-5 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-zinc-800 border-[3px] border-zinc-950 shadow-xl z-50 flex items-center justify-center text-[18px] hover:bg-zinc-700 hover:scale-110 transition-all"
-               title={isEventMode ? "가챠 배너로 돌아가기" : "이벤트 배너 보기"}
-             >
-               {isEventMode ? '🎪' : '🎰'}
-             </button>
+             <div className="absolute -left-6 sm:-left-12 md:-left-[70px] top-1/2 -translate-y-1/2 flex items-center z-50">
+               <button
+                 onClick={() => setIsEventMode(!isEventMode)}
+                 className="w-10 h-10 rounded-full bg-zinc-800 border-[3px] border-zinc-950 shadow-[0_0_15px_rgba(0,0,0,0.5)] flex items-center justify-center text-[18px] hover:bg-zinc-700 hover:scale-110 transition-transform z-10 relative"
+                 title={isEventMode ? "가챠 배너로 돌아가기" : "이벤트 배너 보기"}
+               >
+                 {isEventMode ? '🎪' : '🎰'}
+               </button>
+               <div className="w-6 sm:w-10 md:w-[46px] h-[3px] bg-zinc-600 absolute left-5 top-1/2 -translate-y-1/2 -z-10 shadow-sm" />
+             </div>
           )}
 
-          {/* 이미지 영역만 둥글게 깎기 */}
           <div className="relative aspect-[21/9] w-full bg-zinc-800 flex items-center justify-center border-b border-white/10 overflow-hidden rounded-t-2xl shrink-0 transition-all duration-500">
             {displayBanner ? (
               <img 
-                key={displayBanner} // 🌟 [핵심 버그 수정] key를 주면 모드 전환 시 완전히 새롭게 이미지를 렌더링해서 사라짐 증상 해결!
+                key={displayBanner}
                 src={displayBanner} 
                 alt={`${event.name} 배너`}
-                className="absolute inset-0 w-full h-full object-cover animate-fade-in"
+                className={`absolute inset-0 w-full h-full animate-fade-in ${isEventMode ? 'object-contain bg-zinc-900/80 p-1' : 'object-cover'}`}
                 onError={(e) => { e.currentTarget.style.display = 'none'; }}
               />
             ) : (
@@ -191,7 +259,6 @@ export default function FutureEventCard({
 
       {/* ================= 중앙 타임라인 선 ================= */}
       <div className="hidden md:flex flex-col items-center justify-center relative z-20 w-10">
-        {/* 🌟 이벤트 모드 & 하코 이벤트 시 유닛 로고 아이콘으로 변신! */}
         {unitLogo ? (
           <div className="w-9 h-9 rounded-full bg-zinc-900 border-2 border-white/20 shadow-[0_0_15px_rgba(255,255,255,0.3)] z-20 flex items-center justify-center overflow-hidden p-1 transition-all">
              <img src={unitLogo} alt="Unit Logo" className="w-full h-full object-contain drop-shadow-md" />
@@ -205,39 +272,81 @@ export default function FutureEventCard({
       <div className="flex-1 w-full relative z-10 flex justify-center md:px-4">
         <div className="bg-zinc-900/30 border border-white/5 rounded-3xl p-6 w-full max-w-[520px] flex flex-col">
           
-          {/* 상단 헤더 & 이미지 뱃지 추가! */}
-          <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/10 shrink-0">
-            <h4 className="text-sm font-bold text-zinc-300 w-full flex items-center justify-between">
-              <span className="flex items-center gap-1.5">
-                {isEventMode ? <><span className="text-amber-400">🎁</span> 이벤트 보너스 멤버</> : <><span className="text-sky-400">✨</span> 가챠 픽업 멤버</>}
-              </span>
-              
-              {/* 🌟 우측에 통상/한정 이미지 뱃지 렌더링! */}
-              <div className="flex items-center gap-1">
-                 {!isEventMode && event.gacha.types.map(t => {
-                   if (t === "통상") return <img key={t} src="/icons/status/normal.png" className="w-[20px] h-[20px] rounded-full shadow-sm" alt="통상" title="통상" />;
-                   if (["한정", "페스", "월링"].includes(t)) return <img key={t} src="/icons/status/limited.png" className="w-[20px] h-[20px] rounded-full shadow-sm" alt={t} title={t} />;
-                   return null;
-                 })}
-              </div>
-            </h4>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-white/10 shrink-0">
+            <div className="flex items-center gap-1.5 font-bold text-zinc-300 text-sm">
+              {isEventMode ? <><span className="text-amber-400">🎁</span> 이벤트 보너스 멤버</> : <><span className="text-sky-400">✨</span> 가챠 픽업 멤버</>}
+            </div>
+            
+            <div className="flex items-center gap-2">
+               {isEventMode ? (
+                 <>
+                   {/* 🌟 정렬 토글 버튼 (원클릭 전환!) */}
+                   <button
+                     onClick={() => setSortMode(prev => prev === "bonus" ? "score" : "bonus")}
+                     className="w-7 h-7 flex items-center justify-center rounded-full bg-zinc-800 border border-white/10 text-zinc-400 hover:text-white hover:bg-zinc-700 transition-colors shadow-sm"
+                     title={sortMode === "bonus" ? "이벤포순 정렬 중 (클릭 시 스업 수치순)" : "스업 수치순 정렬 중 (클릭 시 이벤포순)"}
+                   >
+                     {sortMode === "bonus" ? "✦" : "⇪"}
+                   </button>
+
+                   {/* 🌟 조건부 기준 버튼 (이벤포=마랭 / 스업순=레벨) */}
+                   {sortMode === "bonus" ? (
+                     <div className="flex items-center bg-zinc-800 border border-white/10 rounded-full p-1 shadow-sm animate-fade-in">
+                        <span className="text-[10px] text-zinc-400 font-bold px-2 whitespace-nowrap hidden sm:inline-block">미보유 기준 마랭</span>
+                        <span className="text-[10px] text-zinc-400 font-bold pl-2 pr-1 whitespace-nowrap sm:hidden">마랭</span>
+                        <div className="flex gap-0.5 pr-0.5">
+                          {[0, 1, 2, 3, 4, 5].map(lv => (
+                            <button key={lv} onClick={() => setRefMasterRank(lv)}
+                              className={`w-[20px] h-[20px] flex items-center justify-center rounded-full text-[10px] font-bold transition-all ${refMasterRank === lv ? 'bg-amber-500/20 text-amber-300 border border-amber-400/50 scale-105' : 'text-zinc-500 hover:bg-zinc-700 hover:text-zinc-200'}`}>
+                              {lv}
+                            </button>
+                          ))}
+                        </div>
+                     </div>
+                   ) : (
+                     <div className="flex items-center bg-zinc-800 border border-white/10 rounded-full p-1 shadow-sm animate-fade-in">
+                        <span className="text-[10px] text-zinc-400 font-bold px-2 whitespace-nowrap hidden sm:inline-block">미보유 기준 Lv</span>
+                        <span className="text-[10px] text-zinc-400 font-bold pl-2 pr-1 whitespace-nowrap sm:hidden">Lv</span>
+                        <div className="flex gap-0.5 pr-0.5">
+                          {[1, 2, 3, 4].map(lv => (
+                            <button key={lv} onClick={() => setRefSkillLevel(lv)}
+                              className={`w-[20px] h-[20px] flex items-center justify-center rounded-full text-[10px] font-bold transition-all ${refSkillLevel === lv ? 'bg-sky-500/20 text-sky-300 border border-sky-400/50 scale-105' : 'text-zinc-500 hover:bg-zinc-700 hover:text-zinc-200'}`}>
+                              {lv}
+                            </button>
+                          ))}
+                        </div>
+                     </div>
+                   )}
+                 </>
+               ) : (
+                 <div className="flex items-center gap-1">
+                    {event.gacha.types.map(t => {
+                      if (t === "통상") return <img key={t} src="/icons/status/normal.png" className="w-[20px] h-[20px] rounded-full shadow-sm" alt="통상" title="통상" />;
+                      if (["한정", "페스", "월링"].includes(t)) return <img key={t} src="/icons/status/limited.png" className="w-[20px] h-[20px] rounded-full shadow-sm" alt={t} title={t} />;
+                      return null;
+                    })}
+                 </div>
+               )}
+            </div>
           </div>
           
-          {/* 🌟 보너스 멤버 세로 길이 제한 및 스크롤바 완전히 제거! 쫙 펼쳐집니다! */}
           <div className="flex flex-wrap justify-center md:justify-start gap-4">
-            {displayCards.length > 0 ? displayCards.map((card, idx) => {
-              const realId = card.info ? card.info.id : card.id;
-              const myState = userStates[realId]; 
+            {displayItems.length > 0 ? displayItems.map(({ card, myState, bonus, score }, idx) => {
+              const realId = (card as any).info ? (card as any).info.id : (card as any).id;
               const isCardMatched = !isFilterActive || matchedCardIds.includes(realId);
 
               return (
                 <div key={realId || idx} className={`w-[100px] shrink-0 transition-all duration-300 ${!isCardMatched ? 'opacity-30 grayscale-[80%]' : ''}`}>
                   <CardItem 
-                    card={card} 
+                    card={card as any} 
                     userState={myState} 
                     onClick={onCardClick} 
                     showPostAwake={showPostAwake} 
                     showTextBadge={true}
+                    // 🌟 모드에 따라 ✦(bonus) 또는 ⇪(score) 값을 카드 하단에 띄워줍니다!
+                    sortOrder={isEventMode ? sortMode : undefined}
+                    eventBonus={bonus}
+                    scoreBonus={score}
                   />
                 </div>
               );

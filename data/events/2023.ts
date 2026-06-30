@@ -16,7 +16,7 @@ export const EVENTS_2023: EventData[] = [
       types: ["통상"],
       featuredCardIds: ["mmj_Airi_005", "VS_LEN_005", "mmj_Haruka_005"]
     },
-    eventBannerPath: "/gachas/22y/banner_23_01_m.png", 
+    eventBannerPath: "/events/22y/banner_23_01_m.png", 
   },
   {
     id: "gacha_event_2023_02",
@@ -33,6 +33,6 @@ export const EVENTS_2023: EventData[] = [
       types: ["통상"],
       featuredCardIds: ["wds_Nene_004", "wds_Rui_004", "VS_LUKA_005"]
     },
-    eventBannerPath: "/gachas/22y/banner_23_02_w.png", 
+    eventBannerPath: "/events/22y/banner_23_02_w.png", 
   },
 ];

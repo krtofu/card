@@ -28,7 +28,7 @@ export const EVENTS_2022: EventData[] = [
       types: ["통상"],
       featuredCardIds: ["ln_Saki_001", "VS_LUKA_001", "ln_Shiho_001"]
     },
-    eventBannerPath: "/gachas/22y/banner_22_01_l.png", 
+    eventBannerPath: "/events/22y/banner_22_01_l.png", 
   },
   {
     id: "gacha_event_22_02",
@@ -45,6 +45,6 @@ export const EVENTS_2022: EventData[] = [
       types: ["통상"],
       featuredCardIds: ["ng_Mafuyu_001", "ng_Kanade_001", "VS_MIKU_002"]
     },
-    eventBannerPath: "/gachas/22y/banner_22_02_n.png", 
+    eventBannerPath: "/events/22y/banner_22_02_n.png", 
   },
 ];

@@ -7,6 +7,7 @@ export interface EventData {
   eventName?: string;
   eventType?: "하코" | "혼합" | "월링" | "없음";
   period: { start: string; end: string };
+  wlOrder?: number;
   bonus?: {
     attribute: string;
     unit?: string;
