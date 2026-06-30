@@ -9,6 +9,8 @@ import CardItem from "@/components/CardItem";
 import { UserCardState } from "@/app/cards/page";
 import { FinalCardInfo } from "@/data/cards/template";
 import { calculateCardEventBonus } from "@/lib/bonusCalculator";
+// 🌟 [추가됨] 의상 프리뷰 모달 컴포넌트를 미래시 탭으로 수입!
+import ModalCostumePreviewCard from "@/components/ModalCostumePreviewCard";
 
 const PREMIUM_BADGE_STYLE: React.CSSProperties = {
   borderColor: "rgba(255,255,255,0.35)",
@@ -107,7 +109,6 @@ const getSkillBonusPercentage = (skillType: string, level: number, unit: string,
   return 0;
 };
 
-// 🌟 [추가됨] Props에 monthMarker 추가
 interface FutureEventCardProps {
   event: EventData;
   index: number;
@@ -126,6 +127,8 @@ export default function FutureEventCard({
 }: FutureEventCardProps) {
   
   const [isEventMode, setIsEventMode] = useState(false);
+  // 🌟 [추가됨] 의상 프리뷰 토글 상태 관리
+  const [showCostumes, setShowCostumes] = useState(false);
   const [sortMode, setSortMode] = useState<"bonus" | "score">("bonus");
   const [refMasterRank, setRefMasterRank] = useState<number>(0);
   const [refSkillLevel, setRefSkillLevel] = useState<number>(1);
@@ -196,18 +199,17 @@ export default function FutureEventCard({
     : "opacity-100 transition-opacity duration-300";
 
   return (
-    // 🌟 [개선됨] items-stretch를 적용하여 배너/중앙선/카드목록의 높이를 일치시키고, 내부 요소들을 세로 중앙(justify-center) 정렬합니다!
     <div className={`flex flex-col md:flex-row items-stretch gap-8 ${fadeClass}`}>
       
       {/* ================= 좌측: 배너 영역 ================= */}
       <div className="flex-1 w-full relative z-10 flex flex-col justify-center md:px-4 py-2 shrink-0">
-        {/* 🌟 h-fit을 주어서 stretch 되더라도 배너 박스 원본 크기만 유지! */}
         <div className="w-full max-w-[520px] mx-auto bg-zinc-900 border border-white/10 rounded-2xl overflow-visible shadow-xl flex flex-col relative h-fit">
           
           {event.bonus && (
              <div className="absolute -left-6 sm:-left-12 md:-left-[70px] top-1/2 -translate-y-1/2 flex items-center z-50">
                <button
-                 onClick={() => setIsEventMode(!isEventMode)}
+                 // 🌟 [추가됨] 이벤트 모드로 넘어가면 의상 창을 닫아버리도록 예외 처리
+                 onClick={() => { setIsEventMode(!isEventMode); setShowCostumes(false); }}
                  className="w-10 h-10 rounded-full bg-zinc-800 border-[3px] border-zinc-950 shadow-[0_0_15px_rgba(0,0,0,0.5)] flex items-center justify-center text-[18px] hover:bg-zinc-700 hover:scale-110 transition-transform z-10 relative"
                  title={isEventMode ? "가챠 배너로 돌아가기" : "이벤트 배너 보기"}
                >
@@ -259,10 +261,8 @@ export default function FutureEventCard({
       </div>
 
       {/* ================= 중앙 타임라인 선 ================= */}
-      {/* 🌟 items-stretch 환경에서 자연스럽게 세로 중앙 정렬을 맞추기 위해 구조를 변경했습니다! */}
       <div className="hidden md:flex flex-col items-center justify-center relative z-20 w-10 shrink-0">
         <div className="relative flex justify-center items-center">
-          {/* 🌟 [개선됨] 월 뱃지를 점 바로 위쪽에 은은하게 안착! */}
           {monthMarker && (
             <div className="absolute bottom-full mb-4 px-2.5 py-0.5 rounded-full bg-zinc-800 text-zinc-400 text-[11px] font-bold border border-white/10 shadow-sm z-30 whitespace-nowrap">
               {monthMarker}월
@@ -328,8 +328,22 @@ export default function FutureEventCard({
                    )}
                  </>
                ) : (
-                 // 🌟 [개선됨] 통상/한정 아이콘 뱃지 크기 대폭 상향 (30px)
                  <div className="flex items-center gap-1.5">
+                    {/* 🌟 [추가됨] 🛍️ 의상 프리뷰 토글 원형 버튼! (픽업 카드 중 하나라도 의상이 있을 때만 나타납니다) */}
+                    {pickupCards.some(p => !!((p.card as any).info || p.card).costume) && (
+                      <button 
+                        onClick={() => setShowCostumes(!showCostumes)} 
+                        className={`w-[30px] h-[30px] rounded-full flex items-center justify-center transition-all shadow-md text-[14px] ${
+                          showCostumes 
+                            ? 'bg-pink-500/20 border border-pink-500/50 shadow-[0_0_10px_rgba(236,72,153,0.3)]' 
+                            : 'bg-zinc-800 border border-white/10 hover:bg-zinc-700'
+                        }`}
+                        title={showCostumes ? "카드 보기" : "의상 프리뷰 보기"}
+                      >
+                        🛍️
+                      </button>
+                    )}
+
                     {event.gacha.types.map(t => {
                       if (t === "통상") return <img key={t} src="/icons/status/normal.png" className="w-[30px] h-[30px] rounded-full shadow-md" alt="통상" title="통상" />;
                       if (["한정", "페스", "월링"].includes(t)) return <img key={t} src="/icons/status/limited.png" className="w-[30px] h-[30px] rounded-full shadow-md" alt={t} title={t} />;
@@ -340,31 +354,64 @@ export default function FutureEventCard({
             </div>
           </div>
           
-          <div className="flex flex-wrap justify-center md:justify-start gap-4">
-            {displayItems.length > 0 ? displayItems.map(({ card, myState, bonus, score }, idx) => {
-              const realId = (card as any).info ? (card as any).info.id : (card as any).id;
-              const isCardMatched = !isFilterActive || matchedCardIds.includes(realId);
+          {/* 🌟 [개선됨] showCostumes 상태에 따라 의상을 보여줄지, 카드 목록을 보여줄지 분기합니다. */}
+          {showCostumes && !isEventMode ? (
+            <div className="flex flex-col gap-6 w-full animate-fade-in">
+              {pickupCards.map((p, idx) => {
+                const targetCard = (p.card as any).info || p.card;
+                if (!targetCard.costume) return null;
+                
+                const costumePreviewData = {
+                  title: targetCard.cardName,
+                  subtitle: targetCard.costume.name,
+                  characters: [
+                    {
+                      name: targetCard.character,
+                      sets: targetCard.costume.sets.map((set: any) => ({
+                        key: set.key, label: set.label, front: [set.front], back: [set.back]
+                      }))
+                    }
+                  ]
+                };
 
-              return (
-                <div key={realId || idx} className={`w-[100px] shrink-0 transition-all duration-300 ${!isCardMatched ? 'opacity-30 grayscale-[80%]' : ''}`}>
-                  <CardItem 
-                    card={card as any} 
-                    userState={myState} 
-                    onClick={onCardClick} 
-                    showPostAwake={showPostAwake} 
-                    showTextBadge={true}
-                    sortOrder={isEventMode ? sortMode : undefined}
-                    eventBonus={bonus}
-                    scoreBonus={score}
-                  />
+                return (
+                  <div key={idx} className="w-full shadow-xl rounded-2xl bg-zinc-950/50 border border-white/5 overflow-hidden">
+                    <ModalCostumePreviewCard 
+                      preview={costumePreviewData as any} 
+                      userState={p.myState || { isOwned: false, isTarget: false, masterRank: 0, skillLevel: 1 }} 
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="flex flex-wrap justify-center md:justify-start gap-4">
+              {displayItems.length > 0 ? displayItems.map(({ card, myState, bonus, score }, idx) => {
+                const realId = (card as any).info ? (card as any).info.id : (card as any).id;
+                const isCardMatched = !isFilterActive || matchedCardIds.includes(realId);
+
+                return (
+                  <div key={realId || idx} className={`w-[100px] shrink-0 transition-all duration-300 ${!isCardMatched ? 'opacity-30 grayscale-[80%]' : ''}`}>
+                    <CardItem 
+                      card={card as any} 
+                      userState={myState} 
+                      onClick={onCardClick} 
+                      showPostAwake={showPostAwake} 
+                      showTextBadge={true}
+                      sortOrder={isEventMode ? sortMode : undefined}
+                      eventBonus={bonus}
+                      scoreBonus={score}
+                    />
+                  </div>
+                );
+              }) : (
+                <div className="w-full py-10 flex justify-center text-zinc-500 text-xs font-bold">
+                  보너스 조건에 맞는 멤버가 없습니다.
                 </div>
-              );
-            }) : (
-              <div className="w-full py-10 flex justify-center text-zinc-500 text-xs font-bold">
-                보너스 조건에 맞는 멤버가 없습니다.
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
+          
         </div>
       </div>
 

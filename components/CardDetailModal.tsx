@@ -462,7 +462,7 @@ export default function CardDetailModal({
                   <div className="flex items-center gap-2">
                     <span className="text-zinc-400 font-medium">스킬 레벨 (Lv.)</span>
                     {calculatedSkillBonus > 0 && (
-                      <span className="bg-sky-500/20 text-sky-400 border border-sky-400/30 px-1.5 py-0.5 rounded text-[11px] font-black tracking-wider animate-fade-in shadow-sm flex items-center gap-0.5">
+                      <span className="bg-sky-500/20 text-sky-400 border border-sky-400/30 px-1.5 py-0.5 rounded text-[11px] font-medium tracking-wider animate-fade-in shadow-sm flex items-center gap-0.5">
                         ⇪ +{calculatedSkillBonus}%
                       </span>
                     )}
