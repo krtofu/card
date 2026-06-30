@@ -109,28 +109,28 @@ export default function FuturePage() {
     if (searchQuery.trim() !== "") {
       const q = searchQuery.toLowerCase().trim();
       
-      // 🌟 [핵심 해결] 알맹이 데이터(FinalCardInfo 템플릿)를 정확히 타겟팅!
-      const targetCard = card.info ? card.info : card;
-      
       const getStr = (val: any) => {
         if (val === null || val === undefined) return "";
         if (Array.isArray(val)) return val.join(" ").toLowerCase();
         return String(val).toLowerCase();
       };
       
-      const matchName = getStr(targetCard.cardName).includes(q);
-      const matchChar = getStr(targetCard.character).includes(q);
-      const matchEvent = getStr(targetCard.eventName).includes(q);
-      const matchGacha = getStr(targetCard.gachaPoolName).includes(q);
+      const matchName = getStr(card.cardName).includes(q);
+      const matchChar = getStr(card.character).includes(q);
+      const matchEvent = getStr(card.eventName).includes(q);
+      const matchGacha = getStr(card.gachaPoolName).includes(q);
       
-      // 🌟 템플릿(FinalCardInfo) 양식에 있는 변수명 그대로 완벽 매칭!
-      const matchCostume = getStr(targetCard.costumeName).includes(q) || getStr(targetCard.costume).includes(q);
-      const matchSong = getStr(targetCard.releaseSong).includes(q) || getStr(targetCard.relatedSong).includes(q) || getStr(targetCard.song).includes(q);
-      const matchSkill = getStr(targetCard.skillName).includes(q) || getStr(targetCard.skillType).includes(q);
-      const matchUnit = getStr(targetCard.unit).includes(q);
-      const matchSupportUnit = getStr(targetCard.supportUnit).includes(q);
+      const matchCostume = getStr(card.costume?.name).includes(q); 
+      const matchSong = getStr(card.songName).includes(q);         
+      const matchSkill = getStr(card.skillType).includes(q);       
+      const matchUnit = getStr(card.unit).includes(q);             
       
-      if (!(matchName || matchChar || matchEvent || matchGacha || matchCostume || matchSong || matchSkill || matchUnit || matchSupportUnit)) {
+      // 🌟 [추가됨] 기획자님 아이디어 반영! 뽑기 유형(통상/한정/페스)과 속성까지 검색망에 추가!
+      const matchGachaType = getStr(card.gachaType).includes(q);
+      // (참고: 속성은 DB에 pure, cute 등 영어로 저장되어 있다면 영어로 쳐야 나오지만, 필터가 있으니 보조용으로 둡니다!)
+      const matchAttribute = getStr(card.attribute).includes(q);
+      
+      if (!(matchName || matchChar || matchEvent || matchGacha || matchCostume || matchSong || matchSkill || matchUnit || matchGachaType || matchAttribute)) {
         return false;
       }
     }
