@@ -9,6 +9,9 @@ import CardDetailModal from "@/components/CardDetailModal";
 import { FinalCardInfo } from "@/data/cards/template";
 import { UserCardState } from "@/app/cards/page"; 
 
+// 🌟 [복구됨] 고급스러운 말풍선 툴팁 공통 CSS 클래스
+const TOOLTIP_CLASS = "absolute bottom-full mb-2 left-1/2 -translate-x-1/2 px-2.5 py-1 bg-zinc-800 text-zinc-100 text-[11px] font-bold rounded-lg shadow-xl border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-[60]";
+
 export default function FuturePage() {
   const [cardStates, setCardStates] = useState<Record<string, UserCardState>>({});
   const [activeModalCard, setActiveModalCard] = useState<FinalCardInfo | null>(null);
@@ -195,7 +198,6 @@ export default function FuturePage() {
   const condIds = condSubs.map(s => s.id);
   const isAllCondSelected = condIds.length > 0 && condIds.every(id => selectedSkills.includes(id));
   
-  // 🌟 [추가됨] 필터링 연산 사전 처리
   const processedEvents = FUTURE_EVENTS.map(event => {
     let isEventMatched = true;
     let matchedCardIds: string[] = [];
@@ -211,7 +213,6 @@ export default function FuturePage() {
 
   const visibleEvents = hideUnmatchedEvents ? processedEvents.filter(e => e.isEventMatched) : processedEvents;
 
-  // 🌟 [추가됨] 가시 이벤트들의 날짜 차이(D-day) 계산
   const visibleEventsWithGap = visibleEvents.map((item, index) => {
     let gapDays = 0;
     if (index < visibleEvents.length - 1) {
@@ -229,7 +230,7 @@ export default function FuturePage() {
     <div className="flex flex-col md:flex-row gap-6 px-4 md:px-8 py-6 min-h-screen text-zinc-100 max-w-[1920px] mx-auto w-full">
       
       {/* ========================================= */}
-      {/* 👈 좌측 영역: 필터칸 (기존과 동일) */}
+      {/* 👈 좌측 영역: 필터칸 (말풍선 복구!) */}
       {/* ========================================= */}
       <div className={`flex flex-col shrink-0 md:w-[280px] md:relative md:block md:bg-transparent md:p-0 md:h-auto md:z-0 ${isMobileFilterOpen ? 'fixed inset-0 z-[100] bg-zinc-950 p-6 overflow-y-auto' : 'hidden'}`}>
         <div className="flex items-center justify-between border-b border-white/10 pb-3 mb-6 md:mb-0">
@@ -263,28 +264,34 @@ export default function FuturePage() {
                     )
                   })}
                 </div>
+                {/* 🌟 통상/한정/헤어 아이콘 말풍선 복구 */}
                 <div className="grid grid-cols-4 gap-1.5">
                   <button onClick={() => toggleFilter(selectedTypes, setSelectedTypes, "normal")}
                     className={`relative group aspect-square rounded-full p-1 transition-all duration-300 w-full h-full ${selectedTypes.includes("normal") ? "bg-zinc-800 scale-105" : "bg-zinc-900 scale-[0.85] hover:scale-95"} ${!isAnyTypeSelected || selectedTypes.includes("normal") ? "opacity-100" : "opacity-40 hover:opacity-100"}`}>
                     <img src="/icons/status/normal.png" alt="통상" className="w-full h-full object-contain" />
+                    <span className={TOOLTIP_CLASS}>통상</span>
                   </button>
                   <button onClick={() => toggleFilter(selectedTypes, setSelectedTypes, "limited")}
                     className={`relative group aspect-square rounded-full p-1 transition-all duration-300 w-full h-full ${selectedTypes.includes("limited") ? "bg-zinc-800 scale-105" : "bg-zinc-900 scale-[0.85] hover:scale-95"} ${!isAnyTypeSelected || selectedTypes.includes("limited") ? "opacity-100" : "opacity-40 hover:opacity-100"}`}>
                     <img src="/icons/status/limited.png" alt="한정" className="w-full h-full object-contain" />
+                    <span className={TOOLTIP_CLASS}>한정/페스/월링</span>
                   </button>
                   <button onClick={() => toggleFilter(selectedHairs, setSelectedHairs, "hair_o")}
                     className={`relative group aspect-square rounded-full p-1 transition-all duration-300 w-full h-full ${selectedHairs.includes("hair_o") ? "bg-zinc-800 scale-105" : "bg-zinc-900 scale-[0.85] hover:scale-95"} ${!isAnyHairSelected || selectedHairs.includes("hair_o") ? "opacity-100" : "opacity-40 hover:opacity-100"}`}>
                     <img src="/icons/status/hair_o.png" alt="헤어 O" className="w-full h-full object-contain" />
+                    <span className={TOOLTIP_CLASS}>헤어 개방 가능</span>
                   </button>
                   <button onClick={() => toggleFilter(selectedHairs, setSelectedHairs, "hair_x")}
                     className={`relative group aspect-square rounded-full p-1 transition-all duration-300 w-full h-full ${selectedHairs.includes("hair_x") ? "bg-zinc-800 scale-105" : "bg-zinc-900 scale-[0.85] hover:scale-95"} ${!isAnyHairSelected || selectedHairs.includes("hair_x") ? "opacity-100" : "opacity-40 hover:opacity-100"}`}>
                     <img src="/icons/status/hair_x.png" alt="헤어 X" className="w-full h-full object-contain" />
+                    <span className={TOOLTIP_CLASS}>헤어 없음</span>
                   </button>
                 </div>
               </div>
             )}
           </div>
 
+          {/* EVENT TYPE */}
           <div className="space-y-2 pt-2 border-t border-white/5">
             <button onClick={() => setIsEventTypeExpanded(!isEventTypeExpanded)} className="w-full flex items-center justify-between group pt-2 pb-1 cursor-pointer">
               <span className="text-[12px] md:text-[11px] font-bold text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-300 transition-colors">EVENT TYPE</span>
@@ -356,6 +363,7 @@ export default function FuturePage() {
             </button>
             {isAttrExpanded && (
               <div className="grid grid-cols-5 gap-1.5 pt-1">
+                {/* 🌟 속성 아이콘 말풍선 복구 */}
                 {ATTR_FILTERS.map(attr => {
                   const isSelected = selectedAttrs.includes(attr.id);
                   const opacityClass = !isAnyAttrSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100";
@@ -363,6 +371,7 @@ export default function FuturePage() {
                   <button key={attr.id} onClick={() => toggleFilter(selectedAttrs, setSelectedAttrs, attr.id)} 
                     className={`relative group aspect-square rounded-full transition-all duration-300 ${isSelected ? "scale-105" : "scale-[0.85] hover:scale-95"} ${opacityClass}`}>
                     <img src={attr.img} alt={attr.name} className="w-full h-full object-contain" />
+                    <span className={TOOLTIP_CLASS}>{attr.name}</span>
                   </button>
                 )})}
               </div>
@@ -377,6 +386,7 @@ export default function FuturePage() {
             {isSkillExpanded && (
               <div className="space-y-2 pt-1">
                 <div className="grid grid-cols-4 gap-1.5">
+                  {/* 🌟 스킬 아이콘 말풍선 복구 */}
                   {SKILL_FILTERS.map(skill => {
                     const isCondGroup = skill.id === "condition_group";
                     const isSelected = isCondGroup ? isAllCondSelected : selectedSkills.includes(skill.id);
@@ -385,6 +395,7 @@ export default function FuturePage() {
                       <button key={skill.id} onClick={isCondGroup ? toggleCondSkillGroup : () => toggleFilter(selectedSkills, setSelectedSkills, skill.id)}
                         className={`relative group aspect-square rounded-full p-1 transition-all duration-300 ${isSelected ? "bg-zinc-800 scale-105" : "bg-zinc-900 scale-[0.85] hover:scale-95"} ${opacityClass}`}>
                         <img src={skill.img} alt={skill.name} className="w-full h-full object-contain" />
+                        <span className={TOOLTIP_CLASS}>{skill.name}</span>
                       </button>
                     );
                   })}
@@ -456,13 +467,15 @@ export default function FuturePage() {
                       <img src={unit.logo} alt={unit.name} className="h-full w-auto object-contain max-w-[90%]" />
                     </button>
                     <div className="grid grid-cols-4 gap-1.5 mt-1">
+                      {/* 🌟 캐릭터 아이콘 말풍선 복구 */}
                       {unit.chars.map(char => {
                         const isSelected = selectedChars.includes(char.id);
                         const charOpacityClass = !isAnyCharSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100";
                         return (
                         <button key={char.id} onClick={() => toggleFilter(selectedChars, setSelectedChars, char.id)}
-                          className={`relative aspect-square rounded-full transition-all duration-300 bg-zinc-950 ${isSelected ? "scale-105" : "scale-[0.80] hover:scale-[0.85]"} ${charOpacityClass}`}>
+                          className={`relative group aspect-square rounded-full transition-all duration-300 bg-zinc-950 ${isSelected ? "scale-105" : "scale-[0.80] hover:scale-[0.85]"} ${charOpacityClass}`}>
                           <img src={char.img} alt={char.name} className="w-full h-full object-contain" />
+                          <span className={TOOLTIP_CLASS}>{char.name}</span>
                         </button>
                       )})}
                     </div>
@@ -504,7 +517,6 @@ export default function FuturePage() {
               🔍 필터
             </button>
 
-            {/* 🌟 [개편] 👻 유령 버튼: "비활성 배너 숨기기" */}
             <button 
               onClick={() => setHideUnmatchedEvents(!hideUnmatchedEvents)}
               className={`hidden sm:flex items-center justify-center h-[34px] rounded-full text-[12px] font-bold transition-all shadow-sm border ${
@@ -560,12 +572,10 @@ export default function FuturePage() {
               return (
                 <div key={event.id} className="relative animate-fade-in">
                   
-                  {/* 🌟 1. [좌/우] 연도 & 월 드롭다운이 나오는 메인 이정표! */}
                   {showYearMarker && (
                     <div ref={(el) => { yearRefs.current[eventYear] = el; monthRefs.current[eventYearMonth] = el; }} className="flex justify-center my-10 relative z-30 scroll-mt-24">
                       <div className="relative flex items-center justify-center">
                         
-                        {/* 왼쪽: 월별 드롭다운 */}
                         <div className={`absolute right-full top-1/2 -translate-y-1/2 flex items-center transition-all duration-300 ease-in-out origin-right overflow-hidden mr-2 ${openYearMarker === eventYear ? 'max-w-[500px] opacity-100' : 'max-w-0 opacity-0 pointer-events-none'}`}>
                           <div className="flex bg-zinc-800 border border-white/20 rounded-sm shadow-lg overflow-hidden shrink-0">
                              {getMonthsForYear(eventYear).map(month => (
@@ -576,12 +586,10 @@ export default function FuturePage() {
                           </div>
                         </div>
 
-                        {/* 가운데: 연도 버튼 */}
                         <button onClick={() => setOpenYearMarker(openYearMarker === eventYear ? null : eventYear)} className="bg-white text-zinc-950 font-black px-5 py-1.5 rounded-sm text-sm shadow-xl tracking-widest z-20 hover:bg-zinc-200 transition-colors flex items-center gap-1.5">
                           {openYearMarker === eventYear ? '◀' : '▶'} {eventYear} {openYearMarker === eventYear ? '▶' : '◀'}
                         </button>
 
-                        {/* 오른쪽: 연도 드롭다운 */}
                         <div className={`absolute left-full top-1/2 -translate-y-1/2 flex items-center transition-all duration-300 ease-in-out origin-left overflow-hidden ml-2 ${openYearMarker === eventYear ? 'max-w-[500px] opacity-100' : 'max-w-0 opacity-0 pointer-events-none'}`}>
                           <div className="flex bg-zinc-800 border border-white/20 rounded-sm shadow-lg overflow-hidden shrink-0">
                              {uniqueYears.filter(y => y !== eventYear).map(year => (
@@ -596,7 +604,6 @@ export default function FuturePage() {
                     </div>
                   )}
 
-                  {/* 🌟 2. [추가됨] 조그만 월별 이정표 */}
                   {showMonthMarker && !showYearMarker && (
                      <div ref={el => { monthRefs.current[eventYearMonth] = el; }} className="flex justify-center my-6 relative z-30 scroll-mt-24">
                         <span className="bg-zinc-800 text-zinc-400 text-[10px] px-3 py-1 rounded-full border border-white/10 shadow-md">
@@ -616,7 +623,6 @@ export default function FuturePage() {
                     matchedCardIds={matchedCardIds}
                   />
 
-                  {/* 🌟 3. [추가됨] 👻 모드 시 다음 배너까지의 간격(D-day) 표시 */}
                   {hideUnmatchedEvents && gapDays > 0 && (
                      <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center">
                        <span className="bg-zinc-900 text-zinc-400 text-[10px] px-3 py-0.5 rounded-full border border-white/10 font-bold whitespace-nowrap shadow-sm">

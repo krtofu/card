@@ -7,6 +7,9 @@ import { FinalCardInfo } from "@/data/cards/template";
 import CardDetailModal from "@/components/CardDetailModal";
 import CardItem from "@/components/CardItem"; 
 
+// 🌟 [추가됨] 고급스러운 말풍선 툴팁 공통 CSS 클래스
+const TOOLTIP_CLASS = "absolute bottom-full mb-2 left-1/2 -translate-x-1/2 px-2.5 py-1 bg-zinc-800 text-zinc-100 text-[11px] font-bold rounded-lg shadow-xl border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-[60]";
+
 export type UserCardState = {
   isOwned: boolean;
   isTarget: boolean;
@@ -68,7 +71,6 @@ export default function MyCardsPage() {
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [spinDeg, setSpinDeg] = useState(0);
 
-  // 🌟 [검색창 1단계] 검색어 텍스트를 저장할 상태 추가!
   const [searchQuery, setSearchQuery] = useState("");
 
   const [excludeCollab, setExcludeCollab] = useState(false);
@@ -134,7 +136,7 @@ export default function MyCardsPage() {
     setSelectedChars([]); setSelectedAttrs([]); setSelectedSkills([]); 
     setSelectedStatuses([]); setSelectedTypes([]); setSelectedHairs([]);
     setExcludeCollab(false); setHideUnreleased(false);
-    setSearchQuery(""); // 🌟 검색어도 함께 초기화!
+    setSearchQuery("");
   };
 
   const allVsCharIds = UNIT_FILTERS.flatMap(u => u.chars.filter(c => c.isVirtual).map(c => c.id));
@@ -153,7 +155,6 @@ export default function MyCardsPage() {
   };
 
   const filteredCards = ALL_CARDS.filter(card => {
-    // 🌟 [검색창 2단계] 텍스트 매칭 엔진 가동! (이름, 의상명, 이벤트명 등 모두 검사)
     if (searchQuery.trim() !== "") {
       const q = searchQuery.toLowerCase().trim();
       const matchName = card.cardName?.toLowerCase().includes(q);
@@ -302,18 +303,22 @@ export default function MyCardsPage() {
                   <button onClick={() => toggleFilter(selectedTypes, setSelectedTypes, "normal")}
                     className={`relative group aspect-square rounded-full p-1 transition-all duration-300 w-full h-full ${selectedTypes.includes("normal") ? "bg-zinc-800 scale-105" : "bg-zinc-900 scale-[0.85] hover:scale-95"} ${!isAnyTypeSelected || selectedTypes.includes("normal") ? "opacity-100" : "opacity-40 hover:opacity-100"}`}>
                     <img src="/icons/status/normal.png" alt="통상" className="w-full h-full object-contain" />
+                    <span className={TOOLTIP_CLASS}>통상</span>
                   </button>
                   <button onClick={() => toggleFilter(selectedTypes, setSelectedTypes, "limited")}
                     className={`relative group aspect-square rounded-full p-1 transition-all duration-300 w-full h-full ${selectedTypes.includes("limited") ? "bg-zinc-800 scale-105" : "bg-zinc-900 scale-[0.85] hover:scale-95"} ${!isAnyTypeSelected || selectedTypes.includes("limited") ? "opacity-100" : "opacity-40 hover:opacity-100"}`}>
                     <img src="/icons/status/limited.png" alt="한정" className="w-full h-full object-contain" />
+                    <span className={TOOLTIP_CLASS}>한정/페스/월링</span>
                   </button>
                   <button onClick={() => toggleFilter(selectedHairs, setSelectedHairs, "hair_o")}
                     className={`relative group aspect-square rounded-full p-1 transition-all duration-300 w-full h-full ${selectedHairs.includes("hair_o") ? "bg-zinc-800 scale-105" : "bg-zinc-900 scale-[0.85] hover:scale-95"} ${!isAnyHairSelected || selectedHairs.includes("hair_o") ? "opacity-100" : "opacity-40 hover:opacity-100"}`}>
                     <img src="/icons/status/hair_o.png" alt="헤어 O" className="w-full h-full object-contain" />
+                    <span className={TOOLTIP_CLASS}>헤어 개방 가능</span>
                   </button>
                   <button onClick={() => toggleFilter(selectedHairs, setSelectedHairs, "hair_x")}
                     className={`relative group aspect-square rounded-full p-1 transition-all duration-300 w-full h-full ${selectedHairs.includes("hair_x") ? "bg-zinc-800 scale-105" : "bg-zinc-900 scale-[0.85] hover:scale-95"} ${!isAnyHairSelected || selectedHairs.includes("hair_x") ? "opacity-100" : "opacity-40 hover:opacity-100"}`}>
                     <img src="/icons/status/hair_x.png" alt="헤어 X" className="w-full h-full object-contain" />
+                    <span className={TOOLTIP_CLASS}>헤어 없음</span>
                   </button>
                 </div>
               </div>
@@ -377,6 +382,7 @@ export default function MyCardsPage() {
                   <button key={attr.id} onClick={() => toggleFilter(selectedAttrs, setSelectedAttrs, attr.id)} 
                     className={`relative group aspect-square rounded-full transition-all duration-300 ${isSelected ? "scale-105" : "scale-[0.85] hover:scale-95"} ${opacityClass}`}>
                     <img src={attr.img} alt={attr.name} className="w-full h-full object-contain" />
+                    <span className={TOOLTIP_CLASS}>{attr.name}</span>
                   </button>
                 )})}
               </div>
@@ -399,6 +405,7 @@ export default function MyCardsPage() {
                       <button key={skill.id} onClick={isCondGroup ? toggleCondSkillGroup : () => toggleFilter(selectedSkills, setSelectedSkills, skill.id)}
                         className={`relative group aspect-square rounded-full p-1 transition-all duration-300 ${isSelected ? "bg-zinc-800 scale-105" : "bg-zinc-900 scale-[0.85] hover:scale-95"} ${opacityClass}`}>
                         <img src={skill.img} alt={skill.name} className="w-full h-full object-contain" />
+                        <span className={TOOLTIP_CLASS}>{skill.name}</span>
                       </button>
                     );
                   })}
@@ -475,8 +482,9 @@ export default function MyCardsPage() {
                         const charOpacityClass = !isAnyCharSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100";
                         return (
                         <button key={char.id} onClick={() => toggleFilter(selectedChars, setSelectedChars, char.id)}
-                          className={`relative aspect-square rounded-full transition-all duration-300 bg-zinc-950 ${isSelected ? "scale-105" : "scale-[0.80] hover:scale-[0.85]"} ${charOpacityClass}`}>
+                          className={`relative group aspect-square rounded-full transition-all duration-300 bg-zinc-950 ${isSelected ? "scale-105" : "scale-[0.80] hover:scale-[0.85]"} ${charOpacityClass}`}>
                           <img src={char.img} alt={char.name} className="w-full h-full object-contain" />
+                          <span className={TOOLTIP_CLASS}>{char.name}</span>
                         </button>
                       )})}
                     </div>
@@ -501,7 +509,6 @@ export default function MyCardsPage() {
               🔍 필터
             </button>
 
-            {/* 🌟 [검색창 3단계] 우측 상단에 배치되는 세련된 검색 바 UI */}
             <div className="relative flex items-center w-full sm:w-48 lg:w-64">
               <span className="absolute left-3 text-zinc-400 text-sm">🔍</span>
               <input
