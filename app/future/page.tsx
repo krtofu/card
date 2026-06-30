@@ -9,7 +9,6 @@ import CardDetailModal from "@/components/CardDetailModal";
 import { FinalCardInfo } from "@/data/cards/template";
 import { UserCardState } from "@/app/cards/page"; 
 
-// 🌟 [복구됨] 고급스러운 말풍선 툴팁 공통 CSS 클래스
 const TOOLTIP_CLASS = "absolute bottom-full mb-2 left-1/2 -translate-x-1/2 px-2.5 py-1 bg-zinc-800 text-zinc-100 text-[11px] font-bold rounded-lg shadow-xl border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-[60]";
 
 export default function FuturePage() {
@@ -125,9 +124,7 @@ export default function FuturePage() {
       const matchSkill = getStr(card.skillType).includes(q);       
       const matchUnit = getStr(card.unit).includes(q);             
       
-      // 🌟 [추가됨] 기획자님 아이디어 반영! 뽑기 유형(통상/한정/페스)과 속성까지 검색망에 추가!
       const matchGachaType = getStr(card.gachaType).includes(q);
-      // (참고: 속성은 DB에 pure, cute 등 영어로 저장되어 있다면 영어로 쳐야 나오지만, 필터가 있으니 보조용으로 둡니다!)
       const matchAttribute = getStr(card.attribute).includes(q);
       
       if (!(matchName || matchChar || matchEvent || matchGacha || matchCostume || matchSong || matchSkill || matchUnit || matchGachaType || matchAttribute)) {
@@ -248,9 +245,7 @@ export default function FuturePage() {
   return (
     <div className="flex flex-col md:flex-row gap-6 px-4 md:px-8 py-6 min-h-screen text-zinc-100 max-w-[1920px] mx-auto w-full">
       
-      {/* ========================================= */}
-      {/* 👈 좌측 영역: 필터칸 */}
-      {/* ========================================= */}
+      {/* 👈 좌측 영역: 필터칸 (기존과 완전히 동일) */}
       <div className={`flex flex-col shrink-0 md:w-[280px] md:relative md:block md:bg-transparent md:p-0 md:h-auto md:z-0 ${isMobileFilterOpen ? 'fixed inset-0 z-[100] bg-zinc-950 p-6 overflow-y-auto' : 'hidden'}`}>
         <div className="flex items-center justify-between border-b border-white/10 pb-3 mb-6 md:mb-0">
           <h2 className="text-lg md:text-sm font-bold text-zinc-300 tracking-wider uppercase">🔍 미래시 필터</h2>
@@ -283,7 +278,6 @@ export default function FuturePage() {
                     )
                   })}
                 </div>
-                {/* 🌟 통상/한정/헤어 아이콘 말풍선 복구 */}
                 <div className="grid grid-cols-4 gap-1.5">
                   <button onClick={() => toggleFilter(selectedTypes, setSelectedTypes, "normal")}
                     className={`relative group aspect-square rounded-full p-1 transition-all duration-300 w-full h-full ${selectedTypes.includes("normal") ? "bg-zinc-800 scale-105" : "bg-zinc-900 scale-[0.85] hover:scale-95"} ${!isAnyTypeSelected || selectedTypes.includes("normal") ? "opacity-100" : "opacity-40 hover:opacity-100"}`}>
@@ -298,19 +292,18 @@ export default function FuturePage() {
                   <button onClick={() => toggleFilter(selectedHairs, setSelectedHairs, "hair_o")}
                     className={`relative group aspect-square rounded-full p-1 transition-all duration-300 w-full h-full ${selectedHairs.includes("hair_o") ? "bg-zinc-800 scale-105" : "bg-zinc-900 scale-[0.85] hover:scale-95"} ${!isAnyHairSelected || selectedHairs.includes("hair_o") ? "opacity-100" : "opacity-40 hover:opacity-100"}`}>
                     <img src="/icons/status/hair_o.png" alt="헤어 O" className="w-full h-full object-contain" />
-                    <span className={TOOLTIP_CLASS}>헤어 O</span>
+                    <span className={TOOLTIP_CLASS}>헤어 개방 가능</span>
                   </button>
                   <button onClick={() => toggleFilter(selectedHairs, setSelectedHairs, "hair_x")}
                     className={`relative group aspect-square rounded-full p-1 transition-all duration-300 w-full h-full ${selectedHairs.includes("hair_x") ? "bg-zinc-800 scale-105" : "bg-zinc-900 scale-[0.85] hover:scale-95"} ${!isAnyHairSelected || selectedHairs.includes("hair_x") ? "opacity-100" : "opacity-40 hover:opacity-100"}`}>
                     <img src="/icons/status/hair_x.png" alt="헤어 X" className="w-full h-full object-contain" />
-                    <span className={TOOLTIP_CLASS}>헤어 X</span>
+                    <span className={TOOLTIP_CLASS}>헤어 없음</span>
                   </button>
                 </div>
               </div>
             )}
           </div>
 
-          {/* EVENT TYPE */}
           <div className="space-y-2 pt-2 border-t border-white/5">
             <button onClick={() => setIsEventTypeExpanded(!isEventTypeExpanded)} className="w-full flex items-center justify-between group pt-2 pb-1 cursor-pointer">
               <span className="text-[12px] md:text-[11px] font-bold text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-300 transition-colors">EVENT TYPE</span>
@@ -382,7 +375,6 @@ export default function FuturePage() {
             </button>
             {isAttrExpanded && (
               <div className="grid grid-cols-5 gap-1.5 pt-1">
-                {/* 🌟 속성 아이콘 말풍선 복구 */}
                 {ATTR_FILTERS.map(attr => {
                   const isSelected = selectedAttrs.includes(attr.id);
                   const opacityClass = !isAnyAttrSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100";
@@ -405,7 +397,6 @@ export default function FuturePage() {
             {isSkillExpanded && (
               <div className="space-y-2 pt-1">
                 <div className="grid grid-cols-4 gap-1.5">
-                  {/* 🌟 스킬 아이콘 말풍선 복구 */}
                   {SKILL_FILTERS.map(skill => {
                     const isCondGroup = skill.id === "condition_group";
                     const isSelected = isCondGroup ? isAllCondSelected : selectedSkills.includes(skill.id);
@@ -486,7 +477,6 @@ export default function FuturePage() {
                       <img src={unit.logo} alt={unit.name} className="h-full w-auto object-contain max-w-[90%]" />
                     </button>
                     <div className="grid grid-cols-4 gap-1.5 mt-1">
-                      {/* 🌟 캐릭터 아이콘 말풍선 복구 */}
                       {unit.chars.map(char => {
                         const isSelected = selectedChars.includes(char.id);
                         const charOpacityClass = !isAnyCharSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100";
@@ -513,53 +503,53 @@ export default function FuturePage() {
       {/* 🌟 overflow-hidden을 제거하여 Sticky가 완벽하게 작동하도록 수정! */}
       <div className="flex-1 flex flex-col min-w-0 bg-zinc-900/30 rounded-3xl p-4 md:p-6 border border-white/5 relative">
         
-        {/* 🌟 [개선됨] 스크롤 시 상단에 딱 달라붙는 스틱키 메인 컨트롤 센터 바! */}
-        <div className="sticky top-0 bg-zinc-950/85 backdrop-blur-md px-2 py-4 -mx-4 md:-mx-6 px-4 md:px-6 rounded-t-3xl border-b border-white/5 z-50 flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-4">
+        {/* 🌟 [개선됨] 연도 뱃지를 텍스트 우측으로 나란히 합치고 레이아웃 재배치! */}
+        <div className="sticky top-0 bg-zinc-950/85 backdrop-blur-md py-4 -mx-4 md:-mx-6 px-4 md:px-6 rounded-t-3xl border-b border-white/5 z-50 flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-4">
           <div>
-            <h1 className="text-xl font-bold tracking-tight text-white mb-2">📅 미래시 타임라인</h1>
-            
-            <div className="flex flex-wrap gap-2 mt-1 mb-2">
-              {uniqueYears.map(year => (
-                <button
-                  key={year}
-                  onClick={() => scrollToYear(year)}
-                  className="px-3 py-1 bg-zinc-800 border border-white/10 hover:bg-white hover:text-black text-zinc-300 text-[11px] font-bold rounded-md transition-all shadow-sm"
-                >
-                  {year}년
-                </button>
-              ))}
+            <div className="flex items-center gap-3">
+              <h1 className="text-xl font-bold tracking-tight text-white shrink-0">📅 미래시 타임라인</h1>
+              <div className="flex flex-wrap items-center gap-1.5">
+                {uniqueYears.map(year => (
+                  <button
+                    key={year}
+                    onClick={() => scrollToYear(year)}
+                    className="px-2.5 py-1 bg-zinc-800 border border-white/10 hover:bg-white hover:text-black text-zinc-300 text-[11px] font-bold rounded-md transition-all shadow-sm whitespace-nowrap"
+                  >
+                    {year}년
+                  </button>
+                ))}
+              </div>
             </div>
-
-            <p className="text-xs text-zinc-400 mt-2">앞으로 다가올 가챠 일정과 픽업 멤버를 확인해보세요.</p>
+            <p className="text-xs text-zinc-400 mt-1">앞으로 다가올 가챠 일정과 픽업 멤버를 확인해보세요.</p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto relative w-full sm:w-auto mt-2 sm:mt-0">
+          <div className="flex flex-wrap items-center gap-2 self-start xl:self-auto relative w-full xl:w-auto">
             <button onClick={() => setIsMobileFilterOpen(true)} className="md:hidden flex items-center justify-center gap-1.5 h-[34px] px-3 rounded-full bg-zinc-800/80 border border-white/10 text-[12px] font-bold text-zinc-300 hover:text-white transition-colors shadow-sm">
               🔍 필터
             </button>
 
-            {/* 🌟 [개선됨] 버튼 내부 전체에 꽉 찬 색상을 채워 한눈에 각인되도록 스타일 변경! */}
+            {/* 🌟 [개선됨] 👻 유령 버튼: 활성화 시 꽉 찬 인디고 배경과 네온사인 그림자 적용! */}
             <button 
               onClick={() => setHideUnmatchedEvents(!hideUnmatchedEvents)}
               className={`hidden sm:flex items-center justify-center h-[34px] rounded-full text-[12px] font-bold transition-all shadow-sm border ${
                 hideUnmatchedEvents 
                   ? 'bg-indigo-600 border-indigo-500 text-white shadow-[0_0_12px_rgba(79,70,229,0.5)] px-4 gap-1.5' 
-                  : 'bg-zinc-800/80 border-white/10 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-700 px-3 gap-1.5'
+                  : 'bg-zinc-800/80 border-white/10 text-indigo-300 hover:text-indigo-200 hover:bg-zinc-700 px-3 gap-1.5'
               }`}
               title="비활성 배너 숨기기"
             >
-              👻 {hideUnmatchedEvents ? '모든 배너 켜기' : '비활성 배너 숨기기'}
+              👻 {hideUnmatchedEvents ? '숨겨짐!' : '비활성 배너 숨기기'}
             </button>
             <button 
               onClick={() => setHideUnmatchedEvents(!hideUnmatchedEvents)} 
               className={`sm:hidden flex items-center justify-center w-[34px] h-[34px] rounded-full text-[14px] transition-all shadow-sm border ${
-                hideUnmatchedEvents ? 'bg-indigo-600 border-indigo-500 text-white shadow-[0_0_12px_rgba(79,70,229,0.5)]' : 'bg-zinc-800/80 border-white/10 text-zinc-400'
+                hideUnmatchedEvents ? 'bg-indigo-600 border-indigo-500 text-white shadow-[0_0_12px_rgba(79,70,229,0.5)]' : 'bg-zinc-800/80 border-white/10 text-indigo-300'
               }`}
             >
               👻
             </button>
 
-            {/* 🌟 확장된 검색창 크기 보존 */}
+            {/* 확장된 검색창 */}
             <div className="relative flex items-center w-full sm:w-64 lg:w-80">
               <span className="absolute left-3 text-zinc-400 text-sm">🔍</span>
               <input
@@ -596,11 +586,12 @@ export default function FuturePage() {
               const showYearMarker = eventYear !== lastRenderedYear;
               if (showYearMarker) lastRenderedYear = eventYear;
 
+              // 🌟 [개선됨] 덜 튀는 월 뱃지를 위해 별도 블록 렌더링 제거 후 prop으로 컴포넌트에 넘겨줍니다!
               const showMonthMarker = eventYearMonth !== lastRenderedMonth;
               if (showMonthMarker) lastRenderedMonth = eventYearMonth;
 
               return (
-                <div key={event.id} className="relative animate-fade-in">
+                <div key={event.id} ref={(el) => { if(showMonthMarker) monthRefs.current[eventYearMonth] = el; }} className="relative animate-fade-in">
                   
                   {showYearMarker && (
                     <div ref={(el) => { yearRefs.current[eventYear] = el; monthRefs.current[eventYearMonth] = el; }} className="flex justify-center my-10 relative z-30 scroll-mt-24">
@@ -634,14 +625,7 @@ export default function FuturePage() {
                     </div>
                   )}
 
-                  {showMonthMarker && !showYearMarker && (
-                     <div ref={el => { monthRefs.current[eventYearMonth] = el; }} className="flex justify-center my-6 relative z-30 scroll-mt-24">
-                        <span className="bg-zinc-800 text-zinc-400 text-[10px] px-3 py-1 rounded-full border border-white/10 shadow-md">
-                          {eventMonth}월
-                        </span>
-                     </div>
-                  )}
-
+                  {/* 🌟 월 뱃지는 이제 중앙선 위에 얹어집니다! */}
                   <FutureEventCard 
                     event={event} 
                     index={index} 
@@ -651,6 +635,7 @@ export default function FuturePage() {
                     isFilterActive={isFilterActive}
                     isEventMatched={isEventMatched}
                     matchedCardIds={matchedCardIds}
+                    monthMarker={showMonthMarker ? eventMonth : undefined}
                   />
 
                   {hideUnmatchedEvents && gapDays > 0 && (

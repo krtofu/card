@@ -107,6 +107,7 @@ const getSkillBonusPercentage = (skillType: string, level: number, unit: string,
   return 0;
 };
 
+// 🌟 [추가됨] Props에 monthMarker 추가
 interface FutureEventCardProps {
   event: EventData;
   index: number;
@@ -116,11 +117,12 @@ interface FutureEventCardProps {
   isFilterActive: boolean; 
   isEventMatched: boolean; 
   matchedCardIds: string[]; 
+  monthMarker?: string; 
 }
 
 export default function FutureEventCard({ 
   event, userStates, onCardClick, showPostAwake, 
-  isFilterActive, isEventMatched, matchedCardIds 
+  isFilterActive, isEventMatched, matchedCardIds, monthMarker 
 }: FutureEventCardProps) {
   
   const [isEventMode, setIsEventMode] = useState(false);
@@ -128,7 +130,6 @@ export default function FutureEventCard({
   const [refMasterRank, setRefMasterRank] = useState<number>(0);
   const [refSkillLevel, setRefSkillLevel] = useState<number>(1);
 
-  // 1. 가챠 픽업 카드 처리
   const pickupCards = event.gacha.featuredCardIds
     .map((cardId) => ALL_CARDS.find((c: any) => c.id === cardId || ((c as any).info && (c as any).info.id === cardId)))
     .filter((c) => c !== undefined)
@@ -138,25 +139,18 @@ export default function FutureEventCard({
       return { card, myState, bonus: 0, score: 0 };
     });
 
-  // 2. 이벤트 보너스 카드 처리 (🌟 날짜 대조 타임패러독스 차단 로직 포함!)
   const getBonusCards = () => {
     if (!event.bonus) return [];
     
-    // 이벤트 시작 타임스탬프 구하기 ("2022-05-31. 15:00" -> 안전하게 정제)
-    const eventStartClean = event.period.start.split(".")[0].trim(); // "2022-05-31"
+    const eventStartClean = event.period.start.split(".")[0].trim();
     const eventStartDate = new Date(eventStartClean);
 
     const matchingCards = ALL_CARDS.filter(card => {
-      // 🌟 [핵심 규칙] 카드의 출시날짜(releaseDate)가 이벤트 시작일보다 늦으면 완벽 제외!
       if (card.releaseDate) {
         const cardReleaseDate = new Date(card.releaseDate);
         if (cardReleaseDate > eventStartDate) return false;
       }
-
-      // 속성 매치
       if (!matchAttribute(card.attribute || "", event.bonus!.attribute)) return false;
-      
-      // 인선/유닛 매치
       const matchesUnit = event.bonus!.unit && matchUnit(card.unit || "", event.bonus!.unit);
       const matchesChar = event.bonus!.characters && event.bonus!.characters.includes(card.character || "");
       return matchesUnit || matchesChar;
@@ -202,14 +196,14 @@ export default function FutureEventCard({
     : "opacity-100 transition-opacity duration-300";
 
   return (
-    <div className={`flex flex-col md:flex-row items-start gap-8 ${fadeClass}`}>
+    // 🌟 [개선됨] items-stretch를 적용하여 배너/중앙선/카드목록의 높이를 일치시키고, 내부 요소들을 세로 중앙(justify-center) 정렬합니다!
+    <div className={`flex flex-col md:flex-row items-stretch gap-8 ${fadeClass}`}>
       
       {/* ================= 좌측: 배너 영역 ================= */}
-      <div className="flex-1 w-full relative z-10 flex justify-center md:px-4 shrink-0">
-        {/* 🌟 겉박스를 items-start 구조에 맞춰 높이가 절대 유연하게 늘어나지 않고 배너 본연의 비율만 유지하도록 세팅! */}
-        <div className="w-full max-w-[520px] bg-zinc-900 border border-white/10 rounded-2xl overflow-visible shadow-xl flex flex-col relative aspect-[21/12.3]">
+      <div className="flex-1 w-full relative z-10 flex flex-col justify-center md:px-4 py-2 shrink-0">
+        {/* 🌟 h-fit을 주어서 stretch 되더라도 배너 박스 원본 크기만 유지! */}
+        <div className="w-full max-w-[520px] mx-auto bg-zinc-900 border border-white/10 rounded-2xl overflow-visible shadow-xl flex flex-col relative h-fit">
           
-          {/* 허공에 둥둥 뜬 연결 스위치 및 라인선 */}
           {event.bonus && (
              <div className="absolute -left-6 sm:-left-12 md:-left-[70px] top-1/2 -translate-y-1/2 flex items-center z-50">
                <button
@@ -223,7 +217,6 @@ export default function FutureEventCard({
              </div>
           )}
 
-          {/* 🌟 배너 박스 영역: aspect-[21/9] 고정 및 늘어남 절대 방지! */}
           <div className="relative aspect-[21/9] w-full bg-zinc-950/40 flex items-center justify-center border-b border-white/10 overflow-hidden rounded-t-2xl shrink-0">
             {displayBanner ? (
               <img 
@@ -266,20 +259,29 @@ export default function FutureEventCard({
       </div>
 
       {/* ================= 중앙 타임라인 선 ================= */}
-      {/* 🌟 items-start에 맞게 상단 마진을 줘서 배너 중앙 높이에 아이콘이 걸치게 균형 조절 */}
-      <div className="hidden md:flex flex-col items-center justify-center relative z-20 w-10 mt-12 shrink-0">
-        {unitLogo ? (
-          <div className="w-9 h-9 rounded-full bg-zinc-900 border-2 border-white/20 shadow-[0_0_15px_rgba(255,255,255,0.3)] z-20 flex items-center justify-center overflow-hidden p-1 transition-all">
-             <img src={unitLogo} alt="Unit Logo" className="w-full h-full object-contain drop-shadow-md" />
-          </div>
-        ) : (
-          <div className={`w-4 h-4 rounded-full border-4 border-zinc-950 shadow-[0_0_15px_rgba(255,255,255,0.5)] transition-all ${isFilterActive && !isEventMatched ? 'bg-zinc-600' : 'bg-white'}`} />
-        )}
+      {/* 🌟 items-stretch 환경에서 자연스럽게 세로 중앙 정렬을 맞추기 위해 구조를 변경했습니다! */}
+      <div className="hidden md:flex flex-col items-center justify-center relative z-20 w-10 shrink-0">
+        <div className="relative flex justify-center items-center">
+          {/* 🌟 [개선됨] 월 뱃지를 점 바로 위쪽에 은은하게 안착! */}
+          {monthMarker && (
+            <div className="absolute bottom-full mb-4 px-2.5 py-0.5 rounded-full bg-zinc-800 text-zinc-400 text-[11px] font-bold border border-white/10 shadow-sm z-30 whitespace-nowrap">
+              {monthMarker}월
+            </div>
+          )}
+
+          {unitLogo ? (
+            <div className="w-9 h-9 rounded-full bg-zinc-900 border-2 border-white/20 shadow-[0_0_15px_rgba(255,255,255,0.3)] z-20 flex items-center justify-center overflow-hidden p-1 transition-all">
+               <img src={unitLogo} alt="Unit Logo" className="w-full h-full object-contain drop-shadow-md" />
+            </div>
+          ) : (
+            <div className={`w-4 h-4 rounded-full border-4 border-zinc-950 shadow-[0_0_15px_rgba(255,255,255,0.5)] transition-all ${isFilterActive && !isEventMatched ? 'bg-zinc-600' : 'bg-white'}`} />
+          )}
+        </div>
       </div>
 
       {/* ================= 우측: 카드 목록 ================= */}
-      <div className="flex-1 w-full relative z-10 flex justify-center md:px-4">
-        <div className="bg-zinc-900/30 border border-white/5 rounded-3xl p-6 w-full max-w-[520px] flex flex-col">
+      <div className="flex-1 w-full relative z-10 flex flex-col justify-center md:px-4 py-2 shrink-0">
+        <div className="bg-zinc-900/30 border border-white/5 rounded-3xl p-6 w-full max-w-[520px] mx-auto flex flex-col h-fit">
           
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-white/10 shrink-0">
             <div className="flex items-center gap-1.5 font-bold text-zinc-300 text-sm">
@@ -326,10 +328,11 @@ export default function FutureEventCard({
                    )}
                  </>
                ) : (
-                 <div className="flex items-center gap-1">
+                 // 🌟 [개선됨] 통상/한정 아이콘 뱃지 크기 대폭 상향 (30px)
+                 <div className="flex items-center gap-1.5">
                     {event.gacha.types.map(t => {
-                      if (t === "통상") return <img key={t} src="/icons/status/normal.png" className="w-[20px] h-[20px] rounded-full shadow-sm" alt="통상" title="통상" />;
-                      if (["한정", "페스", "월링"].includes(t)) return <img key={t} src="/icons/status/limited.png" className="w-[20px] h-[20px] rounded-full shadow-sm" alt={t} title={t} />;
+                      if (t === "통상") return <img key={t} src="/icons/status/normal.png" className="w-[30px] h-[30px] rounded-full shadow-md" alt="통상" title="통상" />;
+                      if (["한정", "페스", "월링"].includes(t)) return <img key={t} src="/icons/status/limited.png" className="w-[30px] h-[30px] rounded-full shadow-md" alt={t} title={t} />;
                       return null;
                     })}
                  </div>
