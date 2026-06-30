@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { FUTURE_EVENTS } from "@/data/events";
+import { FUTURE_EVENTS } from "@/data/events/index";
 import { ALL_CARDS } from "@/data/cards";
 import FutureEventCard from "@/components/FutureEventCard";
 import CardDetailModal from "@/components/CardDetailModal";
@@ -20,10 +20,8 @@ export default function FuturePage() {
   const [openYearMarker, setOpenYearMarker] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // 🌟 [추가됨] 일치하지 않는 배너를 완전히 숨길지 결정하는 스위치!
   const [hideUnmatchedEvents, setHideUnmatchedEvents] = useState(false);
 
-  // 필터 상태들
   const [excludeCollab, setExcludeCollab] = useState(false);
   const [isStatusExpanded, setIsStatusExpanded] = useState(true);
   const [isEventTypeExpanded, setIsEventTypeExpanded] = useState(true);
@@ -41,6 +39,7 @@ export default function FuturePage() {
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
 
   const yearRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const monthRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   useEffect(() => {
     setMounted(true);
@@ -164,12 +163,20 @@ export default function FuturePage() {
   };
 
   const uniqueYears = [...new Set(FUTURE_EVENTS.map(e => e.period.start.split('-')[0]))].sort() as string[];
+  
+  const getMonthsForYear = (year: string) => {
+    const months = FUTURE_EVENTS.filter(e => e.period.start.startsWith(year)).map(e => e.period.start.split('-')[1]);
+    return [...new Set(months)].sort() as string[];
+  };
 
   const scrollToYear = (year: string) => {
     const element = yearRefs.current[year];
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
+    if (element) { element.scrollIntoView({ behavior: "smooth", block: "start" }); }
+  };
+  
+  const scrollToMonth = (yearMonth: string) => {
+    const element = monthRefs.current[yearMonth];
+    if (element) { element.scrollIntoView({ behavior: "smooth", block: "start" }); }
   };
 
   if (!mounted) return null;
@@ -188,13 +195,41 @@ export default function FuturePage() {
   const condIds = condSubs.map(s => s.id);
   const isAllCondSelected = condIds.length > 0 && condIds.every(id => selectedSkills.includes(id));
   
+  // 🌟 [추가됨] 필터링 연산 사전 처리
+  const processedEvents = FUTURE_EVENTS.map(event => {
+    let isEventMatched = true;
+    let matchedCardIds: string[] = [];
+    if (isFilterActive) {
+      const passEventType = !isAnyEventTypeSelected || selectedEventTypes.includes(event.eventType || "없음");
+      const eventCards = event.gacha.featuredCardIds.map(id => ALL_CARDS.find(c => c.id === id || ((c as any).info && (c as any).info.id === id))).filter(c => c !== undefined) as any[];
+      const matchedCards = eventCards.filter(c => checkCardMatch(c));
+      matchedCardIds = matchedCards.map(c => (c as any).info ? (c as any).info.id : c.id);
+      if (!passEventType || matchedCardIds.length === 0) isEventMatched = false;
+    }
+    return { event, isEventMatched, matchedCardIds };
+  });
+
+  const visibleEvents = hideUnmatchedEvents ? processedEvents.filter(e => e.isEventMatched) : processedEvents;
+
+  // 🌟 [추가됨] 가시 이벤트들의 날짜 차이(D-day) 계산
+  const visibleEventsWithGap = visibleEvents.map((item, index) => {
+    let gapDays = 0;
+    if (index < visibleEvents.length - 1) {
+      const d1 = new Date(item.event.period.start.split('.')[0]);
+      const d2 = new Date(visibleEvents[index + 1].event.period.start.split('.')[0]);
+      gapDays = Math.floor((d2.getTime() - d1.getTime()) / 86400000);
+    }
+    return { ...item, gapDays };
+  });
+
   let lastRenderedYear = "";
+  let lastRenderedMonth = "";
 
   return (
     <div className="flex flex-col md:flex-row gap-6 px-4 md:px-8 py-6 min-h-screen text-zinc-100 max-w-[1920px] mx-auto w-full">
       
       {/* ========================================= */}
-      {/* 👈 좌측 영역: 필터칸 (기존 동일) */}
+      {/* 👈 좌측 영역: 필터칸 (기존과 동일) */}
       {/* ========================================= */}
       <div className={`flex flex-col shrink-0 md:w-[280px] md:relative md:block md:bg-transparent md:p-0 md:h-auto md:z-0 ${isMobileFilterOpen ? 'fixed inset-0 z-[100] bg-zinc-950 p-6 overflow-y-auto' : 'hidden'}`}>
         <div className="flex items-center justify-between border-b border-white/10 pb-3 mb-6 md:mb-0">
@@ -469,17 +504,18 @@ export default function FuturePage() {
               🔍 필터
             </button>
 
-            {/* 🌟 [추가됨] 필터링된 배너만 보기 / 전체 보기 토글 (컨트롤 바에 배치!) */}
+            {/* 🌟 [개편] 👻 유령 버튼: "비활성 배너 숨기기" */}
             <button 
               onClick={() => setHideUnmatchedEvents(!hideUnmatchedEvents)}
-              className={`hidden sm:flex items-center gap-1.5 h-[34px] px-3 rounded-full text-[12px] font-bold transition-all shadow-sm border ${
-                hideUnmatchedEvents ? 'bg-indigo-500/20 text-indigo-300 border-indigo-400/50' : 'bg-zinc-800/80 border-white/10 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-700'
+              className={`hidden sm:flex items-center justify-center h-[34px] rounded-full text-[12px] font-bold transition-all shadow-sm border ${
+                hideUnmatchedEvents ? 'bg-indigo-500/20 text-indigo-300 border-indigo-400/50 w-[34px] px-0' : 'bg-zinc-800/80 border-white/10 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-700 px-3 gap-1.5'
               }`}
+              title="비활성 배너 숨기기"
             >
-              {hideUnmatchedEvents ? '👻 일치 배너만' : '👁️ 전체 타임라인'}
+              {hideUnmatchedEvents ? '👻' : '👻 비활성 배너 숨기기'}
             </button>
-            <button onClick={() => setHideUnmatchedEvents(!hideUnmatchedEvents)} className={`sm:hidden flex items-center justify-center w-[34px] h-[34px] rounded-full text-[14px] transition-all shadow-sm border ${hideUnmatchedEvents ? 'bg-indigo-500/20 text-indigo-300 border-indigo-400/50' : 'bg-zinc-800/80 border-white/10 text-zinc-400'}`} title="일치 배너만 보기">
-              {hideUnmatchedEvents ? '👻' : '👁️'}
+            <button onClick={() => setHideUnmatchedEvents(!hideUnmatchedEvents)} className={`sm:hidden flex items-center justify-center w-[34px] h-[34px] rounded-full text-[14px] transition-all shadow-sm border ${hideUnmatchedEvents ? 'bg-indigo-500/20 text-indigo-300 border-indigo-400/50' : 'bg-zinc-800/80 border-white/10 text-zinc-400'}`}>
+              👻
             </button>
 
             <div className="relative flex items-center w-full sm:w-40 lg:w-56">
@@ -492,24 +528,13 @@ export default function FuturePage() {
                 className="w-full h-[34px] bg-zinc-800/80 border border-white/10 text-white text-xs rounded-full pl-8 pr-8 focus:outline-none focus:border-sky-500 transition-all shadow-sm placeholder:text-zinc-500"
               />
               {searchQuery && (
-                <button 
-                  onClick={() => setSearchQuery("")}
-                  className="absolute right-3 text-zinc-400 hover:text-white text-xs font-bold"
-                >
-                  ✕
-                </button>
+                <button onClick={() => setSearchQuery("")} className="absolute right-3 text-zinc-400 hover:text-white text-xs font-bold">✕</button>
               )}
             </div>
 
-            <button 
-              onClick={() => setExcludeCollab(!excludeCollab)}
-              className={`hidden sm:flex items-center gap-1.5 h-[34px] px-3 rounded-full text-[12px] font-bold transition-all shadow-sm border ${
-                excludeCollab ? 'bg-red-500/20 text-red-300 border-red-400/50' : 'bg-zinc-800/80 border-white/10 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-700'
-              }`}
-            >
+            <button onClick={() => setExcludeCollab(!excludeCollab)} className={`hidden sm:flex items-center gap-1.5 h-[34px] px-3 rounded-full text-[12px] font-bold transition-all shadow-sm border ${excludeCollab ? 'bg-red-500/20 text-red-300 border-red-400/50' : 'bg-zinc-800/80 border-white/10 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-700'}`}>
               {excludeCollab ? '🚫 콜라보 제외' : '🤝 콜라보 포함'}
             </button>
-            
             <button onClick={() => setShowPostAwake(!showPostAwake)} className="p-1 rounded-full bg-zinc-900 border border-white/10 shrink-0 ml-auto sm:ml-0" aria-label="썸네일 전환">
               <img src={showPostAwake ? "/icons/post_star.png" : "/icons/pre_star.png"} alt="스위치" className="h-8 w-auto object-contain block" />
             </button>
@@ -520,68 +545,64 @@ export default function FuturePage() {
           <div className="absolute left-1/2 top-0 bottom-0 w-px bg-white/10 -translate-x-1/2 hidden md:block" />
           
           <div className="space-y-12 pb-20">
-            {FUTURE_EVENTS.map((event, index) => {
+            {visibleEventsWithGap.map(({ event, isEventMatched, matchedCardIds, gapDays }, index) => {
               
-              let isEventMatched = true;
-              let matchedCardIds: string[] = [];
-
-              if (isFilterActive) {
-                const passEventType = !isAnyEventTypeSelected || selectedEventTypes.includes(event.eventType || "없음");
-                
-                const eventCards = event.gacha.featuredCardIds
-                  .map(id => ALL_CARDS.find(c => c.id === id || ((c as any).info && (c as any).info.id === id)))
-                  .filter(c => c !== undefined) as any[];
-                
-                const matchedCards = eventCards.filter(c => checkCardMatch(c));
-                matchedCardIds = matchedCards.map(c => (c as any).info ? (c as any).info.id : c.id);
-
-                const hasCardFilters = isAnyStatusSelected || isAnyTypeSelected || isAnyHairSelected || isAnyAttrSelected || isAnySkillSelected || isAnyCharSelected || excludeCollab || searchQuery.trim() !== "";
-                if (!passEventType || (hasCardFilters && matchedCardIds.length === 0)) {
-                  isEventMatched = false;
-                }
-              }
-
-              // 🌟 [핵심] 스위치가 켜져 있고 조건에 안 맞는 이벤트라면 렌더링 자체를 스킵합니다!
-              if (hideUnmatchedEvents && isFilterActive && !isEventMatched) {
-                return null;
-              }
-
-              // 🌟 [핵심] 렌더링이 확정된 시점에서만 lastRenderedYear를 계산합니다. (빈 연도 이정표 방지!)
               const eventYear = event.period.start.split('-')[0];
+              const eventMonth = event.period.start.split('-')[1];
+              const eventYearMonth = `${eventYear}-${eventMonth}`;
+
               const showYearMarker = eventYear !== lastRenderedYear;
               if (showYearMarker) lastRenderedYear = eventYear;
 
+              const showMonthMarker = eventYearMonth !== lastRenderedMonth;
+              if (showMonthMarker) lastRenderedMonth = eventYearMonth;
+
               return (
                 <div key={event.id} className="relative animate-fade-in">
+                  
+                  {/* 🌟 1. [좌/우] 연도 & 월 드롭다운이 나오는 메인 이정표! */}
                   {showYearMarker && (
-                    <div 
-                      ref={(el) => { yearRefs.current[eventYear] = el; }} 
-                      className="flex justify-center my-10 relative z-30 scroll-mt-24"
-                    >
+                    <div ref={(el) => { yearRefs.current[eventYear] = el; monthRefs.current[eventYearMonth] = el; }} className="flex justify-center my-10 relative z-30 scroll-mt-24">
                       <div className="relative flex items-center justify-center">
-                        <button 
-                          onClick={() => setOpenYearMarker(openYearMarker === eventYear ? null : eventYear)}
-                          className="bg-white text-zinc-950 font-black px-5 py-1.5 rounded-sm text-sm shadow-xl tracking-widest z-20 hover:bg-zinc-200 transition-colors flex items-center gap-1.5"
-                        >
-                          {eventYear}
-                          <span className="text-[10px]">{openYearMarker === eventYear ? '◀' : '▶'}</span>
+                        
+                        {/* 왼쪽: 월별 드롭다운 */}
+                        <div className={`absolute right-full top-1/2 -translate-y-1/2 flex items-center transition-all duration-300 ease-in-out origin-right overflow-hidden mr-2 ${openYearMarker === eventYear ? 'max-w-[500px] opacity-100' : 'max-w-0 opacity-0 pointer-events-none'}`}>
+                          <div className="flex bg-zinc-800 border border-white/20 rounded-sm shadow-lg overflow-hidden shrink-0">
+                             {getMonthsForYear(eventYear).map(month => (
+                               <button key={month} onClick={() => { scrollToMonth(`${eventYear}-${month}`); setOpenYearMarker(null); }} className="px-3 py-1.5 text-[11px] font-bold text-zinc-400 hover:bg-white hover:text-black transition-colors border-r border-white/10 last:border-0 whitespace-nowrap">
+                                 {month}월
+                               </button>
+                             ))}
+                          </div>
+                        </div>
+
+                        {/* 가운데: 연도 버튼 */}
+                        <button onClick={() => setOpenYearMarker(openYearMarker === eventYear ? null : eventYear)} className="bg-white text-zinc-950 font-black px-5 py-1.5 rounded-sm text-sm shadow-xl tracking-widest z-20 hover:bg-zinc-200 transition-colors flex items-center gap-1.5">
+                          {openYearMarker === eventYear ? '◀' : '▶'} {eventYear} {openYearMarker === eventYear ? '▶' : '◀'}
                         </button>
 
+                        {/* 오른쪽: 연도 드롭다운 */}
                         <div className={`absolute left-full top-1/2 -translate-y-1/2 flex items-center transition-all duration-300 ease-in-out origin-left overflow-hidden ml-2 ${openYearMarker === eventYear ? 'max-w-[500px] opacity-100' : 'max-w-0 opacity-0 pointer-events-none'}`}>
                           <div className="flex bg-zinc-800 border border-white/20 rounded-sm shadow-lg overflow-hidden shrink-0">
                              {uniqueYears.filter(y => y !== eventYear).map(year => (
-                               <button
-                                 key={year}
-                                 onClick={() => { scrollToYear(year); setOpenYearMarker(null); }}
-                                 className="px-4 py-1.5 text-[12px] font-bold text-white hover:bg-white hover:text-black transition-colors border-r border-white/10 last:border-0 whitespace-nowrap"
-                               >
+                               <button key={year} onClick={() => { scrollToYear(year); setOpenYearMarker(null); }} className="px-4 py-1.5 text-[12px] font-bold text-white hover:bg-white hover:text-black transition-colors border-r border-white/10 last:border-0 whitespace-nowrap">
                                  {year}년
                                </button>
                              ))}
                           </div>
                         </div>
+
                       </div>
                     </div>
+                  )}
+
+                  {/* 🌟 2. [추가됨] 조그만 월별 이정표 */}
+                  {showMonthMarker && !showYearMarker && (
+                     <div ref={el => { monthRefs.current[eventYearMonth] = el; }} className="flex justify-center my-6 relative z-30 scroll-mt-24">
+                        <span className="bg-zinc-800 text-zinc-400 text-[10px] px-3 py-1 rounded-full border border-white/10 shadow-md">
+                          {eventMonth}월
+                        </span>
+                     </div>
                   )}
 
                   <FutureEventCard 
@@ -594,6 +615,15 @@ export default function FuturePage() {
                     isEventMatched={isEventMatched}
                     matchedCardIds={matchedCardIds}
                   />
+
+                  {/* 🌟 3. [추가됨] 👻 모드 시 다음 배너까지의 간격(D-day) 표시 */}
+                  {hideUnmatchedEvents && gapDays > 0 && (
+                     <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center">
+                       <span className="bg-zinc-900 text-zinc-400 text-[10px] px-3 py-0.5 rounded-full border border-white/10 font-bold whitespace-nowrap shadow-sm">
+                         ⏳ {gapDays}일 후
+                       </span>
+                     </div>
+                  )}
                 </div>
               );
             })}

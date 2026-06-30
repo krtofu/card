@@ -38,7 +38,6 @@ const getEventTypeBadgeBg = (eventType?: string) => {
   }
 };
 
-// 속성 매칭 헬퍼
 const matchAttribute = (cardAttr: string, targetAttr: string) => {
   const c = (cardAttr || "").toLowerCase();
   const t = (targetAttr || "").toLowerCase();
@@ -51,7 +50,6 @@ const matchAttribute = (cardAttr: string, targetAttr: string) => {
   return false;
 };
 
-// 유닛 매칭 헬퍼
 const matchUnit = (cardUnit: string, targetUnit: string) => {
   const c = (cardUnit || "").toLowerCase().replace(/[^a-z0-9가-힣]/g, "");
   const t = (targetUnit || "").toLowerCase().replace(/[^a-z0-9가-힣]/g, "");
@@ -62,6 +60,19 @@ const matchUnit = (cardUnit: string, targetUnit: string) => {
   if (t.includes("wonder") && (c.includes("wonder") || c.includes("원더쇼") || c.includes("wxs"))) return true;
   if (t.includes("25") && (c.includes("25") || c.includes("니고") || c.includes("niigo") || c.includes("n25"))) return true;
   return c.includes(t) || t.includes(c);
+};
+
+// 🌟 [추가됨] 중앙선에 띄워줄 유닛 로고 가져오기
+const getUnitLogo = (unitName: string) => {
+  if (!unitName) return null;
+  const u = unitName.toLowerCase().replace(/[^a-z0-9가-힣]/g, "");
+  if (u.includes("leo") || u.includes("레오니")) return "/icons/Leoneed_icon.png";
+  if (u.includes("more") || u.includes("모모점")) return "/icons/MMJ_icon.png";
+  if (u.includes("vivid") || u.includes("비배스")) return "/icons/VBS_icon.png";
+  if (u.includes("Wds") || u.includes("원더쇼")) return "/icons/Wds_icon.png";
+  if (u.includes("ng") || u.includes("니고")) return "/icons/Niigo_icon.png";
+  if (u.includes("virtual") || u.includes("버싱")) return "/icons/VS_icon.png";
+  return null;
 };
 
 interface FutureEventCardProps {
@@ -80,36 +91,26 @@ export default function FutureEventCard({
   isFilterActive, isEventMatched, matchedCardIds 
 }: FutureEventCardProps) {
   
-  // 🌟 [핵심] 가챠 모드 vs 이벤트 보너스 모드 스위치
   const [isEventMode, setIsEventMode] = useState(false);
 
-  // 1. 가챠 픽업 멤버 계산
   const pickupCards = event.gacha.featuredCardIds
     .map((cardId) => ALL_CARDS.find((c: any) => c.id === cardId || ((c as any).info && (c as any).info.id === cardId)))
     .filter((c) => c !== undefined) as any[];
 
-  // 2. 이벤트 보너스 멤버 계산 (전체 카드 풀에서 검색 후 정렬)
   const getBonusCards = () => {
     if (!event.bonus) return [];
-    
     const matchingCards = ALL_CARDS.filter(card => {
-      // 1) 속성 매치
       if (!matchAttribute(card.attribute || "", event.bonus!.attribute)) return false;
-      
-      // 2) 유닛 또는 캐릭터 매치
       const matchesUnit = event.bonus!.unit && matchUnit(card.unit || "", event.bonus!.unit);
       const matchesChar = event.bonus!.characters && event.bonus!.characters.includes(card.character || "");
-      
       return matchesUnit || matchesChar;
     });
 
-    // 🌟 완벽한 덱 편성을 위한 정렬: [보유중] -> [목표중] -> [미보유] -> 최신순
     return matchingCards.sort((a, b) => {
       const stateA = userStates[(a as any).info ? (a as any).info.id : a.id];
       const stateB = userStates[(b as any).info ? (b as any).info.id : b.id];
       const valA = stateA?.isOwned ? 2 : (stateA?.isTarget ? 1 : 0);
       const valB = stateB?.isOwned ? 2 : (stateB?.isTarget ? 1 : 0);
-      
       if (valA !== valB) return valB - valA;
       return (b.releaseDate || "").localeCompare(a.releaseDate || "");
     });
@@ -117,9 +118,11 @@ export default function FutureEventCard({
 
   const bonusCards = getBonusCards();
   
-  // 현재 모드에 따라 보여줄 카드와 배너 결정
   const displayCards = isEventMode ? bonusCards : pickupCards;
   const displayBanner = isEventMode && event.eventBannerPath ? event.eventBannerPath : event.gacha.bannerPath;
+  
+  // 🌟 [추가됨] 하코 이벤트면서 이벤트 모드일 때 띄울 유닛 로고!
+  const unitLogo = isEventMode && event.eventType === "하코" && event.bonus?.unit ? getUnitLogo(event.bonus?.unit) : null;
 
   const fadeClass = isFilterActive && !isEventMatched 
     ? "opacity-30 grayscale hover:opacity-60 transition-opacity duration-300" 
@@ -130,10 +133,25 @@ export default function FutureEventCard({
       
       {/* ================= 좌측: 배너 영역 ================= */}
       <div className="flex-1 w-full relative z-10 flex justify-center md:px-4">
-        <div className="w-full max-w-[520px] bg-zinc-900 border border-white/10 rounded-2xl overflow-hidden shadow-xl flex flex-col">
-          <div className="relative aspect-[21/9] w-full bg-zinc-800 flex items-center justify-center border-b border-white/10 overflow-hidden shrink-0 transition-all duration-500">
+        {/* 🌟 overflow-visible로 변경하여 전환 버튼이 배너 바깥으로 삐져나올 수 있게 수정! */}
+        <div className="w-full max-w-[520px] bg-zinc-900 border border-white/10 rounded-2xl overflow-visible shadow-xl flex flex-col relative">
+          
+          {/* 🌟 가챠 <-> 이벤트 전환 버튼 (배너의 좌측 세로 중앙!) */}
+          {event.bonus && (
+             <button
+               onClick={() => setIsEventMode(!isEventMode)}
+               className="absolute -left-4 md:-left-5 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-zinc-800 border-[3px] border-zinc-950 shadow-xl z-50 flex items-center justify-center text-[18px] hover:bg-zinc-700 hover:scale-110 transition-all"
+               title={isEventMode ? "가챠 배너로 돌아가기" : "이벤트 배너 보기"}
+             >
+               {isEventMode ? '🎪' : '🎰'}
+             </button>
+          )}
+
+          {/* 이미지 영역만 둥글게 깎기 */}
+          <div className="relative aspect-[21/9] w-full bg-zinc-800 flex items-center justify-center border-b border-white/10 overflow-hidden rounded-t-2xl shrink-0 transition-all duration-500">
             {displayBanner ? (
               <img 
+                key={displayBanner} // 🌟 [핵심 버그 수정] key를 주면 모드 전환 시 완전히 새롭게 이미지를 렌더링해서 사라짐 증상 해결!
                 src={displayBanner} 
                 alt={`${event.name} 배너`}
                 className="absolute inset-0 w-full h-full object-cover animate-fade-in"
@@ -158,7 +176,7 @@ export default function FutureEventCard({
             )}
           </div>
           
-          <div className="p-4 bg-zinc-950/90 backdrop-blur-sm relative z-20 flex justify-between items-end flex-1">
+          <div className="p-4 bg-zinc-950/90 backdrop-blur-sm relative z-20 flex justify-between items-end flex-1 rounded-b-2xl">
             <div className="min-w-0">
               <h3 className="text-lg font-bold text-white mb-1 truncate pr-2">
                 {isEventMode ? (event.eventName || event.name) : event.name}
@@ -171,46 +189,42 @@ export default function FutureEventCard({
         </div>
       </div>
 
-      {/* 중앙 타임라인 선 */}
-      <div className="hidden md:flex flex-col items-center justify-center relative z-20 w-6">
-        <div className={`w-4 h-4 rounded-full border-4 border-zinc-950 shadow-[0_0_15px_rgba(255,255,255,0.5)] ${isFilterActive && !isEventMatched ? 'bg-zinc-600' : 'bg-white'}`} />
+      {/* ================= 중앙 타임라인 선 ================= */}
+      <div className="hidden md:flex flex-col items-center justify-center relative z-20 w-10">
+        {/* 🌟 이벤트 모드 & 하코 이벤트 시 유닛 로고 아이콘으로 변신! */}
+        {unitLogo ? (
+          <div className="w-9 h-9 rounded-full bg-zinc-900 border-2 border-white/20 shadow-[0_0_15px_rgba(255,255,255,0.3)] z-20 flex items-center justify-center overflow-hidden p-1 transition-all">
+             <img src={unitLogo} alt="Unit Logo" className="w-full h-full object-contain drop-shadow-md" />
+          </div>
+        ) : (
+          <div className={`w-4 h-4 rounded-full border-4 border-zinc-950 shadow-[0_0_15px_rgba(255,255,255,0.5)] transition-all ${isFilterActive && !isEventMatched ? 'bg-zinc-600' : 'bg-white'}`} />
+        )}
       </div>
 
-      {/* ================= 우측: 카드 목록 및 토글 ================= */}
+      {/* ================= 우측: 카드 목록 ================= */}
       <div className="flex-1 w-full relative z-10 flex justify-center md:px-4">
         <div className="bg-zinc-900/30 border border-white/5 rounded-3xl p-6 w-full max-w-[520px] flex flex-col">
           
-          {/* 상단 헤더 & 모드 스위치 */}
+          {/* 상단 헤더 & 이미지 뱃지 추가! */}
           <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/10 shrink-0">
-            <h4 className="text-sm font-bold text-zinc-300">
-              {isEventMode ? (
-                <span className="flex items-center gap-1.5"><span className="text-amber-400">🎁</span> 이벤트 보너스 멤버</span>
-              ) : (
-                <span className="flex items-center gap-1.5"><span className="text-sky-400">✨</span> 가챠 픽업 멤버</span>
-              )}
-            </h4>
-            
-            {/* 🌟 이벤트 데이터가 있을 때만 토글 버튼 노출! */}
-            {event.bonus && (
-              <div className="flex bg-zinc-950 rounded-lg p-1 shadow-inner border border-white/5">
-                 <button 
-                   onClick={() => setIsEventMode(false)} 
-                   className={`px-3 py-1 text-[11px] font-bold rounded-md transition-all ${!isEventMode ? 'bg-sky-500 text-white shadow-md' : 'text-zinc-500 hover:text-zinc-300'}`}
-                 >
-                   🎰 가챠
-                 </button>
-                 <button 
-                   onClick={() => setIsEventMode(true)} 
-                   className={`px-3 py-1 text-[11px] font-bold rounded-md transition-all ${isEventMode ? 'bg-pink-500 text-white shadow-md' : 'text-zinc-500 hover:text-zinc-300'}`}
-                 >
-                   🎪 이벤트
-                 </button>
+            <h4 className="text-sm font-bold text-zinc-300 w-full flex items-center justify-between">
+              <span className="flex items-center gap-1.5">
+                {isEventMode ? <><span className="text-amber-400">🎁</span> 이벤트 보너스 멤버</> : <><span className="text-sky-400">✨</span> 가챠 픽업 멤버</>}
+              </span>
+              
+              {/* 🌟 우측에 통상/한정 이미지 뱃지 렌더링! */}
+              <div className="flex items-center gap-1">
+                 {!isEventMode && event.gacha.types.map(t => {
+                   if (t === "통상") return <img key={t} src="/icons/status/normal.png" className="w-[20px] h-[20px] rounded-full shadow-sm" alt="통상" title="통상" />;
+                   if (["한정", "페스", "월링"].includes(t)) return <img key={t} src="/icons/status/limited.png" className="w-[20px] h-[20px] rounded-full shadow-sm" alt={t} title={t} />;
+                   return null;
+                 })}
               </div>
-            )}
+            </h4>
           </div>
           
-          {/* 카드 목록 영역 (보너스 멤버가 많아질 경우를 대비해 스크롤 적용!) */}
-          <div className="flex flex-wrap justify-center md:justify-start gap-4 max-h-[320px] overflow-y-auto pr-2 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-zinc-800/50 [&::-webkit-scrollbar-thumb]:bg-zinc-600 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-zinc-500">
+          {/* 🌟 보너스 멤버 세로 길이 제한 및 스크롤바 완전히 제거! 쫙 펼쳐집니다! */}
+          <div className="flex flex-wrap justify-center md:justify-start gap-4">
             {displayCards.length > 0 ? displayCards.map((card, idx) => {
               const realId = card.info ? card.info.id : card.id;
               const myState = userStates[realId]; 
