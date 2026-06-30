@@ -17,9 +17,11 @@ export default function FuturePage() {
   const [showPostAwake, setShowPostAwake] = useState(false);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [spinDeg, setSpinDeg] = useState(0);
-  
-  // 🌟 타임라인 중앙에서 어떤 연도 마커의 드롭다운이 열려있는지 추적하는 상태!
   const [openYearMarker, setOpenYearMarker] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // 🌟 [추가됨] 일치하지 않는 배너를 완전히 숨길지 결정하는 스위치!
+  const [hideUnmatchedEvents, setHideUnmatchedEvents] = useState(false);
 
   // 필터 상태들
   const [excludeCollab, setExcludeCollab] = useState(false);
@@ -83,6 +85,7 @@ export default function FuturePage() {
     setSelectedChars([]); setSelectedAttrs([]); setSelectedSkills([]); 
     setSelectedStatuses([]); setSelectedTypes([]); setSelectedHairs([]); setSelectedEventTypes([]);
     setExcludeCollab(false);
+    setSearchQuery(""); 
   };
 
   const allVsCharIds = UNIT_FILTERS.flatMap(u => u.chars.filter(c => c.isVirtual).map(c => c.id));
@@ -101,6 +104,16 @@ export default function FuturePage() {
   };
 
   const checkCardMatch = (card: any) => {
+    if (searchQuery.trim() !== "") {
+      const q = searchQuery.toLowerCase().trim();
+      const matchName = card.cardName?.toLowerCase().includes(q);
+      const matchChar = card.character?.toLowerCase().includes(q);
+      const matchCostume = (card as any).costumeName?.toLowerCase().includes(q);
+      const matchEvent = card.eventName?.toLowerCase().includes(q);
+      const matchGacha = card.gachaPoolName?.toLowerCase().includes(q);
+      if (!(matchName || matchChar || matchCostume || matchEvent || matchGacha)) return false;
+    }
+
     if (excludeCollab && card.gachaType === "콜라보") return false;
     if (selectedStatuses.length > 0) {
       const isOwned = cardStates[card.id]?.isOwned || false;
@@ -150,7 +163,7 @@ export default function FuturePage() {
     return true; 
   };
 
-  const uniqueYears = Array.from(new Set(FUTURE_EVENTS.map(e => e.period.start.split('-')[0]))).sort();
+  const uniqueYears = [...new Set(FUTURE_EVENTS.map(e => e.period.start.split('-')[0]))].sort() as string[];
 
   const scrollToYear = (year: string) => {
     const element = yearRefs.current[year];
@@ -169,7 +182,7 @@ export default function FuturePage() {
   const isAnySkillSelected = selectedSkills.length > 0;
   const isAnyCharSelected = selectedChars.length > 0;
 
-  const isFilterActive = isAnyStatusSelected || isAnyTypeSelected || isAnyEventTypeSelected || isAnyHairSelected || isAnyAttrSelected || isAnySkillSelected || isAnyCharSelected || excludeCollab;
+  const isFilterActive = isAnyStatusSelected || isAnyTypeSelected || isAnyEventTypeSelected || isAnyHairSelected || isAnyAttrSelected || isAnySkillSelected || isAnyCharSelected || excludeCollab || searchQuery.trim() !== "";
 
   const condSubs = SKILL_FILTERS.find(s => s.id === "condition_group")?.subs || [];
   const condIds = condSubs.map(s => s.id);
@@ -181,7 +194,7 @@ export default function FuturePage() {
     <div className="flex flex-col md:flex-row gap-6 px-4 md:px-8 py-6 min-h-screen text-zinc-100 max-w-[1920px] mx-auto w-full">
       
       {/* ========================================= */}
-      {/* 👈 좌측 영역: 스마트 필터칸 */}
+      {/* 👈 좌측 영역: 필터칸 (기존 동일) */}
       {/* ========================================= */}
       <div className={`flex flex-col shrink-0 md:w-[280px] md:relative md:block md:bg-transparent md:p-0 md:h-auto md:z-0 ${isMobileFilterOpen ? 'fixed inset-0 z-[100] bg-zinc-950 p-6 overflow-y-auto' : 'hidden'}`}>
         <div className="flex items-center justify-between border-b border-white/10 pb-3 mb-6 md:mb-0">
@@ -195,8 +208,6 @@ export default function FuturePage() {
         </div>
 
         <div className="space-y-6 md:mt-6">
-          
-          {/* STATUS 구역 */}
           <div className="space-y-2">
             <button onClick={() => setIsStatusExpanded(!isStatusExpanded)} className="w-full flex items-center justify-between group pb-1 cursor-pointer">
               <span className="text-[12px] md:text-[11px] font-bold text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-300 transition-colors">STATUS & TYPE</span>
@@ -239,7 +250,6 @@ export default function FuturePage() {
             )}
           </div>
 
-          {/* EVENT TYPE 구역 */}
           <div className="space-y-2 pt-2 border-t border-white/5">
             <button onClick={() => setIsEventTypeExpanded(!isEventTypeExpanded)} className="w-full flex items-center justify-between group pt-2 pb-1 cursor-pointer">
               <span className="text-[12px] md:text-[11px] font-bold text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-300 transition-colors">EVENT TYPE</span>
@@ -261,7 +271,6 @@ export default function FuturePage() {
             )}
           </div>
 
-          {/* COLLAB 구역 */}
           <div className="space-y-2 pt-2 border-t border-white/5">
             <button onClick={() => setIsCollabExpanded(!isCollabExpanded)} className="w-full flex items-center justify-between group pt-2 pb-1 cursor-pointer">
               <span className="text-[12px] md:text-[11px] font-bold text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-300 transition-colors">COLLAB</span>
@@ -350,7 +359,6 @@ export default function FuturePage() {
                     const isSelected = selectedSkills.includes(sub.id);
                     const opacityClass = !isAnySkillSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100 text-white bg-zinc-900";
                     return (
-                      // 🌟 [수정됨] 텍스트 버튼 버그 원인 해결! 비활성화 상태에도 투명한 border를 유지합니다.
                       <button key={sub.id} onClick={() => toggleFilter(selectedSkills, setSelectedSkills, sub.id)}
                         className={`py-2.5 md:py-2 px-1 text-[12px] font-medium tracking-tight rounded-lg transition-all duration-300 text-white ${isSelected ? "bg-zinc-700 scale-105 shadow-md border border-white/20" : "bg-zinc-900 hover:bg-zinc-800 scale-95 border border-transparent"} ${opacityClass}`}>
                         {sub.name}
@@ -441,7 +449,6 @@ export default function FuturePage() {
           <div>
             <h1 className="text-xl font-bold tracking-tight text-white mb-2">📅 미래시 타임라인</h1>
             
-            {/* 🌟 좌측 상단으로 이동한 연도 탭 버튼! */}
             <div className="flex flex-wrap gap-2 mt-1 mb-2">
               {uniqueYears.map(year => (
                 <button
@@ -462,6 +469,38 @@ export default function FuturePage() {
               🔍 필터
             </button>
 
+            {/* 🌟 [추가됨] 필터링된 배너만 보기 / 전체 보기 토글 (컨트롤 바에 배치!) */}
+            <button 
+              onClick={() => setHideUnmatchedEvents(!hideUnmatchedEvents)}
+              className={`hidden sm:flex items-center gap-1.5 h-[34px] px-3 rounded-full text-[12px] font-bold transition-all shadow-sm border ${
+                hideUnmatchedEvents ? 'bg-indigo-500/20 text-indigo-300 border-indigo-400/50' : 'bg-zinc-800/80 border-white/10 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-700'
+              }`}
+            >
+              {hideUnmatchedEvents ? '👻 일치 배너만' : '👁️ 전체 타임라인'}
+            </button>
+            <button onClick={() => setHideUnmatchedEvents(!hideUnmatchedEvents)} className={`sm:hidden flex items-center justify-center w-[34px] h-[34px] rounded-full text-[14px] transition-all shadow-sm border ${hideUnmatchedEvents ? 'bg-indigo-500/20 text-indigo-300 border-indigo-400/50' : 'bg-zinc-800/80 border-white/10 text-zinc-400'}`} title="일치 배너만 보기">
+              {hideUnmatchedEvents ? '👻' : '👁️'}
+            </button>
+
+            <div className="relative flex items-center w-full sm:w-40 lg:w-56">
+              <span className="absolute left-3 text-zinc-400 text-sm">🔍</span>
+              <input
+                type="text"
+                placeholder="이벤트, 검색..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full h-[34px] bg-zinc-800/80 border border-white/10 text-white text-xs rounded-full pl-8 pr-8 focus:outline-none focus:border-sky-500 transition-all shadow-sm placeholder:text-zinc-500"
+              />
+              {searchQuery && (
+                <button 
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-3 text-zinc-400 hover:text-white text-xs font-bold"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+
             <button 
               onClick={() => setExcludeCollab(!excludeCollab)}
               className={`hidden sm:flex items-center gap-1.5 h-[34px] px-3 rounded-full text-[12px] font-bold transition-all shadow-sm border ${
@@ -477,22 +516,18 @@ export default function FuturePage() {
           </div>
         </div>
 
-        {/* 타임라인 본문 (연도 이정표 포함) */}
         <div className="relative pt-4">
           <div className="absolute left-1/2 top-0 bottom-0 w-px bg-white/10 -translate-x-1/2 hidden md:block" />
           
           <div className="space-y-12 pb-20">
             {FUTURE_EVENTS.map((event, index) => {
               
-              const eventYear = event.period.start.split('-')[0];
-              const showYearMarker = eventYear !== lastRenderedYear;
-              if (showYearMarker) lastRenderedYear = eventYear;
-
               let isEventMatched = true;
               let matchedCardIds: string[] = [];
 
               if (isFilterActive) {
                 const passEventType = !isAnyEventTypeSelected || selectedEventTypes.includes(event.eventType || "없음");
+                
                 const eventCards = event.gacha.featuredCardIds
                   .map(id => ALL_CARDS.find(c => c.id === id || ((c as any).info && (c as any).info.id === id)))
                   .filter(c => c !== undefined) as any[];
@@ -500,15 +535,24 @@ export default function FuturePage() {
                 const matchedCards = eventCards.filter(c => checkCardMatch(c));
                 matchedCardIds = matchedCards.map(c => (c as any).info ? (c as any).info.id : c.id);
 
-                const hasCardFilters = isAnyStatusSelected || isAnyTypeSelected || isAnyHairSelected || isAnyAttrSelected || isAnySkillSelected || isAnyCharSelected || excludeCollab;
+                const hasCardFilters = isAnyStatusSelected || isAnyTypeSelected || isAnyHairSelected || isAnyAttrSelected || isAnySkillSelected || isAnyCharSelected || excludeCollab || searchQuery.trim() !== "";
                 if (!passEventType || (hasCardFilters && matchedCardIds.length === 0)) {
                   isEventMatched = false;
                 }
               }
 
+              // 🌟 [핵심] 스위치가 켜져 있고 조건에 안 맞는 이벤트라면 렌더링 자체를 스킵합니다!
+              if (hideUnmatchedEvents && isFilterActive && !isEventMatched) {
+                return null;
+              }
+
+              // 🌟 [핵심] 렌더링이 확정된 시점에서만 lastRenderedYear를 계산합니다. (빈 연도 이정표 방지!)
+              const eventYear = event.period.start.split('-')[0];
+              const showYearMarker = eventYear !== lastRenderedYear;
+              if (showYearMarker) lastRenderedYear = eventYear;
+
               return (
-                <div key={event.id} className="relative">
-                  {/* 🌟 중앙 타임라인 연도 이정표 (흰 배경 + 각진 뱃지 + 우측 드롭다운!) */}
+                <div key={event.id} className="relative animate-fade-in">
                   {showYearMarker && (
                     <div 
                       ref={(el) => { yearRefs.current[eventYear] = el; }} 
@@ -523,7 +567,6 @@ export default function FuturePage() {
                           <span className="text-[10px]">{openYearMarker === eventYear ? '◀' : '▶'}</span>
                         </button>
 
-                        {/* 가로 드롭다운 메뉴 (타임라인 중앙에서 우측으로 스르륵 열림) */}
                         <div className={`absolute left-full top-1/2 -translate-y-1/2 flex items-center transition-all duration-300 ease-in-out origin-left overflow-hidden ml-2 ${openYearMarker === eventYear ? 'max-w-[500px] opacity-100' : 'max-w-0 opacity-0 pointer-events-none'}`}>
                           <div className="flex bg-zinc-800 border border-white/20 rounded-sm shadow-lg overflow-hidden shrink-0">
                              {uniqueYears.filter(y => y !== eventYear).map(year => (
@@ -563,9 +606,7 @@ export default function FuturePage() {
   );
 }
 
-// =========================================================================================
-// (아래 UNIT_FILTERS 등은 기존과 100% 동일하게 놔두시면 됩니다!)
-// =========================================================================================
+// (이하 필터 배열 데이터는 완벽히 동일합니다!)
 type CharDef = { id: string; name: string; img: string; isVirtual?: boolean; matchKeys?: string[] };
 type UnitDef = { id: string; name: string; logo: string; chars: CharDef[] };
 type AttrDef = { id: string; name: string; img: string };

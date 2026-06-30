@@ -24,6 +24,7 @@ const getGachaBadgeBg = (gachaType: string) => {
     case "페스": return "bg-violet-500";
     case "월링": return "bg-emerald-500";
     case "콜라보": return "bg-amber-500";
+    case "유료": return "bg-zinc-950 !text-amber-300 shadow-[0_0_12px_rgba(251,191,36,0.25)]";
     default: return "bg-zinc-600";
   }
 };
