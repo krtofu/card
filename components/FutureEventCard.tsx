@@ -75,7 +75,6 @@ const getUnitLogo = (unitName: string) => {
   return null;
 };
 
-// 🌟 [추가됨] 스업 수치 계산 헬퍼 함수
 const getSkillBonusPercentage = (skillType: string, level: number, unit: string, isAwakened: boolean, charRank: number = 1, isOwned: boolean = false) => {
   const safeLevel = Math.max(1, Math.min(4, level)); 
   const idx = safeLevel - 1;
@@ -125,15 +124,11 @@ export default function FutureEventCard({
 }: FutureEventCardProps) {
   
   const [isEventMode, setIsEventMode] = useState(false);
-  
-  // 🌟 [추가됨] 정렬 모드 (이벤포순 vs 스업순)
   const [sortMode, setSortMode] = useState<"bonus" | "score">("bonus");
-  
-  // 🌟 기준치 상태 관리
   const [refMasterRank, setRefMasterRank] = useState<number>(0);
   const [refSkillLevel, setRefSkillLevel] = useState<number>(1);
 
-  // 1. 픽업 카드 처리
+  // 1. 가챠 픽업 카드 처리
   const pickupCards = event.gacha.featuredCardIds
     .map((cardId) => ALL_CARDS.find((c: any) => c.id === cardId || ((c as any).info && (c as any).info.id === cardId)))
     .filter((c) => c !== undefined)
@@ -143,19 +138,30 @@ export default function FutureEventCard({
       return { card, myState, bonus: 0, score: 0 };
     });
 
-  // 2. 이벤트 보너스 카드 처리
+  // 2. 이벤트 보너스 카드 처리 (🌟 날짜 대조 타임패러독스 차단 로직 포함!)
   const getBonusCards = () => {
     if (!event.bonus) return [];
     
-    // 1차: 속성/유닛 매칭
+    // 이벤트 시작 타임스탬프 구하기 ("2022-05-31. 15:00" -> 안전하게 정제)
+    const eventStartClean = event.period.start.split(".")[0].trim(); // "2022-05-31"
+    const eventStartDate = new Date(eventStartClean);
+
     const matchingCards = ALL_CARDS.filter(card => {
+      // 🌟 [핵심 규칙] 카드의 출시날짜(releaseDate)가 이벤트 시작일보다 늦으면 완벽 제외!
+      if (card.releaseDate) {
+        const cardReleaseDate = new Date(card.releaseDate);
+        if (cardReleaseDate > eventStartDate) return false;
+      }
+
+      // 속성 매치
       if (!matchAttribute(card.attribute || "", event.bonus!.attribute)) return false;
+      
+      // 인선/유닛 매치
       const matchesUnit = event.bonus!.unit && matchUnit(card.unit || "", event.bonus!.unit);
       const matchesChar = event.bonus!.characters && event.bonus!.characters.includes(card.character || "");
       return matchesUnit || matchesChar;
     });
 
-    // 2차: 보너스 및 스코어 계산
     const cardsWithValues = matchingCards.map(card => {
       const realId = (card as any).info ? (card as any).info.id : (card as any).id;
       const myState = userStates[realId];
@@ -173,7 +179,6 @@ export default function FutureEventCard({
       return { card, myState, bonus, score };
     });
 
-    // 3차: 모드에 따른 정렬
     return cardsWithValues.sort((a, b) => {
       if (sortMode === "score") {
         if (b.score !== a.score) return b.score - a.score;
@@ -197,12 +202,14 @@ export default function FutureEventCard({
     : "opacity-100 transition-opacity duration-300";
 
   return (
-    <div className={`flex flex-col md:flex-row items-stretch gap-8 ${fadeClass}`}>
+    <div className={`flex flex-col md:flex-row items-start gap-8 ${fadeClass}`}>
       
       {/* ================= 좌측: 배너 영역 ================= */}
-      <div className="flex-1 w-full relative z-10 flex justify-center md:px-4">
-        <div className="w-full max-w-[520px] bg-zinc-900 border border-white/10 rounded-2xl overflow-visible shadow-xl flex flex-col relative">
+      <div className="flex-1 w-full relative z-10 flex justify-center md:px-4 shrink-0">
+        {/* 🌟 겉박스를 items-start 구조에 맞춰 높이가 절대 유연하게 늘어나지 않고 배너 본연의 비율만 유지하도록 세팅! */}
+        <div className="w-full max-w-[520px] bg-zinc-900 border border-white/10 rounded-2xl overflow-visible shadow-xl flex flex-col relative aspect-[21/12.3]">
           
+          {/* 허공에 둥둥 뜬 연결 스위치 및 라인선 */}
           {event.bonus && (
              <div className="absolute -left-6 sm:-left-12 md:-left-[70px] top-1/2 -translate-y-1/2 flex items-center z-50">
                <button
@@ -216,13 +223,14 @@ export default function FutureEventCard({
              </div>
           )}
 
-          <div className="relative aspect-[21/9] w-full bg-zinc-800 flex items-center justify-center border-b border-white/10 overflow-hidden rounded-t-2xl shrink-0 transition-all duration-500">
+          {/* 🌟 배너 박스 영역: aspect-[21/9] 고정 및 늘어남 절대 방지! */}
+          <div className="relative aspect-[21/9] w-full bg-zinc-950/40 flex items-center justify-center border-b border-white/10 overflow-hidden rounded-t-2xl shrink-0">
             {displayBanner ? (
               <img 
                 key={displayBanner}
                 src={displayBanner} 
                 alt={`${event.name} 배너`}
-                className={`absolute inset-0 w-full h-full animate-fade-in ${isEventMode ? 'object-contain bg-zinc-900/80 p-1' : 'object-cover'}`}
+                className={`absolute inset-0 w-full h-full animate-fade-in ${isEventMode ? 'object-contain p-1.5' : 'object-cover'}`}
                 onError={(e) => { e.currentTarget.style.display = 'none'; }}
               />
             ) : (
@@ -258,7 +266,8 @@ export default function FutureEventCard({
       </div>
 
       {/* ================= 중앙 타임라인 선 ================= */}
-      <div className="hidden md:flex flex-col items-center justify-center relative z-20 w-10">
+      {/* 🌟 items-start에 맞게 상단 마진을 줘서 배너 중앙 높이에 아이콘이 걸치게 균형 조절 */}
+      <div className="hidden md:flex flex-col items-center justify-center relative z-20 w-10 mt-12 shrink-0">
         {unitLogo ? (
           <div className="w-9 h-9 rounded-full bg-zinc-900 border-2 border-white/20 shadow-[0_0_15px_rgba(255,255,255,0.3)] z-20 flex items-center justify-center overflow-hidden p-1 transition-all">
              <img src={unitLogo} alt="Unit Logo" className="w-full h-full object-contain drop-shadow-md" />
@@ -280,7 +289,6 @@ export default function FutureEventCard({
             <div className="flex items-center gap-2">
                {isEventMode ? (
                  <>
-                   {/* 🌟 정렬 토글 버튼 (원클릭 전환!) */}
                    <button
                      onClick={() => setSortMode(prev => prev === "bonus" ? "score" : "bonus")}
                      className="w-7 h-7 flex items-center justify-center rounded-full bg-zinc-800 border border-white/10 text-zinc-400 hover:text-white hover:bg-zinc-700 transition-colors shadow-sm"
@@ -289,7 +297,6 @@ export default function FutureEventCard({
                      {sortMode === "bonus" ? "✦" : "⇪"}
                    </button>
 
-                   {/* 🌟 조건부 기준 버튼 (이벤포=마랭 / 스업순=레벨) */}
                    {sortMode === "bonus" ? (
                      <div className="flex items-center bg-zinc-800 border border-white/10 rounded-full p-1 shadow-sm animate-fade-in">
                         <span className="text-[10px] text-zinc-400 font-bold px-2 whitespace-nowrap hidden sm:inline-block">미보유 기준 마랭</span>
@@ -343,7 +350,6 @@ export default function FutureEventCard({
                     onClick={onCardClick} 
                     showPostAwake={showPostAwake} 
                     showTextBadge={true}
-                    // 🌟 모드에 따라 ✦(bonus) 또는 ⇪(score) 값을 카드 하단에 띄워줍니다!
                     sortOrder={isEventMode ? sortMode : undefined}
                     eventBonus={bonus}
                     scoreBonus={score}
