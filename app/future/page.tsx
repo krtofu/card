@@ -536,20 +536,31 @@ export default function FuturePage() {
               🔍 필터
             </button>
 
+            {/* 🌟 [개선됨] 👻 유령 버튼: 확실한 테마 색상(Indigo) 적용으로 가독성 UP! */}
             <button 
               onClick={() => setHideUnmatchedEvents(!hideUnmatchedEvents)}
               className={`hidden sm:flex items-center justify-center h-[34px] rounded-full text-[12px] font-bold transition-all shadow-sm border ${
-                hideUnmatchedEvents ? 'bg-indigo-500/20 text-indigo-300 border-indigo-400/50 w-[34px] px-0' : 'bg-zinc-800/80 border-white/10 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-700 px-3 gap-1.5'
+                hideUnmatchedEvents 
+                  ? 'bg-indigo-600 text-white border-indigo-500 w-[34px] px-0 shadow-[0_0_10px_rgba(79,70,229,0.4)]' 
+                  : 'bg-zinc-800/80 border-white/10 text-indigo-300 hover:text-indigo-200 hover:bg-zinc-700 px-3 gap-1.5'
               }`}
               title="비활성 배너 숨기기"
             >
               {hideUnmatchedEvents ? '👻' : '👻 비활성 배너 숨기기'}
             </button>
-            <button onClick={() => setHideUnmatchedEvents(!hideUnmatchedEvents)} className={`sm:hidden flex items-center justify-center w-[34px] h-[34px] rounded-full text-[14px] transition-all shadow-sm border ${hideUnmatchedEvents ? 'bg-indigo-500/20 text-indigo-300 border-indigo-400/50' : 'bg-zinc-800/80 border-white/10 text-zinc-400'}`}>
+            <button 
+              onClick={() => setHideUnmatchedEvents(!hideUnmatchedEvents)} 
+              className={`sm:hidden flex items-center justify-center w-[34px] h-[34px] rounded-full text-[14px] transition-all shadow-sm border ${
+                hideUnmatchedEvents 
+                  ? 'bg-indigo-600 text-white border-indigo-500 shadow-[0_0_10px_rgba(79,70,229,0.4)]' 
+                  : 'bg-zinc-800/80 border-white/10 text-indigo-300'
+              }`}
+            >
               👻
             </button>
 
-            <div className="relative flex items-center w-full sm:w-40 lg:w-56">
+            {/* 🌟 [개선됨] 검색창 너비 대폭 확장! (sm:w-64 lg:w-80) */}
+            <div className="relative flex items-center w-full sm:w-64 lg:w-80">
               <span className="absolute left-3 text-zinc-400 text-sm">🔍</span>
               <input
                 type="text"
