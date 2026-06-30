@@ -9,8 +9,8 @@ import CardItem from "@/components/CardItem";
 import { UserCardState } from "@/app/cards/page";
 import { FinalCardInfo } from "@/data/cards/template";
 import { calculateCardEventBonus } from "@/lib/bonusCalculator";
-// 🌟 [추가됨] 의상 프리뷰 모달 컴포넌트를 미래시 탭으로 수입!
-import ModalCostumePreviewCard from "@/components/ModalCostumePreviewCard";
+// 🌟 [수정됨] 메인 화면용 의상 프리뷰 컴포넌트로 교체!
+import CostumePreviewCard from "@/components/CostumePreviewCard";
 
 const PREMIUM_BADGE_STYLE: React.CSSProperties = {
   borderColor: "rgba(255,255,255,0.35)",
@@ -127,7 +127,6 @@ export default function FutureEventCard({
 }: FutureEventCardProps) {
   
   const [isEventMode, setIsEventMode] = useState(false);
-  // 🌟 [추가됨] 의상 프리뷰 토글 상태 관리
   const [showCostumes, setShowCostumes] = useState(false);
   const [sortMode, setSortMode] = useState<"bonus" | "score">("bonus");
   const [refMasterRank, setRefMasterRank] = useState<number>(0);
@@ -198,6 +197,33 @@ export default function FutureEventCard({
     ? "opacity-30 grayscale hover:opacity-60 transition-opacity duration-300" 
     : "opacity-100 transition-opacity duration-300";
 
+  // 🌟 [핵심 변경] 모든 픽업 카드의 의상 데이터를 하나로 뭉쳐서 CostumePreviewCard에 던질 준비를 합니다!
+  const combinedCostumeData = () => {
+    const charsWithCostumes = pickupCards
+      .map(p => (p.card as any).info || p.card)
+      .filter(c => c.costume)
+      .map(c => ({
+        name: c.character,
+        subtitle: c.costume.name, // 각 캐릭터별 개별 부제
+        sets: c.costume.sets.map((set: any) => ({
+          key: set.key, label: set.label, front: [set.front], back: [set.back]
+        }))
+      }));
+
+    if (charsWithCostumes.length === 0) return null;
+
+    return {
+      title: event.gacha.types.includes("월링") || event.eventType === "하코" 
+        ? `${event.eventName} 의상` 
+        : "픽업 의상 프리뷰",
+      // 캐릭터가 바뀔 때 subtitle이 바뀌어야 하므로 빈 문자열로 넘기고 자식 컴포넌트에서 해결합니다
+      subtitle: "", 
+      characters: charsWithCostumes
+    };
+  };
+
+  const costumePreviewPayload = combinedCostumeData();
+
   return (
     <div className={`flex flex-col md:flex-row items-stretch gap-8 ${fadeClass}`}>
       
@@ -208,7 +234,6 @@ export default function FutureEventCard({
           {event.bonus && (
              <div className="absolute -left-6 sm:-left-12 md:-left-[70px] top-1/2 -translate-y-1/2 flex items-center z-50">
                <button
-                 // 🌟 [추가됨] 이벤트 모드로 넘어가면 의상 창을 닫아버리도록 예외 처리
                  onClick={() => { setIsEventMode(!isEventMode); setShowCostumes(false); }}
                  className="w-10 h-10 rounded-full bg-zinc-800 border-[3px] border-zinc-950 shadow-[0_0_15px_rgba(0,0,0,0.5)] flex items-center justify-center text-[18px] hover:bg-zinc-700 hover:scale-110 transition-transform z-10 relative"
                  title={isEventMode ? "가챠 배너로 돌아가기" : "이벤트 배너 보기"}
@@ -329,8 +354,8 @@ export default function FutureEventCard({
                  </>
                ) : (
                  <div className="flex items-center gap-1.5">
-                    {/* 🌟 [추가됨] 🛍️ 의상 프리뷰 토글 원형 버튼! (픽업 카드 중 하나라도 의상이 있을 때만 나타납니다) */}
-                    {pickupCards.some(p => !!((p.card as any).info || p.card).costume) && (
+                    {/* 🌟 🛍️ 버튼이 통상/한정 뱃지 바로 좌측에 예쁘게 배치됩니다! */}
+                    {costumePreviewPayload && (
                       <button 
                         onClick={() => setShowCostumes(!showCostumes)} 
                         className={`w-[30px] h-[30px] rounded-full flex items-center justify-center transition-all shadow-md text-[14px] ${
@@ -354,35 +379,10 @@ export default function FutureEventCard({
             </div>
           </div>
           
-          {/* 🌟 [개선됨] showCostumes 상태에 따라 의상을 보여줄지, 카드 목록을 보여줄지 분기합니다. */}
-          {showCostumes && !isEventMode ? (
-            <div className="flex flex-col gap-6 w-full animate-fade-in">
-              {pickupCards.map((p, idx) => {
-                const targetCard = (p.card as any).info || p.card;
-                if (!targetCard.costume) return null;
-                
-                const costumePreviewData = {
-                  title: targetCard.cardName,
-                  subtitle: targetCard.costume.name,
-                  characters: [
-                    {
-                      name: targetCard.character,
-                      sets: targetCard.costume.sets.map((set: any) => ({
-                        key: set.key, label: set.label, front: [set.front], back: [set.back]
-                      }))
-                    }
-                  ]
-                };
-
-                return (
-                  <div key={idx} className="w-full shadow-xl rounded-2xl bg-zinc-950/50 border border-white/5 overflow-hidden">
-                    <ModalCostumePreviewCard 
-                      preview={costumePreviewData as any} 
-                      userState={p.myState || { isOwned: false, isTarget: false, masterRank: 0, skillLevel: 1 }} 
-                    />
-                  </div>
-                );
-              })}
+          {/* 🌟 [개선됨] 🛍️ 버튼 토글에 따라 의상 프리뷰 창(1개로 합쳐짐) 렌더링! */}
+          {showCostumes && !isEventMode && costumePreviewPayload ? (
+            <div className="w-full shadow-2xl rounded-2xl bg-zinc-950/80 border border-white/10 overflow-hidden animate-fade-in">
+              <CostumePreviewCard preview={costumePreviewPayload as any} />
             </div>
           ) : (
             <div className="flex flex-wrap justify-center md:justify-start gap-4">
