@@ -157,19 +157,29 @@ export default function MyCardsPage() {
   const filteredCards = ALL_CARDS.filter(card => {
     if (searchQuery.trim() !== "") {
       const q = searchQuery.toLowerCase().trim();
-      const matchName = card.cardName?.toLowerCase().includes(q);
-      const matchChar = card.character?.toLowerCase().includes(q);
-      const matchEvent = card.eventName?.toLowerCase().includes(q);
-      const matchGacha = card.gachaPoolName?.toLowerCase().includes(q);
       
-      // 🌟 [추가됨] 의상, 악곡, 스킬, 유닛명까지 모조리 잡아내는 투망식 검색!
-      const matchCostume = (card as any).costumeName?.toLowerCase().includes(q) || (card as any).costume?.toLowerCase().includes(q);
-      const matchSong = (card as any).song?.toLowerCase().includes(q) || (card as any).relatedSong?.toLowerCase().includes(q);
-      const matchSkillName = (card as any).skillName?.toLowerCase().includes(q);
-      const matchUnit = card.unit?.toLowerCase().includes(q);
-      const matchSupportUnit = (card as any).supportUnit?.toLowerCase().includes(q);
+      // 🌟 [핵심 방패] 데이터가 배열이든 숫자든 에러 없이 무조건 소문자 글자로 변환!
+      const getStr = (val: any) => {
+        if (val === null || val === undefined) return "";
+        if (Array.isArray(val)) return val.join(" ").toLowerCase();
+        return String(val).toLowerCase();
+      };
       
-      if (!(matchName || matchChar || matchEvent || matchGacha || matchCostume || matchSong || matchSkillName || matchUnit || matchSupportUnit)) return false;
+      const matchName = getStr(card.cardName).includes(q);
+      const matchChar = getStr(card.character).includes(q);
+      const matchEvent = getStr(card.eventName).includes(q);
+      const matchGacha = getStr(card.gachaPoolName).includes(q);
+      
+      // 악곡이나 의상이 여러 개(배열) 들어있어도 무조건 검색에 다 걸립니다!
+      const matchCostume = getStr((card as any).costumeName).includes(q) || getStr((card as any).costume).includes(q);
+      const matchSong = getStr((card as any).song).includes(q) || getStr((card as any).relatedSong).includes(q);
+      const matchSkill = getStr((card as any).skillName).includes(q) || getStr(card.skillType).includes(q);
+      const matchUnit = getStr(card.unit).includes(q);
+      const matchSupportUnit = getStr((card as any).supportUnit).includes(q);
+      
+      if (!(matchName || matchChar || matchEvent || matchGacha || matchCostume || matchSong || matchSkill || matchUnit || matchSupportUnit)) {
+        return false;
+      }
     }
 
     if (hideUnreleased && card.releaseDate && new Date(card.releaseDate) > new Date()) return false;
@@ -520,7 +530,7 @@ export default function MyCardsPage() {
               <span className="absolute left-3 text-zinc-400 text-sm">🔍</span>
               <input
                 type="text"
-                placeholder="이름, 의상명, 픽업명 검색..."
+                placeholder="카드명, 의상, 악곡, 배너 검색..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full h-[34px] bg-zinc-800/80 border border-white/10 text-white text-xs rounded-full pl-8 pr-8 focus:outline-none focus:border-sky-500 transition-all shadow-sm placeholder:text-zinc-500"
