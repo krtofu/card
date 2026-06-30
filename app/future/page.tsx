@@ -249,7 +249,7 @@ export default function FuturePage() {
     <div className="flex flex-col md:flex-row gap-6 px-4 md:px-8 py-6 min-h-screen text-zinc-100 max-w-[1920px] mx-auto w-full">
       
       {/* ========================================= */}
-      {/* 👈 좌측 영역: 필터칸 (말풍선 복구!) */}
+      {/* 👈 좌측 영역: 필터칸 */}
       {/* ========================================= */}
       <div className={`flex flex-col shrink-0 md:w-[280px] md:relative md:block md:bg-transparent md:p-0 md:h-auto md:z-0 ${isMobileFilterOpen ? 'fixed inset-0 z-[100] bg-zinc-950 p-6 overflow-y-auto' : 'hidden'}`}>
         <div className="flex items-center justify-between border-b border-white/10 pb-3 mb-6 md:mb-0">
@@ -298,12 +298,12 @@ export default function FuturePage() {
                   <button onClick={() => toggleFilter(selectedHairs, setSelectedHairs, "hair_o")}
                     className={`relative group aspect-square rounded-full p-1 transition-all duration-300 w-full h-full ${selectedHairs.includes("hair_o") ? "bg-zinc-800 scale-105" : "bg-zinc-900 scale-[0.85] hover:scale-95"} ${!isAnyHairSelected || selectedHairs.includes("hair_o") ? "opacity-100" : "opacity-40 hover:opacity-100"}`}>
                     <img src="/icons/status/hair_o.png" alt="헤어 O" className="w-full h-full object-contain" />
-                    <span className={TOOLTIP_CLASS}>헤어 개방 가능</span>
+                    <span className={TOOLTIP_CLASS}>헤어 O</span>
                   </button>
                   <button onClick={() => toggleFilter(selectedHairs, setSelectedHairs, "hair_x")}
                     className={`relative group aspect-square rounded-full p-1 transition-all duration-300 w-full h-full ${selectedHairs.includes("hair_x") ? "bg-zinc-800 scale-105" : "bg-zinc-900 scale-[0.85] hover:scale-95"} ${!isAnyHairSelected || selectedHairs.includes("hair_x") ? "opacity-100" : "opacity-40 hover:opacity-100"}`}>
                     <img src="/icons/status/hair_x.png" alt="헤어 X" className="w-full h-full object-contain" />
-                    <span className={TOOLTIP_CLASS}>헤어 없음</span>
+                    <span className={TOOLTIP_CLASS}>헤어 X</span>
                   </button>
                 </div>
               </div>
@@ -510,9 +510,11 @@ export default function FuturePage() {
       {/* ========================================= */}
       {/* 👉 우측 영역: 미래시 타임라인 본문 */}
       {/* ========================================= */}
-      <div className="flex-1 flex flex-col min-w-0 bg-zinc-900/30 rounded-3xl p-4 md:p-6 border border-white/5 relative overflow-hidden">
+      {/* 🌟 overflow-hidden을 제거하여 Sticky가 완벽하게 작동하도록 수정! */}
+      <div className="flex-1 flex flex-col min-w-0 bg-zinc-900/30 rounded-3xl p-4 md:p-6 border border-white/5 relative">
         
-        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-4 relative z-40">
+        {/* 🌟 [개선됨] 스크롤 시 상단에 딱 달라붙는 스틱키 메인 컨트롤 센터 바! */}
+        <div className="sticky top-0 bg-zinc-950/85 backdrop-blur-md px-2 py-4 -mx-4 md:-mx-6 px-4 md:px-6 rounded-t-3xl border-b border-white/5 z-50 flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-4">
           <div>
             <h1 className="text-xl font-bold tracking-tight text-white mb-2">📅 미래시 타임라인</h1>
             
@@ -531,35 +533,33 @@ export default function FuturePage() {
             <p className="text-xs text-zinc-400 mt-2">앞으로 다가올 가챠 일정과 픽업 멤버를 확인해보세요.</p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto relative w-full sm:w-auto">
+          <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto relative w-full sm:w-auto mt-2 sm:mt-0">
             <button onClick={() => setIsMobileFilterOpen(true)} className="md:hidden flex items-center justify-center gap-1.5 h-[34px] px-3 rounded-full bg-zinc-800/80 border border-white/10 text-[12px] font-bold text-zinc-300 hover:text-white transition-colors shadow-sm">
               🔍 필터
             </button>
 
-            {/* 🌟 [개선됨] 👻 유령 버튼: 확실한 테마 색상(Indigo) 적용으로 가독성 UP! */}
+            {/* 🌟 [개선됨] 버튼 내부 전체에 꽉 찬 색상을 채워 한눈에 각인되도록 스타일 변경! */}
             <button 
               onClick={() => setHideUnmatchedEvents(!hideUnmatchedEvents)}
               className={`hidden sm:flex items-center justify-center h-[34px] rounded-full text-[12px] font-bold transition-all shadow-sm border ${
                 hideUnmatchedEvents 
-                  ? 'bg-indigo-600 text-white border-indigo-500 w-[34px] px-0 shadow-[0_0_10px_rgba(79,70,229,0.4)]' 
-                  : 'bg-zinc-800/80 border-white/10 text-indigo-300 hover:text-indigo-200 hover:bg-zinc-700 px-3 gap-1.5'
+                  ? 'bg-indigo-600 border-indigo-500 text-white shadow-[0_0_12px_rgba(79,70,229,0.5)] px-4 gap-1.5' 
+                  : 'bg-zinc-800/80 border-white/10 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-700 px-3 gap-1.5'
               }`}
               title="비활성 배너 숨기기"
             >
-              {hideUnmatchedEvents ? '👻' : '👻 비활성 배너 숨기기'}
+              👻 {hideUnmatchedEvents ? '모든 배너 켜기' : '비활성 배너 숨기기'}
             </button>
             <button 
               onClick={() => setHideUnmatchedEvents(!hideUnmatchedEvents)} 
               className={`sm:hidden flex items-center justify-center w-[34px] h-[34px] rounded-full text-[14px] transition-all shadow-sm border ${
-                hideUnmatchedEvents 
-                  ? 'bg-indigo-600 text-white border-indigo-500 shadow-[0_0_10px_rgba(79,70,229,0.4)]' 
-                  : 'bg-zinc-800/80 border-white/10 text-indigo-300'
+                hideUnmatchedEvents ? 'bg-indigo-600 border-indigo-500 text-white shadow-[0_0_12px_rgba(79,70,229,0.5)]' : 'bg-zinc-800/80 border-white/10 text-zinc-400'
               }`}
             >
               👻
             </button>
 
-            {/* 🌟 [개선됨] 검색창 너비 대폭 확장! (sm:w-64 lg:w-80) */}
+            {/* 🌟 확장된 검색창 크기 보존 */}
             <div className="relative flex items-center w-full sm:w-64 lg:w-80">
               <span className="absolute left-3 text-zinc-400 text-sm">🔍</span>
               <input

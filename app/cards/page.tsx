@@ -7,7 +7,6 @@ import { FinalCardInfo } from "@/data/cards/template";
 import CardDetailModal from "@/components/CardDetailModal";
 import CardItem from "@/components/CardItem"; 
 
-// 🌟 [추가됨] 고급스러운 말풍선 툴팁 공통 CSS 클래스
 const TOOLTIP_CLASS = "absolute bottom-full mb-2 left-1/2 -translate-x-1/2 px-2.5 py-1 bg-zinc-800 text-zinc-100 text-[11px] font-bold rounded-lg shadow-xl border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-[60]";
 
 export type UserCardState = {
@@ -158,26 +157,27 @@ export default function MyCardsPage() {
     if (searchQuery.trim() !== "") {
       const q = searchQuery.toLowerCase().trim();
       
+      const targetCard = (card as any).info ? (card as any).info : card;
+      
       const getStr = (val: any) => {
         if (val === null || val === undefined) return "";
         if (Array.isArray(val)) return val.join(" ").toLowerCase();
         return String(val).toLowerCase();
       };
       
-      const matchName = getStr(card.cardName).includes(q);
-      const matchChar = getStr(card.character).includes(q);
-      const matchEvent = getStr(card.eventName).includes(q);
-      const matchGacha = getStr(card.gachaPoolName).includes(q);
+      const matchName = getStr(targetCard.cardName).includes(q);
+      const matchChar = getStr(targetCard.character).includes(q);
+      const matchEvent = getStr(targetCard.eventName).includes(q);
+      const matchGacha = getStr(targetCard.gachaPoolName).includes(q);
       
-      const matchCostume = getStr(card.costume?.name).includes(q); 
-      const matchSong = getStr(card.songName).includes(q);         
-      const matchSkill = getStr(card.skillType).includes(q);       
-      const matchUnit = getStr(card.unit).includes(q);             
+      const matchCostume = getStr(targetCard.costumeName).includes(q) || getStr(targetCard.costume?.name).includes(q);
+      const matchSong = getStr(targetCard.releaseSong).includes(q) || getStr(targetCard.relatedSong).includes(q) || getStr(targetCard.songName).includes(q);
+      const matchSkill = getStr(targetCard.skillName).includes(q) || getStr(targetCard.skillType).includes(q);
+      const matchUnit = getStr(targetCard.unit).includes(q);
+      const matchSupportUnit = getStr(targetCard.supportUnit).includes(q);
       
-      // 🌟 [추가됨] 기획자님 아이디어 반영! 뽑기 유형(통상/한정/페스)과 속성까지 검색망에 추가!
-      const matchGachaType = getStr(card.gachaType).includes(q);
-      // (참고: 속성은 DB에 pure, cute 등 영어로 저장되어 있다면 영어로 쳐야 나오지만, 필터가 있으니 보조용으로 둡니다!)
-      const matchAttribute = getStr(card.attribute).includes(q);
+      const matchGachaType = getStr(targetCard.gachaType).includes(q);
+      const matchAttribute = getStr(targetCard.attribute).includes(q);
       
       if (!(matchName || matchChar || matchEvent || matchGacha || matchCostume || matchSong || matchSkill || matchUnit || matchGachaType || matchAttribute)) {
         return false;
@@ -516,19 +516,22 @@ export default function MyCardsPage() {
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col min-w-0 bg-zinc-900/30 rounded-3xl p-4 md:p-6 border border-white/5">
-        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6 relative z-40">
+      {/* 🌟 overflow-hidden을 제거하여 Sticky가 완벽하게 작동하도록 수정! */}
+      <div className="flex-1 flex flex-col min-w-0 bg-zinc-900/30 rounded-3xl p-4 md:p-6 border border-white/5 relative">
+        
+        {/* 🌟 [개선됨] 내 카드 전용 탭 컨트롤 바 상단 스틱키 고정 완료! */}
+        <div className="sticky top-0 bg-zinc-950/85 backdrop-blur-md px-2 py-4 -mx-4 md:-mx-6 px-4 md:px-6 rounded-t-3xl border-b border-white/5 z-50 flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
           <div>
             <h1 className="text-xl font-bold tracking-tight">카드 목록</h1>
             <p className="text-xs text-zinc-400 mt-1">검색된 카드: <strong className="text-white">{sortedCards.length}</strong>장</p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto relative w-full sm:w-auto">
+          <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto relative w-full sm:w-auto mt-2 sm:mt-0">
             <button onClick={() => setIsMobileFilterOpen(true)} className="md:hidden flex items-center justify-center gap-1.5 h-[34px] px-3 rounded-full bg-zinc-800/80 border border-white/10 text-[12px] font-bold text-zinc-300 hover:text-white transition-colors shadow-sm">
               🔍 필터
             </button>
 
-            <div className="relative flex items-center w-full sm:w-48 lg:w-64">
+            <div className="relative flex items-center w-full sm:w-64 lg:w-80">
               <span className="absolute left-3 text-zinc-400 text-sm">🔍</span>
               <input
                 type="text"
