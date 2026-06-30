@@ -6,7 +6,7 @@ import { UserCardState } from "@/app/cards/page";
 import ModalCostumePreviewCard from "@/components/ModalCostumePreviewCard";
 import { useState, useEffect } from "react"; 
 
-// 🌟 [추가됨] 스킬 보너스 계산 엔진 (모달 전용)
+// 🌟 스킬 보너스 계산 엔진 (모달 전용)
 const getSkillBonusPercentage = (skillType: string, level: number, unit: string, isAwakened: boolean, charRank: number = 1, isOwned: boolean = false) => {
   const safeLevel = Math.max(1, Math.min(4, level)); 
   const idx = safeLevel - 1;
@@ -54,12 +54,11 @@ export default function CardDetailModal({
 }: CardDetailModalProps) {
   const [isExpandMode, setIsExpandMode] = useState(false);
   
-  // 🌟 [추가됨] 미보유 카드를 위한 가상 시뮬레이터 상태
+  // 미보유 카드를 위한 가상 시뮬레이터 상태
   const [simSkillLevel, setSimSkillLevel] = useState(1);
   const [simMasterRank, setSimMasterRank] = useState(0);
   const [characterRank, setCharacterRank] = useState(1);
 
-  // 🌟 모달이 열릴 때 캐릭터 랭크를 조용히 가져옵니다 (부모 파일 수정 불필요!)
   useEffect(() => {
     if (card) {
       const saved = localStorage.getItem("sekard_character_ranks");
@@ -91,11 +90,10 @@ export default function CardDetailModal({
 
   const isReleased = card.releaseDate ? new Date(card.releaseDate) <= new Date() : false;
 
-  // 🌟 현재 상태 (보유 중이면 실제 상태, 아니면 가상 시뮬레이터 상태)
   const currentSkillLevel = userState.isOwned ? (userState.skillLevel || 1) : simSkillLevel;
   const currentMasterRank = userState.isOwned ? (userState.masterRank || 0) : simMasterRank;
 
-  // 🌟 실시간 스킬 배수 계산! (특훈 후 기준으로 가정하여 최대 포텐셜 표기)
+  // 실시간 스킬 배수 계산
   const calculatedSkillBonus = getSkillBonusPercentage(
     card.skillType || "",
     currentSkillLevel,
@@ -260,24 +258,15 @@ export default function CardDetailModal({
                 <span className="text-xl font-bold text-zinc-100">{card.character}</span>
               </div>
               
-              {/* 🌟 뱃지 및 스킬 배수 렌더링 구역 */}
               <div className="flex flex-wrap items-center justify-end gap-1.5 shrink-0">
+                {/* 🌟 [개선됨] 헷갈리던 동적 스킬 뱃지를 스킬 정보에서 싹 지우고 원래대로 깔끔하게 복구했습니다. */}
                 {skillInfo.src ? (
                   <div className="relative group flex items-center justify-center cursor-help">
-                    <div className="relative">
-                      <img src={skillInfo.src} alt={skillInfo.label} className="w-[26px] h-[26px] object-contain drop-shadow-md shrink-0" />
-                      {/* 🌟 동적 스킬 수치 오버레이 뱃지 */}
-                      {calculatedSkillBonus > 0 && (
-                        <span className="absolute -bottom-1 -right-2 bg-zinc-950 text-amber-300 text-[9px] font-black px-1 rounded-sm border border-amber-500/30 shadow-sm animate-fade-in">
-                          {calculatedSkillBonus}%
-                        </span>
-                      )}
-                    </div>
+                    <img src={skillInfo.src} alt={skillInfo.label} className="w-[26px] h-[26px] object-contain drop-shadow-md shrink-0" />
                     <div className="pointer-events-none absolute bottom-full mb-3 left-1/2 -translate-x-1/2 opacity-0 transition-all duration-200 group-hover:opacity-100 z-50">
                       <div className="relative flex flex-col items-center">
                         <div className="relative z-10 whitespace-nowrap rounded-md border border-zinc-600 bg-zinc-950 px-2.5 py-1.5 text-[11px] font-bold text-zinc-200 shadow-xl">
                           {skillInfo.label}
-                          {calculatedSkillBonus > 0 && <span className="text-amber-400 ml-1.5 tracking-tighter">(🌟 +{calculatedSkillBonus}%)</span>}
                         </div>
                         <div className="absolute -bottom-[4px] z-20 h-2 w-2 rotate-45 border-b border-r border-zinc-600 bg-zinc-950"></div>
                       </div>
@@ -287,7 +276,6 @@ export default function CardDetailModal({
                   skillInfo.label && (
                     <span className="shrink-0 inline-flex items-center px-2.5 py-1 text-[11px] font-bold rounded-full border border-purple-500/20 bg-purple-500/10 text-purple-300 tracking-wide">
                       {skillInfo.label}
-                      {calculatedSkillBonus > 0 && <span className="text-amber-300 ml-1">+{calculatedSkillBonus}%</span>}
                     </span>
                   )
                 )}
@@ -444,7 +432,6 @@ export default function CardDetailModal({
                 </div>
               </div>
 
-              {/* 🌟 [핵심 변경] 미보유 카드도 스킬 레벨과 마랭을 시뮬레이션할 수 있게 막아둔 걸 해제했습니다! */}
               <div className="space-y-1.5">
                 <div className="flex justify-between items-center text-xs">
                   <span className="text-zinc-400 font-medium">마스터 랭크</span>
@@ -456,7 +443,6 @@ export default function CardDetailModal({
                   {[0, 1, 2, 3, 4, 5].map((rank) => (
                     <button
                       key={rank}
-                      // 미보유 시 가상 상태 업데이트
                       onClick={() => userState.isOwned ? onUpdateState(card.id, { masterRank: rank }) : setSimMasterRank(rank)}
                       className={`flex-1 py-1.5 text-[11px] font-mono font-bold rounded-lg transition-all ${
                         currentMasterRank === rank
@@ -470,9 +456,17 @@ export default function CardDetailModal({
                 </div>
               </div>
 
-              <div className="space-y-1.5 pt-1">
-                <div className="flex justify-between items-center text-xs">
-                  <span className="text-zinc-400 font-medium">스킬 레벨 (Lv.)</span>
+              {/* 🌟 [개선됨] 스킬 배수 뱃지를 시뮬레이션 글씨 옆으로 완전히 이사시켰습니다! (하늘색 & ⇪ 테마 통일) */}
+              <div className="space-y-1.5 pt-2 border-t border-white/5 mt-2">
+                <div className="flex justify-between items-center text-xs mb-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-zinc-400 font-medium">스킬 레벨 (Lv.)</span>
+                    {calculatedSkillBonus > 0 && (
+                      <span className="bg-sky-500/20 text-sky-400 border border-sky-400/30 px-1.5 py-0.5 rounded text-[11px] font-black tracking-wider animate-fade-in shadow-sm flex items-center gap-0.5">
+                        ⇪ +{calculatedSkillBonus}%
+                      </span>
+                    )}
+                  </div>
                   <span className="font-bold text-purple-400">
                     {userState.isOwned ? `Lv.${userState.skillLevel || 1}` : `시뮬레이션: Lv.${simSkillLevel}`}
                   </span>
