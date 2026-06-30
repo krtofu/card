@@ -1,9 +1,43 @@
+// src/components/CardDetailModal.tsx
 "use client";
 
 import { FinalCardInfo } from "@/data/cards/template";
 import { UserCardState } from "@/app/cards/page";
 import ModalCostumePreviewCard from "@/components/ModalCostumePreviewCard";
-import { useState } from "react"; 
+import { useState, useEffect } from "react"; 
+
+// 🌟 [추가됨] 스킬 보너스 계산 엔진 (모달 전용)
+const getSkillBonusPercentage = (skillType: string, level: number, unit: string, isAwakened: boolean, charRank: number = 1, isOwned: boolean = false) => {
+  const safeLevel = Math.max(1, Math.min(4, level)); 
+  const idx = safeLevel - 1;
+  const skill = (skillType || "").replace(/\s+/g, "").toLowerCase();
+
+  if (skill.includes("블페") || skill.includes("블룸")) {
+    if (isAwakened) {
+      const maxLimits = [140, 145, 150, 160];
+      if (!isOwned) return maxLimits[idx];
+      const bases = [90, 95, 100, 110];
+      const bloomBonus = Math.floor(charRank / 2);
+      return Math.min(maxLimits[idx], bases[idx] + bloomBonus);
+    }
+    const isVS = unit === "무소속 / VIRTUAL SINGER" || unit.includes("버싱") || unit.includes("VS") || unit.toLowerCase().includes("virtual");
+    return isVS ? [130, 135, 140, 150][idx] : [120, 130, 140, 150][idx];
+  }
+
+  if (skill.includes("스업") && !skill.includes("퍼스업") && !skill.includes("굿스업") && !skill.includes("체스업") && !skill.includes("팀스업") && !skill.includes("조건부")) return [100, 105, 110, 120][idx];
+  if (skill.includes("퍼스업")) return [110, 115, 120, 130][idx];
+  if (skill.includes("굿스업")) return [120, 125, 130, 140][idx];
+  if (skill.includes("체스업")) return [120, 125, 130, 140][idx];
+  if (skill.includes("팀스업")) return [130, 135, 140, 150][idx];
+  if (skill.includes("판강") || skill.includes("판정")) return [80, 85, 90, 100][idx];
+  if (skill.includes("힐") || skill.includes("회복")) return [80, 85, 90, 100][idx];
+
+  if (skill.includes("블랑") || skill.includes("초기페스")) {
+    const isVS = unit === "무소속 / VIRTUAL SINGER" || unit.includes("버싱") || unit.includes("VS") || unit.toLowerCase().includes("virtual");
+    return isVS ? [130, 135, 140, 150][idx] : [120, 130, 140, 150][idx];
+  }
+  return 0;
+};
 
 interface CardDetailModalProps {
   card: FinalCardInfo | null;
@@ -19,6 +53,24 @@ export default function CardDetailModal({
   onClose,
 }: CardDetailModalProps) {
   const [isExpandMode, setIsExpandMode] = useState(false);
+  
+  // 🌟 [추가됨] 미보유 카드를 위한 가상 시뮬레이터 상태
+  const [simSkillLevel, setSimSkillLevel] = useState(1);
+  const [simMasterRank, setSimMasterRank] = useState(0);
+  const [characterRank, setCharacterRank] = useState(1);
+
+  // 🌟 모달이 열릴 때 캐릭터 랭크를 조용히 가져옵니다 (부모 파일 수정 불필요!)
+  useEffect(() => {
+    if (card) {
+      const saved = localStorage.getItem("sekard_character_ranks");
+      if (saved) {
+        try {
+          const ranks = JSON.parse(saved);
+          setCharacterRank(ranks[card.character] || 1);
+        } catch(e) {}
+      }
+    }
+  }, [card]);
 
   if (!card) return null;
 
@@ -38,6 +90,20 @@ export default function CardDetailModal({
   const hasGacha = !!card.gachaPoolName; 
 
   const isReleased = card.releaseDate ? new Date(card.releaseDate) <= new Date() : false;
+
+  // 🌟 현재 상태 (보유 중이면 실제 상태, 아니면 가상 시뮬레이터 상태)
+  const currentSkillLevel = userState.isOwned ? (userState.skillLevel || 1) : simSkillLevel;
+  const currentMasterRank = userState.isOwned ? (userState.masterRank || 0) : simMasterRank;
+
+  // 🌟 실시간 스킬 배수 계산! (특훈 후 기준으로 가정하여 최대 포텐셜 표기)
+  const calculatedSkillBonus = getSkillBonusPercentage(
+    card.skillType || "",
+    currentSkillLevel,
+    card.unit || "",
+    true, 
+    characterRank,
+    userState.isOwned
+  );
 
   const costumePreviewData = hasCostume && card.costume ? {
     title: card.cardName,
@@ -187,7 +253,6 @@ export default function CardDetailModal({
                   <img src={getUnitLogo(card.unit || "")} alt={card.unit} className="h-[28px] w-auto object-contain drop-shadow-md" />
                 )}
                 
-                {/* 🌟 [핵심 변경] 국기를 이름의 좌측으로 이동했습니다! */}
                 <h2 className="text-xl font-bold text-zinc-100 flex items-center gap-1.5">
                   {isReleased && <span className="text-[16px] drop-shadow-sm" title="한국 서버 출시됨">🇰🇷</span>}
                   {card.cardName}
@@ -195,19 +260,36 @@ export default function CardDetailModal({
                 <span className="text-xl font-bold text-zinc-100">{card.character}</span>
               </div>
               
+              {/* 🌟 뱃지 및 스킬 배수 렌더링 구역 */}
               <div className="flex flex-wrap items-center justify-end gap-1.5 shrink-0">
                 {skillInfo.src ? (
                   <div className="relative group flex items-center justify-center cursor-help">
-                    <img src={skillInfo.src} alt={skillInfo.label} className="w-[26px] h-[26px] object-contain drop-shadow-md shrink-0" />
+                    <div className="relative">
+                      <img src={skillInfo.src} alt={skillInfo.label} className="w-[26px] h-[26px] object-contain drop-shadow-md shrink-0" />
+                      {/* 🌟 동적 스킬 수치 오버레이 뱃지 */}
+                      {calculatedSkillBonus > 0 && (
+                        <span className="absolute -bottom-1 -right-2 bg-zinc-950 text-amber-300 text-[9px] font-black px-1 rounded-sm border border-amber-500/30 shadow-sm animate-fade-in">
+                          {calculatedSkillBonus}%
+                        </span>
+                      )}
+                    </div>
                     <div className="pointer-events-none absolute bottom-full mb-3 left-1/2 -translate-x-1/2 opacity-0 transition-all duration-200 group-hover:opacity-100 z-50">
                       <div className="relative flex flex-col items-center">
-                        <div className="relative z-10 whitespace-nowrap rounded-md border border-zinc-600 bg-zinc-950 px-2.5 py-1.5 text-[11px] font-bold text-zinc-200 shadow-xl">{skillInfo.label}</div>
+                        <div className="relative z-10 whitespace-nowrap rounded-md border border-zinc-600 bg-zinc-950 px-2.5 py-1.5 text-[11px] font-bold text-zinc-200 shadow-xl">
+                          {skillInfo.label}
+                          {calculatedSkillBonus > 0 && <span className="text-amber-400 ml-1.5 tracking-tighter">(🌟 +{calculatedSkillBonus}%)</span>}
+                        </div>
                         <div className="absolute -bottom-[4px] z-20 h-2 w-2 rotate-45 border-b border-r border-zinc-600 bg-zinc-950"></div>
                       </div>
                     </div>
                   </div>
                 ) : (
-                  skillInfo.label && <span className="shrink-0 inline-flex items-center px-2.5 py-1 text-[11px] font-bold rounded-full border border-purple-500/20 bg-purple-500/10 text-purple-300 tracking-wide">{skillInfo.label}</span>
+                  skillInfo.label && (
+                    <span className="shrink-0 inline-flex items-center px-2.5 py-1 text-[11px] font-bold rounded-full border border-purple-500/20 bg-purple-500/10 text-purple-300 tracking-wide">
+                      {skillInfo.label}
+                      {calculatedSkillBonus > 0 && <span className="text-amber-300 ml-1">+{calculatedSkillBonus}%</span>}
+                    </span>
+                  )
                 )}
 
                 {attrInfo.src ? (
@@ -362,25 +444,24 @@ export default function CardDetailModal({
                 </div>
               </div>
 
+              {/* 🌟 [핵심 변경] 미보유 카드도 스킬 레벨과 마랭을 시뮬레이션할 수 있게 막아둔 걸 해제했습니다! */}
               <div className="space-y-1.5">
                 <div className="flex justify-between items-center text-xs">
                   <span className="text-zinc-400 font-medium">마스터 랭크</span>
                   <span className="font-bold text-sky-400">
-                    {userState.isOwned ? `${userState.masterRank} 마랭` : "비활성"}
+                    {userState.isOwned ? `${userState.masterRank || 0} 마랭` : `시뮬레이션: ${simMasterRank} 마랭`}
                   </span>
                 </div>
                 <div className="flex gap-1">
                   {[0, 1, 2, 3, 4, 5].map((rank) => (
                     <button
                       key={rank}
-                      disabled={!userState.isOwned}
-                      onClick={() => onUpdateState(card.id, { masterRank: rank })}
+                      // 미보유 시 가상 상태 업데이트
+                      onClick={() => userState.isOwned ? onUpdateState(card.id, { masterRank: rank }) : setSimMasterRank(rank)}
                       className={`flex-1 py-1.5 text-[11px] font-mono font-bold rounded-lg transition-all ${
-                        !userState.isOwned
-                          ? "bg-zinc-950 text-zinc-800 cursor-not-allowed"
-                          : userState.masterRank === rank
-                            ? "bg-sky-500/20 text-sky-400 border border-sky-500/30"
-                            : "bg-zinc-950 text-zinc-500 border border-white/5 hover:bg-zinc-900"
+                        currentMasterRank === rank
+                          ? "bg-sky-500/20 text-sky-400 border border-sky-500/30 shadow-[0_0_8px_rgba(14,165,233,0.2)]"
+                          : "bg-zinc-950 text-zinc-500 border border-white/5 hover:bg-zinc-900"
                       }`}
                     >
                       {rank}
@@ -393,21 +474,18 @@ export default function CardDetailModal({
                 <div className="flex justify-between items-center text-xs">
                   <span className="text-zinc-400 font-medium">스킬 레벨 (Lv.)</span>
                   <span className="font-bold text-purple-400">
-                    {userState.isOwned ? `Lv.${userState.skillLevel}` : "비활성"}
+                    {userState.isOwned ? `Lv.${userState.skillLevel || 1}` : `시뮬레이션: Lv.${simSkillLevel}`}
                   </span>
                 </div>
                 <div className="flex gap-1">
                   {[1, 2, 3, 4].map((lvl) => (
                     <button
                       key={lvl}
-                      disabled={!userState.isOwned}
-                      onClick={() => onUpdateState(card.id, { skillLevel: lvl })}
+                      onClick={() => userState.isOwned ? onUpdateState(card.id, { skillLevel: lvl }) : setSimSkillLevel(lvl)}
                       className={`flex-1 py-1.5 text-[11px] font-mono font-bold rounded-lg transition-all ${
-                        !userState.isOwned
-                          ? "bg-zinc-950 text-zinc-800 cursor-not-allowed"
-                          : userState.skillLevel === lvl
-                            ? "bg-purple-500/20 text-purple-400 border border-purple-500/30"
-                            : "bg-zinc-950 text-zinc-500 border border-white/5 hover:bg-zinc-900"
+                        currentSkillLevel === lvl
+                          ? "bg-purple-500/20 text-purple-400 border border-purple-500/30 shadow-[0_0_8px_rgba(168,85,247,0.2)]"
+                          : "bg-zinc-950 text-zinc-500 border border-white/5 hover:bg-zinc-900"
                       }`}
                     >
                       {lvl}
@@ -423,7 +501,7 @@ export default function CardDetailModal({
               </div>
             ) : (
               <div className="w-full h-32 bg-zinc-900/20 border border-white/10 border-dashed rounded-2xl flex flex-col items-center justify-center gap-2 shadow-inner animate-fade-in">
-                <span className="text-2xl opacity-40">👗</span>
+                <span className="text-2xl opacity-40">🛍️</span>
                 <span className="text-xs text-zinc-500 font-medium tracking-wide">관련 의상 없음</span>
               </div>
             )}
