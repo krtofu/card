@@ -17,6 +17,7 @@ export interface EventData {
     types: string[];
     featuredCardIds: string[];
   };
+  eventBannerPath?: string; 
 }
 
 // 🌟 각 연도별 파일 불러오기

@@ -14,7 +14,7 @@ export const EVENTS_2022: EventData[] = [
     }
   },
   {
-    id: "gacha_event_22_001",
+    id: "gacha_event_22_01",
     name: "별 내리는 밤하늘의 추억 뽑기",
     eventName: "비 갠 뒤 첫 번째 별",
     eventType: "하코",
@@ -27,10 +27,11 @@ export const EVENTS_2022: EventData[] = [
       bannerPath: "/gachas/22y/banner_22_02_l.png",
       types: ["통상"],
       featuredCardIds: ["ln_Saki_001", "VS_LUKA_001", "ln_Shiho_001"]
-    }
+    },
+    eventBannerPath: "/gachas/22y/banner_22_01_l.png", 
   },
   {
-    id: "gacha_event_22_002",
+    id: "gacha_event_22_02",
     name: "인형들의 무도회 뽑기",
     eventName: "사로잡힌 마리오네트",
     eventType: "하코",
@@ -43,6 +44,7 @@ export const EVENTS_2022: EventData[] = [
       bannerPath: "/gachas/22y/banner_22_03_n.png",
       types: ["통상"],
       featuredCardIds: ["ng_Mafuyu_001", "ng_Kanade_001", "VS_MIKU_002"]
-    }
-  }
+    },
+    eventBannerPath: "/gachas/22y/banner_22_02_n.png", 
+  },
 ];
