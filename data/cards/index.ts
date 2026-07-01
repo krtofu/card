@@ -3,20 +3,20 @@ import type { FinalCardInfo } from "./template";
 // ==========================================
 // 🎵 1. VIRTUAL SINGER (VS)
 // ==========================================
-import { MikuCards } from "./VS/MIKU";
-import { RinCards } from "./VS/RIN";
-import { LenCards } from "./VS/LEN";
-import { LukaCards } from "./VS/LUKA";
-// import { MeikoCards } from "./VS/MEIKO";
-import { KaitoCards } from "./VS/KAITO";
+import { MIKUCards } from "./VS/MIKU";
+import { RINCards } from "./VS/RIN";
+import { LENCards } from "./VS/LEN";
+import { LUKACards } from "./VS/LUKA";
+// import { MEIKOCards } from "./VS/MEIKO";
+import { KAITOCards } from "./VS/KAITO";
 
 const VS_CARDS = [
-  ...MikuCards,
-  ...RinCards,
-  ...LenCards,
-  ...LukaCards,
-  // ...MeikoCards,
-  ...KaitoCards,
+  ...MIKUCards,
+  ...RINCards,
+  ...LENCards,
+  ...LUKACards,
+  // ...MEIKOCards,
+  ...KAITOCards,
 ];
 
 // ==========================================

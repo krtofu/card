@@ -2,7 +2,7 @@ import { defineCharacterCards } from "../template";
 
 // 🎵 1. 오리지널 (무소속 / VIRTUAL SINGER) 린
 // -> 얼굴 아이콘: RIN_0.png 자동 매핑
-const RinOriginal = defineCharacterCards("버싱", "카가미네 린", "VS", "RIN", {
+const RINOriginal = defineCharacterCards("버싱", "카가미네 린", "VS", "RIN", {
   cards: [
         {
           info: {
@@ -139,7 +139,7 @@ const RinOriginal = defineCharacterCards("버싱", "카가미네 린", "VS", "RI
 
 // 🎸 2. Leo/need (레오니) 린
 // -> 얼굴 아이콘: RIN_l.png 자동 매핑
-const RinLeoneed = defineCharacterCards("레오니", "카가미네 린", "VS", "RIN", {
+const RINLeoneed = defineCharacterCards("레오니", "카가미네 린", "VS", "RIN", {
   cards: [
         {
           info: {
@@ -253,7 +253,7 @@ const RinLeoneed = defineCharacterCards("레오니", "카가미네 린", "VS", "
 
 // ☘️ 3. MORE MORE JUMP! (모모점) 린
 // -> 얼굴 아이콘: RIN_m.png 자동 매핑
-const RinMmj = defineCharacterCards("모모점", "카가미네 린", "VS", "RIN", {
+const RINMmj = defineCharacterCards("모모점", "카가미네 린", "VS", "RIN", {
   cards: [
         {
           info: {
@@ -302,7 +302,7 @@ const RinMmj = defineCharacterCards("모모점", "카가미네 린", "VS", "RIN"
 
 // 🎤 4. Vivid BAD SQUAD (비배스) 린
 // -> 얼굴 아이콘: RIN_v.png 자동 매핑
-const RinVbs = defineCharacterCards("비배스", "카가미네 린", "VS", "RIN", {
+const RINVbs = defineCharacterCards("비배스", "카가미네 린", "VS", "RIN", {
   cards: [
         {
           info: {
@@ -392,7 +392,7 @@ const RinVbs = defineCharacterCards("비배스", "카가미네 린", "VS", "RIN"
 
 // 🎪 5. Wonderlands×Showtime (원더쇼) 린
 // -> 얼굴 아이콘: RIN_w.png 자동 매핑
-const RinWxs = defineCharacterCards("원더쇼", "카가미네 린", "VS", "RIN", {
+const RINWxs = defineCharacterCards("원더쇼", "카가미네 린", "VS", "RIN", {
   cards: [
         {
           info: {
@@ -506,7 +506,7 @@ const RinWxs = defineCharacterCards("원더쇼", "카가미네 린", "VS", "RIN"
 
 // 🎧 6. 25시, 나이트코드에서. (니고) 린
 // -> 얼굴 아이콘: RIN_n.png 자동 매핑
-const RinNigo = defineCharacterCards("니고", "카가미네 린", "VS", "RIN", {
+const RINNigo = defineCharacterCards("니고", "카가미네 린", "VS", "RIN", {
   cards: [
         {
           info: {
@@ -615,11 +615,11 @@ const RinNigo = defineCharacterCards("니고", "카가미네 린", "VS", "RIN", 
 });
 
 // 🌟 7. 모든 린 카드를 하나의 배열로 싹 다 통합해서 내보내기!
-export const RinCards = [
-  ...RinOriginal,
-  ...RinLeoneed,
-  ...RinMmj,
-  ...RinVbs,
-  ...RinWxs,
-  ...RinNigo,
+export const RINCards = [
+  ...RINOriginal,
+  ...RINLeoneed,
+  ...RINMmj,
+  ...RINVbs,
+  ...RINWxs,
+  ...RINNigo,
 ];

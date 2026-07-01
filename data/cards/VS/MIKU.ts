@@ -2,7 +2,7 @@ import { defineCharacterCards } from "../template";
 
 // 🎵 1. 오리지널 (무소속 / VIRTUAL SINGER) 미쿠
 // -> 얼굴 아이콘: MIKU_0.png 자동 매핑
-const MikuOriginal = defineCharacterCards("버싱", "하츠네 미쿠", "VS", "MIKU", {
+const MIKUOriginal = defineCharacterCards("버싱", "하츠네 미쿠", "VS", "MIKU", {
   cards: [
     {
       info: {
@@ -189,7 +189,7 @@ const MikuOriginal = defineCharacterCards("버싱", "하츠네 미쿠", "VS", "M
 
 // 🎸 2. Leo/need (레오니) 미쿠
 // -> 얼굴 아이콘: MIKU_l.png 자동 매핑
-const MikuLeoneed = defineCharacterCards("레오니", "하츠네 미쿠", "VS", "MIKU", {
+const MIKULeoneed = defineCharacterCards("레오니", "하츠네 미쿠", "VS", "MIKU", {
   cards: [
     {
       info: {
@@ -282,7 +282,7 @@ const MikuLeoneed = defineCharacterCards("레오니", "하츠네 미쿠", "VS", 
 
 // ☘️ 3. MORE MORE JUMP! (모모점) 미쿠
 // -> 얼굴 아이콘: MIKU_m.png 자동 매핑
-const MikuMmj = defineCharacterCards("모모점", "하츠네 미쿠", "VS", "MIKU", {
+const MIKUMmj = defineCharacterCards("모모점", "하츠네 미쿠", "VS", "MIKU", {
   cards: [
     {
       info: {
@@ -394,7 +394,7 @@ const MikuMmj = defineCharacterCards("모모점", "하츠네 미쿠", "VS", "MIK
 
 // 🎤 4. Vivid BAD SQUAD (비배스) 미쿠
 // -> 얼굴 아이콘: MIKU_v.png 자동 매핑
-const MikuVbs = defineCharacterCards("비배스", "하츠네 미쿠", "VS", "MIKU", {
+const MIKUVbs = defineCharacterCards("비배스", "하츠네 미쿠", "VS", "MIKU", {
   cards: [
     {
       info: {
@@ -485,7 +485,7 @@ const MikuVbs = defineCharacterCards("비배스", "하츠네 미쿠", "VS", "MIK
 
 // 🎪 5. Wonderlands×Showtime (원더쇼) 미쿠
 // -> 얼굴 아이콘: MIKU_w.png 자동 매핑
-const MikuWxs = defineCharacterCards("원더쇼", "하츠네 미쿠", "VS", "MIKU", {
+const MIKUWxs = defineCharacterCards("원더쇼", "하츠네 미쿠", "VS", "MIKU", {
   cards: [
     {
       info: {
@@ -551,7 +551,7 @@ const MikuWxs = defineCharacterCards("원더쇼", "하츠네 미쿠", "VS", "MIK
 
 // 🎧 6. 25시, 나이트코드에서. (니고) 미쿠
 // -> 얼굴 아이콘: MIKU_n.png 자동 매핑
-const MikuNigo = defineCharacterCards("니고", "하츠네 미쿠", "VS", "MIKU", {
+const MIKUNigo = defineCharacterCards("니고", "하츠네 미쿠", "VS", "MIKU", {
   cards: [
     {
       info: {
@@ -634,11 +634,11 @@ const MikuNigo = defineCharacterCards("니고", "하츠네 미쿠", "VS", "MIKU"
 });
 
 // 🌟 7. 모든 미쿠 카드를 하나의 배열로 싹 다 통합해서 내보내기!
-export const MikuCards = [
-  ...MikuOriginal,
-  ...MikuLeoneed,
-  ...MikuMmj,
-  ...MikuVbs,
-  ...MikuWxs,
-  ...MikuNigo,
+export const MIKUCards = [
+  ...MIKUOriginal,
+  ...MIKULeoneed,
+  ...MIKUMmj,
+  ...MIKUVbs,
+  ...MIKUWxs,
+  ...MIKUNigo,
 ];
