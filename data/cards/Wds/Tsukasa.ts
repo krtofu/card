@@ -6,7 +6,7 @@ const TsukasaWxs = defineCharacterCards("원더쇼", "텐마 츠카사", "Wds", 
   cards: [
         {
           info: {
-            id: "wds_Tsukasa_001",
+            id: "Wds_Tsukasa_001",
             cardName: "[조마조마?! 좀비 패닉!]",
             attribute: "happy",
             gachaType: "통상",

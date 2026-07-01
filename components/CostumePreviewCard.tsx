@@ -1,3 +1,4 @@
+// src/components/CostumePreviewCard.tsx
 "use client";
 
 import Image from "next/image";
@@ -102,7 +103,7 @@ export default function CostumePreviewCard({ preview }: { preview: CostumePrevie
 
   const currentSrc = images[0] ?? "/costumes/placeholder.png";
 
-  // 🌟 [추가된 보너스 로직] 부모(모달)에서 넘어온 이름을 슬래시(/) 기준으로 쪼갭니다!
+  // 부모(모달)에서 넘어온 이름을 슬래시(/) 기준으로 쪼갭니다!
   const rawSubtitle = preview.subtitle ?? "[카드 이름] 의상 이름";
   const splitNames = rawSubtitle.split("/").map(s => s.trim());
   
@@ -115,7 +116,7 @@ export default function CostumePreviewCard({ preview }: { preview: CostumePrevie
   const subtitle =
     currentSet?.subtitle ??
     currentChar.subtitle ??
-    dynamicSubtitle; // 👈 쪼개진 이름이 최종적으로 여기에 들어갑니다!
+    dynamicSubtitle; 
 
   const goChar = (dir: -1 | 1) => {
     const next = (charIdx + dir + safeChars.length) % safeChars.length;
@@ -215,11 +216,12 @@ export default function CostumePreviewCard({ preview }: { preview: CostumePrevie
                       showFull ? "w-17 text-right" : "w-12",
                     ].join(" ")}
                   >
-                    {visibleLabel}
-                    {/* 원본 우측 화살표 */}
+                    {/* 🌟 [수정됨] 모달창과 동일하게 화살표를 버튼 좌측으로 이동시키고 ➡ 모양으로 적용! */}
                     {active ? (
-                      <span className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-2 text-white/80">⬅</span>
+                      <span className="pointer-events-none absolute right-full top-1/2 -translate-y-1/2 mr-2 text-sky-400 text-[10px]">➡</span>
                     ) : null}
+                    
+                    {visibleLabel}
                   </button>
                 );
               })}

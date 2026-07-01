@@ -9,7 +9,6 @@ import CardItem from "@/components/CardItem";
 import { UserCardState } from "@/app/cards/page";
 import { FinalCardInfo } from "@/data/cards/template";
 import { calculateCardEventBonus } from "@/lib/bonusCalculator";
-// 🌟 [수정됨] 메인 화면용 의상 프리뷰 컴포넌트로 교체!
 import CostumePreviewCard from "@/components/CostumePreviewCard";
 
 const PREMIUM_BADGE_STYLE: React.CSSProperties = {
@@ -118,12 +117,13 @@ interface FutureEventCardProps {
   isFilterActive: boolean; 
   isEventMatched: boolean; 
   matchedCardIds: string[]; 
-  monthMarker?: string; 
+  monthMarker?: string;
+  daysLeft?: number; // 🌟 4. D-Day 계산 연동을 위한 Props 추가 
 }
 
 export default function FutureEventCard({ 
   event, userStates, onCardClick, showPostAwake, 
-  isFilterActive, isEventMatched, matchedCardIds, monthMarker 
+  isFilterActive, isEventMatched, matchedCardIds, monthMarker, daysLeft
 }: FutureEventCardProps) {
   
   const [isEventMode, setIsEventMode] = useState(false);
@@ -197,15 +197,15 @@ export default function FutureEventCard({
     ? "opacity-30 grayscale hover:opacity-60 transition-opacity duration-300" 
     : "opacity-100 transition-opacity duration-300";
 
-  // 🌟 [수정됨] 캐릭터마다 개별적으로 카드 이름을 전달하도록 변경!
+  // 🌟 1. [카드 이름] 의상명 포맷으로 뭉쳐서 내보내는 로직
   const combinedCostumeData = () => {
     const charsWithCostumes = pickupCards
       .map(p => (p.card as any).info || p.card)
       .filter(c => c.costume)
       .map(c => ({
         name: c.character,
-        title: c.cardName, // 🌟 [추가] 캐릭터별 카드 이름을 'title'로 꽂아줍니다!
-        subtitle: c.costume.name,
+        title: c.cardName, // 자식 컴포넌트에서 쓸 제목
+        subtitle: `${c.cardName} ${c.costume.name}`, // 자식 컴포넌트에서 쓸 부제목
         sets: c.costume.sets.map((set: any) => ({
           key: set.key, label: set.label, front: [set.front], back: [set.back]
         }))
@@ -214,7 +214,7 @@ export default function FutureEventCard({
     if (charsWithCostumes.length === 0) return null;
 
     return {
-      title: "", // 🌟 공통 타이틀은 비워둡니다 (자식 컴포넌트가 개별 타이틀을 우선적으로 띄우게 함)
+      title: "", 
       subtitle: "", 
       characters: charsWithCostumes
     };
@@ -248,7 +248,8 @@ export default function FutureEventCard({
                 key={displayBanner}
                 src={displayBanner} 
                 alt={`${event.name} 배너`}
-                className={`absolute inset-0 w-full h-full animate-fade-in ${isEventMode ? 'object-contain p-1.5' : 'object-cover'}`}
+                // 🌟 3. 이벤트 모드일 때 빈 공간 없이 사진 꽉 차게 object-cover 유지
+                className="absolute inset-0 w-full h-full animate-fade-in object-cover"
                 onError={(e) => { e.currentTarget.style.display = 'none'; }}
               />
             ) : (
@@ -285,7 +286,7 @@ export default function FutureEventCard({
 
       {/* ================= 중앙 타임라인 선 ================= */}
       <div className="hidden md:flex flex-col items-center justify-center relative z-20 w-10 shrink-0">
-        <div className="relative flex justify-center items-center">
+        <div className="relative flex flex-col justify-center items-center">
           {monthMarker && (
             <div className="absolute bottom-full mb-4 px-2.5 py-0.5 rounded-full bg-zinc-800 text-zinc-400 text-[11px] font-bold border border-white/10 shadow-sm z-30 whitespace-nowrap">
               {monthMarker}월
@@ -298,6 +299,19 @@ export default function FutureEventCard({
             </div>
           ) : (
             <div className={`w-4 h-4 rounded-full border-4 border-zinc-950 shadow-[0_0_15px_rgba(255,255,255,0.5)] transition-all ${isFilterActive && !isEventMatched ? 'bg-zinc-600' : 'bg-white'}`} />
+          )}
+
+          {/* 🌟 4. 중앙 점 바로 밑에 오늘 날짜 기준 D-Day 뱃지를 아주 예쁘게 달아줍니다! */}
+          {daysLeft !== undefined && (
+            <div className="absolute top-full mt-2.5 z-40 flex flex-col items-center animate-fade-in">
+              <span className={`px-2 py-0.5 rounded-full text-[10px] font-black whitespace-nowrap shadow-sm border ${
+                daysLeft === 0 ? 'bg-amber-500 text-zinc-950 border-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.6)]' 
+                : daysLeft < 0 ? 'bg-zinc-800 text-zinc-500 border-white/10' 
+                : 'bg-zinc-900 text-amber-400 border-amber-400/30'
+              }`}>
+                {daysLeft === 0 ? 'D-Day' : daysLeft < 0 ? '진행/종료' : `D-${daysLeft}`}
+              </span>
+            </div>
           )}
         </div>
       </div>
@@ -352,7 +366,6 @@ export default function FutureEventCard({
                  </>
                ) : (
                  <div className="flex items-center gap-1.5">
-                    {/* 🌟 🛍️ 버튼이 통상/한정 뱃지 바로 좌측에 예쁘게 배치됩니다! */}
                     {costumePreviewPayload && (
                       <button 
                         onClick={() => setShowCostumes(!showCostumes)} 
@@ -377,7 +390,6 @@ export default function FutureEventCard({
             </div>
           </div>
           
-          {/* 🌟 [개선됨] 🛍️ 버튼 토글에 따라 의상 프리뷰 창(1개로 합쳐짐) 렌더링! */}
           {showCostumes && !isEventMode && costumePreviewPayload ? (
             <div className="w-full shadow-2xl rounded-2xl bg-zinc-950/80 border border-white/10 overflow-hidden animate-fade-in">
               <CostumePreviewCard preview={costumePreviewPayload as any} />

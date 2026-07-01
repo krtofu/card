@@ -118,7 +118,7 @@ export function defineCharacterCards(
       if (cleanUnitName.includes("레오니") || cleanUnitName.includes("leo") || cleanUnitName === "l/n") suffix = "_l";
       else if (cleanUnitName.includes("모모점") || cleanUnitName.includes("more") || cleanUnitName === "mmj") suffix = "_m";
       else if (cleanUnitName.includes("비배스") || cleanUnitName.includes("vivid") || cleanUnitName === "vbs") suffix = "_v";
-      else if (cleanUnitName.includes("원더쇼") || cleanUnitName.includes("wonder") || cleanUnitName === "wds") suffix = "_w";
+      else if (cleanUnitName.includes("원더쇼") || cleanUnitName.includes("wonder") || cleanUnitName === "Wds") suffix = "_w";
       else if (cleanUnitName.includes("니고") || cleanUnitName.includes("25") || cleanUnitName === "ng" || cleanUnitName === "niigo") suffix = "_n";
       
       finalIconPath = `/icons/characters/${vsBase}${suffix}.png`;

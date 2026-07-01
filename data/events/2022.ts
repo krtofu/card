@@ -60,7 +60,7 @@ export const EVENTS_2022: EventData[] = [
     gacha: {
       bannerPath: "/gachas/22y/banner_22_04_w.png",
       types: ["통상"],
-      featuredCardIds: ["ng_Mafuyu_001", "ng_Kanade_001", "VS_MIKU_002"]
+      featuredCardIds: ["Wds_Rui_001", "Wds_Tsukasa_001", "VS_KAITO_001"]
     },
     eventBannerPath: "/events/22y/banner_22_03_w.png", 
   },

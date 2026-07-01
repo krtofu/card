@@ -6,7 +6,7 @@ const RuiWxs = defineCharacterCards("원더쇼", "카미시로 루이", "Wds", "
   cards: [
         {
           info: {
-            id: "wds_Rui_001",
+            id: "Wds_Rui_001",
             cardName: "[뜻밖의 지적]",
             attribute: "happy",
             gachaType: "통상",

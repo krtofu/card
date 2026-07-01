@@ -169,7 +169,7 @@ export default function CardDetailModal({
       if (unit.includes("레오니") || unit.includes("leo") || unit === "l/n") suffix = "_l";
       else if (unit.includes("모모점") || unit.includes("more") || unit === "mmj") suffix = "_m";
       else if (unit.includes("비배스") || unit.includes("vivid") || unit === "vbs") suffix = "_v";
-      else if (unit.includes("원더쇼") || unit.includes("wonder") || unit === "wds") suffix = "_w";
+      else if (unit.includes("원더쇼") || unit.includes("wonder") || unit === "Wds") suffix = "_w";
       else if (unit.includes("니고") || unit.includes("25") || unit === "ng" || unit === "niigo") suffix = "_n";
 
       return `/icons/characters/${vsBase}${suffix}.png`;
@@ -183,7 +183,7 @@ export default function CardDetailModal({
     if (lowerUnit.includes("레오니") || lowerUnit.includes("leo") || lowerUnit === "l/n") return "/icons/Leoneed.png";
     if (lowerUnit.includes("모모점") || lowerUnit.includes("more") || lowerUnit === "mmj") return "/icons/MMJ.png";
     if (lowerUnit.includes("비배스") || lowerUnit.includes("vivid") || lowerUnit === "vbs") return "/icons/VBS.png";
-    if (lowerUnit.includes("원더쇼") || lowerUnit.includes("wonder") || lowerUnit === "wds") return "/icons/Wds.png";
+    if (lowerUnit.includes("원더쇼") || lowerUnit.includes("wonder") || lowerUnit === "Wds") return "/icons/Wds.png";
     if (lowerUnit.includes("니고") || lowerUnit.includes("25") || lowerUnit === "ng" || lowerUnit === "niigo") return "/icons/Niigo.png";
     if (lowerUnit.includes("버싱") || lowerUnit.includes("virtual") || lowerUnit === "vs") return "/icons/VS.png";
     return "";
