@@ -4,7 +4,8 @@
 import { FinalCardInfo } from "@/data/cards/template";
 import { UserCardState } from "@/app/cards/page";
 import ModalCostumePreviewCard from "@/components/ModalCostumePreviewCard";
-import { useState, useEffect } from "react"; 
+import { createPortal } from "react-dom";
+import { useState, useEffect } from "react";
 
 // 🌟 스킬 보너스 계산 엔진 (모달 전용)
 const getSkillBonusPercentage = (skillType: string, level: number, unit: string, isAwakened: boolean, charRank: number = 1, isOwned: boolean = false) => {
@@ -59,7 +60,11 @@ export default function CardDetailModal({
   const [simMasterRank, setSimMasterRank] = useState(0);
   const [characterRank, setCharacterRank] = useState(1);
 
+  // 🌟 브라우저가 다 그려졌는지(mounted) 확인하는 상태 추가
+  const [mounted, setMounted] = useState(false);
+
   useEffect(() => {
+    setMounted(true); // 컴포넌트가 화면에 붙으면 true로 변경
     if (card) {
       const saved = localStorage.getItem("sekard_character_ranks");
       if (saved) {
@@ -71,7 +76,8 @@ export default function CardDetailModal({
     }
   }, [card]);
 
-  if (!card) return null;
+  // 카드가 없거나 아직 브라우저에 안 그려졌으면(SSR 방지) 아무것도 안 보여줌
+  if (!card || !mounted) return null;
 
   const postIllustration = card.thumbPostPath 
     ? card.thumbPostPath.replace("thumb_post.png", "post.png") : "";
@@ -194,7 +200,8 @@ export default function CardDetailModal({
   const skillInfo = getSkillInfo(card.skillType || ""); 
   const characterIconPath = getCharacterIcon(card.character || "", card.unit || ""); 
 
-  return (
+  // 🌟 여기서부터 createPortal 래핑 시작!
+  return createPortal(
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md transition-opacity">
       <div className="absolute inset-0" onClick={onClose} />
 
@@ -259,7 +266,6 @@ export default function CardDetailModal({
               </div>
               
               <div className="flex flex-wrap items-center justify-end gap-1.5 shrink-0">
-                {/* 🌟 [개선됨] 헷갈리던 동적 스킬 뱃지를 스킬 정보에서 싹 지우고 원래대로 깔끔하게 복구했습니다. */}
                 {skillInfo.src ? (
                   <div className="relative group flex items-center justify-center cursor-help">
                     <img src={skillInfo.src} alt={skillInfo.label} className="w-[26px] h-[26px] object-contain drop-shadow-md shrink-0" />
@@ -456,7 +462,6 @@ export default function CardDetailModal({
                 </div>
               </div>
 
-              {/* 🌟 [개선됨] 스킬 배수 뱃지를 시뮬레이션 글씨 옆으로 완전히 이사시켰습니다! (하늘색 & ⇪ 테마 통일) */}
               <div className="space-y-1.5 pt-2 border-t border-white/5 mt-2">
                 <div className="flex justify-between items-center text-xs mb-1">
                   <div className="flex items-center gap-2">
@@ -503,6 +508,7 @@ export default function CardDetailModal({
 
         </div>
       </div>
-    </div>
+    </div>,
+    document.body // 🌟 [추가됨] 브라우저 최상단 HTML body에 붙여서 컨트롤 바를 가립니다!
   );
 }
