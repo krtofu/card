@@ -47,4 +47,21 @@ export const EVENTS_2022: EventData[] = [
     },
     eventBannerPath: "/events/22y/banner_22_02_n.png", 
   },
+  {
+    id: "gacha_event_22_03",
+    name: "젠틀★포테이토 스타 뽑기",
+    eventName: "전력! 원더 핼러윈!",
+    eventType: "하코",
+    period: { start: "2022-06-06. 15:00", end: "2022-06-14. 14:59" },
+    bonus: {
+      attribute: "happy",
+      unit: "Wds"
+    },
+    gacha: {
+      bannerPath: "/gachas/22y/banner_22_04_w.png",
+      types: ["통상"],
+      featuredCardIds: ["ng_Mafuyu_001", "ng_Kanade_001", "VS_MIKU_002"]
+    },
+    eventBannerPath: "/events/22y/banner_22_03_w.png", 
+  },
 ];

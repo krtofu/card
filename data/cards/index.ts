@@ -8,7 +8,7 @@ import { RinCards } from "./VS/RIN";
 import { LenCards } from "./VS/LEN";
 import { LukaCards } from "./VS/LUKA";
 // import { MeikoCards } from "./VS/MEIKO";
-// import { KaitoCards } from "./VS/KAITO";
+import { KaitoCards } from "./VS/KAITO";
 
 const VS_CARDS = [
   ...MikuCards,
@@ -16,7 +16,7 @@ const VS_CARDS = [
   ...LenCards,
   ...LukaCards,
   // ...MeikoCards,
-  // ...KaitoCards,
+  ...KaitoCards,
 ];
 
 // ==========================================
@@ -67,16 +67,16 @@ const VBS_CARDS = [
 // ==========================================
 // 🎪 5. Wonderlands×Showtime (Wds)
 // ==========================================
-// import { TsukasaCards } from "./Wds/Tsukasa";
+import { TsukasaCards } from "./Wds/Tsukasa";
 // import { EmuCards } from "./Wds/Emu";
 // import { NeneCards } from "./Wds/Nene";
-// import { RuiCards } from "./Wds/Rui";
+import { RuiCards } from "./Wds/Rui";
 
 const Wds_CARDS = [
-  // ...TsukasaCards,
+ ...TsukasaCards,
   // ...EmuCards,
   // ...NeneCards,
-  // ...RuiCards,
+ ...RuiCards,
 ];
 
 // ==========================================

@@ -197,14 +197,15 @@ export default function FutureEventCard({
     ? "opacity-30 grayscale hover:opacity-60 transition-opacity duration-300" 
     : "opacity-100 transition-opacity duration-300";
 
-  // 🌟 [핵심 변경] 모든 픽업 카드의 의상 데이터를 하나로 뭉쳐서 CostumePreviewCard에 던질 준비를 합니다!
+  // 🌟 [수정됨] 캐릭터마다 개별적으로 카드 이름을 전달하도록 변경!
   const combinedCostumeData = () => {
     const charsWithCostumes = pickupCards
       .map(p => (p.card as any).info || p.card)
       .filter(c => c.costume)
       .map(c => ({
         name: c.character,
-        subtitle: c.costume.name, // 각 캐릭터별 개별 부제
+        title: c.cardName, // 🌟 [추가] 캐릭터별 카드 이름을 'title'로 꽂아줍니다!
+        subtitle: c.costume.name,
         sets: c.costume.sets.map((set: any) => ({
           key: set.key, label: set.label, front: [set.front], back: [set.back]
         }))
@@ -213,10 +214,7 @@ export default function FutureEventCard({
     if (charsWithCostumes.length === 0) return null;
 
     return {
-      title: event.gacha.types.includes("월링") || event.eventType === "하코" 
-        ? `${event.eventName} 의상` 
-        : "픽업 의상 프리뷰",
-      // 캐릭터가 바뀔 때 subtitle이 바뀌어야 하므로 빈 문자열로 넘기고 자식 컴포넌트에서 해결합니다
+      title: "", // 🌟 공통 타이틀은 비워둡니다 (자식 컴포넌트가 개별 타이틀을 우선적으로 띄우게 함)
       subtitle: "", 
       characters: charsWithCostumes
     };
