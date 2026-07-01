@@ -120,7 +120,7 @@ export default function FuturePage() {
       const matchGacha = getStr(card.gachaPoolName).includes(q);
       
       const matchCostume = getStr(card.costume?.name).includes(q); 
-      const matchSong = getStr(card.songName).includes(q);         
+      const matchSong = getStr(card.songName).includes(q);        
       const matchSkill = getStr(card.skillType).includes(q);       
       const matchUnit = getStr(card.unit).includes(q);             
       
@@ -229,14 +229,17 @@ export default function FuturePage() {
 
   const visibleEvents = hideUnmatchedEvents ? processedEvents.filter(e => e.isEventMatched) : processedEvents;
 
-  const visibleEventsWithGap = visibleEvents.map((item, index) => {
-    let gapDays = 0;
-    if (index < visibleEvents.length - 1) {
-      const d1 = new Date(item.event.period.start.split('.')[0]);
-      const d2 = new Date(visibleEvents[index + 1].event.period.start.split('.')[0]);
-      gapDays = Math.floor((d2.getTime() - d1.getTime()) / 86400000);
-    }
-    return { ...item, gapDays };
+  // 🌟 [수정됨] 간격(gapDays) 대신 진짜 D-Day 계산 로직으로 교체!
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const visibleEventsWithDaysLeft = visibleEvents.map((item) => {
+    const startStr = item.event.period.start.split(' ')[0].replace(/\./g, '-');
+    const eventDate = new Date(startStr);
+    eventDate.setHours(0, 0, 0, 0);
+    const diffTime = eventDate.getTime() - today.getTime();
+    const daysLeft = Math.ceil(diffTime / 86400000);
+    return { ...item, daysLeft };
   });
 
   let lastRenderedYear = "";
@@ -500,10 +503,8 @@ export default function FuturePage() {
       {/* ========================================= */}
       {/* 👉 우측 영역: 미래시 타임라인 본문 */}
       {/* ========================================= */}
-      {/* 🌟 overflow-hidden을 제거하여 Sticky가 완벽하게 작동하도록 수정! */}
       <div className="flex-1 flex flex-col min-w-0 bg-zinc-900/30 rounded-3xl p-4 md:p-6 border border-white/5 relative">
         
-        {/* 🌟 [개선됨] 연도 뱃지를 텍스트 우측으로 나란히 합치고 레이아웃 재배치! */}
         <div className="sticky top-0 bg-zinc-950/85 backdrop-blur-md py-4 -mx-4 md:-mx-6 px-4 md:px-6 rounded-t-3xl border-b border-white/5 z-50 flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-4">
           <div>
             <div className="flex items-center gap-3">
@@ -528,7 +529,6 @@ export default function FuturePage() {
               🔍 필터
             </button>
 
-            {/* 🌟 [개선됨] 👻 유령 버튼: 활성화 시 꽉 찬 인디고 배경과 네온사인 그림자 적용! */}
             <button 
               onClick={() => setHideUnmatchedEvents(!hideUnmatchedEvents)}
               className={`hidden sm:flex items-center justify-center h-[34px] rounded-full text-[12px] font-bold transition-all shadow-sm border ${
@@ -549,7 +549,6 @@ export default function FuturePage() {
               👻
             </button>
 
-            {/* 확장된 검색창 */}
             <div className="relative flex items-center w-full sm:w-64 lg:w-80">
               <span className="absolute left-3 text-zinc-400 text-sm">🔍</span>
               <input
@@ -577,7 +576,8 @@ export default function FuturePage() {
           <div className="absolute left-1/2 top-0 bottom-0 w-px bg-white/10 -translate-x-1/2 hidden md:block" />
           
           <div className="space-y-12 pb-20">
-            {visibleEventsWithGap.map(({ event, isEventMatched, matchedCardIds, gapDays }, index) => {
+            {/* 🌟 [수정됨] 간격(gapDays) 대신 진짜 D-Day 남은 일수(daysLeft)를 map에서 뽑아 넘겨줍니다. */}
+            {visibleEventsWithDaysLeft.map(({ event, isEventMatched, matchedCardIds, daysLeft }, index) => {
               
               const eventYear = event.period.start.split('-')[0];
               const eventMonth = event.period.start.split('-')[1];
@@ -586,7 +586,6 @@ export default function FuturePage() {
               const showYearMarker = eventYear !== lastRenderedYear;
               if (showYearMarker) lastRenderedYear = eventYear;
 
-              // 🌟 [개선됨] 덜 튀는 월 뱃지를 위해 별도 블록 렌더링 제거 후 prop으로 컴포넌트에 넘겨줍니다!
               const showMonthMarker = eventYearMonth !== lastRenderedMonth;
               if (showMonthMarker) lastRenderedMonth = eventYearMonth;
 
@@ -625,7 +624,6 @@ export default function FuturePage() {
                     </div>
                   )}
 
-                  {/* 🌟 월 뱃지는 이제 중앙선 위에 얹어집니다! */}
                   <FutureEventCard 
                     event={event} 
                     index={index} 
@@ -636,15 +634,11 @@ export default function FuturePage() {
                     isEventMatched={isEventMatched}
                     matchedCardIds={matchedCardIds}
                     monthMarker={showMonthMarker ? eventMonth : undefined}
+                    // 🌟 1. 이 줄이 핵심! props로 daysLeft를 FutureEventCard에 쏴줍니다. 
+                    daysLeft={hideUnmatchedEvents ? daysLeft : undefined}
                   />
 
-                  {hideUnmatchedEvents && gapDays > 0 && (
-                     <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center">
-                       <span className="bg-zinc-900 text-zinc-400 text-[10px] px-3 py-0.5 rounded-full border border-white/10 font-bold whitespace-nowrap shadow-sm">
-                         ⏳ {gapDays}일 후
-                       </span>
-                     </div>
-                  )}
+                  {/* 🌟 2. 하단에 달려있던 쓸데없는 gapDays 블록은 깔끔하게 삭제했습니다! */}
                 </div>
               );
             })}
@@ -657,7 +651,7 @@ export default function FuturePage() {
   );
 }
 
-// (이하 필터 배열 데이터는 완벽히 동일합니다!)
+// (이하 데이터는 생략: 유지)
 type CharDef = { id: string; name: string; img: string; isVirtual?: boolean; matchKeys?: string[] };
 type UnitDef = { id: string; name: string; logo: string; chars: CharDef[] };
 type AttrDef = { id: string; name: string; img: string };

@@ -202,7 +202,7 @@ export default function CardDetailModal({
 
   // 🌟 여기서부터 createPortal 래핑 시작!
   return createPortal(
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md transition-opacity">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md transition-opacity">
       <div className="absolute inset-0" onClick={onClose} />
 
       <div className="relative w-full max-w-6xl max-h-[95vh] overflow-y-auto rounded-3xl border border-white/10 bg-zinc-950 p-6 shadow-2xl transition-all flex flex-col custom-scrollbar">
