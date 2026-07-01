@@ -3,6 +3,11 @@
 /* 🌟 테일윈드 v4에게 클래스 기반 다크모드를 강제하는 마법의 명령어 */
 @variant dark (&:where(.dark, .dark *));
 
+/* 🌟 앱 전체 포인트 컬러 (기본값: 하츠네 미쿠 청록색) */
+:root {
+  --color-primary: #39C5BB; 
+}
+
 body {
   font-family: Arial, Helvetica, sans-serif;
 }
@@ -50,7 +55,7 @@ body {
 
 /* 얇고 고급스러운 다크 테마 커스텀 스크롤바 */
 .custom-scrollbar::-webkit-scrollbar {
-  width: 6px; /* 스크롤바의 너비 (원하시면 더 얇게 4px로 하셔도 됩니다!) */
+  width: 6px; /* 스크롤바의 너비 */
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
