@@ -3,7 +3,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useTheme } from "next-themes";
-import { useThemeColor } from "@/providers/ThemeColorProvider";
+import { useThemeColor } from "@/app/providers";
 import { CHARACTER_COLORS, CharacterName } from "@/lib/colors";
 
 export default function ThemeToggle() {
