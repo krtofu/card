@@ -6,7 +6,6 @@ import { useTheme } from "next-themes";
 import { useThemeColor } from "@/app/providers";
 import { CHARACTER_COLORS, UNIT_COLORS } from "@/lib/colors";
 
-// 🌟 완벽한 교통정리를 위한 그룹화 데이터
 const THEME_GROUPS = [
   { label: "VIRTUAL SINGER", unit: { name: "버싱", hex: UNIT_COLORS["버싱"] }, chars: ["하츠네 미쿠", "카가미네 린", "카가미네 렌", "메구리네 루카", "메이코", "카이토"] },
   { label: "Leo/need", unit: { name: "레오니", hex: UNIT_COLORS["레오니"] }, chars: ["호시노 이치카", "텐마 사키", "모치즈키 호나미", "히노모리 시호"] },
@@ -72,12 +71,34 @@ export default function ThemeToggle() {
 
           <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 block mb-2">포인트 컬러 테마</span>
           
-          {/* 그룹 간격 최적화 */}
           <div className="flex flex-col">
+            
+            {/* 🌟 1. 순수 다크/라이트 (오리지널 무채색) 그룹 추가 */}
+            <div className="flex flex-col py-2.5 border-b border-zinc-100 dark:border-white/5 first:pt-1">
+              <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 tracking-wider mb-1.5">
+                BASIC & ORIGINAL
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setThemeColor("오리지널 먹색" as any)}
+                  className={`w-6 h-6 rounded-md border-2 transition-all shrink-0 ${themeColor === "오리지널 먹색" ? "border-zinc-900 dark:border-white scale-110 shadow-md" : "border-transparent hover:scale-110"}`}
+                  style={{ backgroundColor: "#71717a" }}
+                  title="순수 다크모드 느낌 (오리지널 먹색)"
+                />
+                <button
+                  onClick={() => setThemeColor("퓨어 화이트" as any)}
+                  className={`w-6 h-6 rounded-md border-2 transition-all shrink-0 ${themeColor === "퓨어 화이트" ? "border-zinc-900 dark:border-white scale-110 shadow-md" : "border-transparent hover:scale-110"}`}
+                  style={{ backgroundColor: "#d4d4d8" }}
+                  title="순수 라이트모드 느낌 (퓨어 화이트)"
+                />
+              </div>
+            </div>
+
+            {/* 🌟 2. 기존 유닛 컬러 그룹들 */}
             {THEME_GROUPS.map((group, idx) => (
               <div 
                 key={group.label} 
-                className="flex flex-col py-2.5 border-b border-zinc-100 dark:border-white/5 first:pt-1 last:pb-0 last:border-0"
+                className="flex flex-col py-2.5 border-b border-zinc-100 dark:border-white/5 last:pb-0 last:border-0"
               >
                 <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 tracking-wider mb-1.5">
                   {group.label}

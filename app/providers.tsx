@@ -6,8 +6,13 @@ import { ThemeProvider } from "next-themes";
 import type { ReactNode } from "react";
 import { CHARACTER_COLORS, UNIT_COLORS } from "@/lib/colors"; 
 
-// 🌟 캐릭터 색상과 유닛 색상을 하나로 합칩니다!
-const ALL_COLORS = { ...CHARACTER_COLORS, ...UNIT_COLORS };
+// 🌟 오리지널 무채색 테마 추가! (순수 다크 / 순수 라이트 포인트 컬러)
+const BASIC_COLORS = {
+  "오리지널 먹색": "#71717a", // 차분한 zinc-500 톤
+  "퓨어 화이트": "#d4d4d8", // 깔끔한 zinc-300 톤
+};
+
+const ALL_COLORS = { ...CHARACTER_COLORS, ...UNIT_COLORS, ...BASIC_COLORS };
 type ThemeKey = keyof typeof ALL_COLORS | "default";
 
 type ThemeColorContextType = {
