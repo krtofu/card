@@ -118,7 +118,7 @@ interface FutureEventCardProps {
   isEventMatched: boolean; 
   matchedCardIds: string[]; 
   monthMarker?: string;
-  daysLeft?: number; // 🌟 4. D-Day 계산 연동을 위한 Props 추가 
+  daysLeft?: number; 
 }
 
 export default function FutureEventCard({ 
@@ -197,15 +197,14 @@ export default function FutureEventCard({
     ? "opacity-30 grayscale hover:opacity-60 transition-opacity duration-300" 
     : "opacity-100 transition-opacity duration-300";
 
-  // 🌟 1. [카드 이름] 의상명 포맷으로 뭉쳐서 내보내는 로직
   const combinedCostumeData = () => {
     const charsWithCostumes = pickupCards
       .map(p => (p.card as any).info || p.card)
       .filter(c => c.costume)
       .map(c => ({
         name: c.character,
-        title: c.cardName, // 자식 컴포넌트에서 쓸 제목
-        subtitle: `${c.cardName} ${c.costume.name}`, // 자식 컴포넌트에서 쓸 부제목
+        title: c.cardName, 
+        subtitle: `${c.cardName} ${c.costume.name}`, 
         sets: c.costume.sets.map((set: any) => ({
           key: set.key, label: set.label, front: [set.front], back: [set.back]
         }))
@@ -227,33 +226,33 @@ export default function FutureEventCard({
       
       {/* ================= 좌측: 배너 영역 ================= */}
       <div className="flex-1 w-full relative z-10 flex flex-col justify-center md:px-4 py-2 shrink-0">
-        <div className="w-full max-w-[520px] mx-auto bg-zinc-900 border border-white/10 rounded-2xl overflow-visible shadow-xl flex flex-col relative h-fit">
+        {/* 🌟 다크/라이트모드 배경 대응 */}
+        <div className="w-full max-w-[520px] mx-auto bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 rounded-2xl overflow-visible shadow-xl flex flex-col relative h-fit transition-colors">
           
           {event.bonus && (
              <div className="absolute -left-6 sm:-left-12 md:-left-[70px] top-1/2 -translate-y-1/2 flex items-center z-50">
                <button
                  onClick={() => { setIsEventMode(!isEventMode); setShowCostumes(false); }}
-                 className="w-10 h-10 rounded-full bg-zinc-800 border-[3px] border-zinc-950 shadow-[0_0_15px_rgba(0,0,0,0.5)] flex items-center justify-center text-[18px] hover:bg-zinc-700 hover:scale-110 transition-transform z-10 relative"
+                 className="w-10 h-10 rounded-full bg-white dark:bg-zinc-800 border-[3px] border-zinc-200 dark:border-zinc-950 shadow-[0_0_15px_rgba(0,0,0,0.1)] dark:shadow-[0_0_15px_rgba(0,0,0,0.5)] flex items-center justify-center text-[18px] hover:bg-zinc-100 dark:hover:bg-zinc-700 hover:scale-110 transition-all z-10 relative"
                  title={isEventMode ? "가챠 배너로 돌아가기" : "이벤트 배너 보기"}
                >
                  {isEventMode ? '🎪' : '🎰'}
                </button>
-               <div className="w-6 sm:w-10 md:w-[46px] h-[3px] bg-zinc-600 absolute left-5 top-1/2 -translate-y-1/2 -z-10 shadow-sm" />
+               <div className="w-6 sm:w-10 md:w-[46px] h-[3px] bg-zinc-300 dark:bg-zinc-600 absolute left-5 top-1/2 -translate-y-1/2 -z-10 shadow-sm transition-colors" />
              </div>
           )}
 
-          <div className="relative aspect-[21/9] w-full bg-zinc-950/40 flex items-center justify-center border-b border-white/10 overflow-hidden rounded-t-2xl shrink-0">
+          <div className="relative aspect-[21/9] w-full bg-zinc-100 dark:bg-zinc-950/40 flex items-center justify-center border-b border-zinc-200 dark:border-white/10 overflow-hidden rounded-t-2xl shrink-0 transition-colors">
             {displayBanner ? (
               <img 
                 key={displayBanner}
                 src={displayBanner} 
                 alt={`${event.name} 배너`}
-                // 🌟 3. 이벤트 모드일 때 빈 공간 없이 사진 꽉 차게 object-cover 유지
                 className="absolute inset-0 w-full h-full animate-fade-in object-cover"
                 onError={(e) => { e.currentTarget.style.display = 'none'; }}
               />
             ) : (
-              <span className="text-zinc-600 text-sm font-bold tracking-widest">NO BANNER IMAGE</span>
+              <span className="text-zinc-400 dark:text-zinc-600 text-sm font-bold tracking-widest transition-colors">NO BANNER IMAGE</span>
             )}
             
             {!isEventMode && (
@@ -271,12 +270,12 @@ export default function FutureEventCard({
             )}
           </div>
           
-          <div className="p-4 bg-zinc-950/90 backdrop-blur-sm relative z-20 flex justify-between items-end flex-1 rounded-b-2xl">
+          <div className="p-4 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-sm relative z-20 flex justify-between items-end flex-1 rounded-b-2xl transition-colors">
             <div className="min-w-0">
-              <h3 className="text-lg font-bold text-white mb-1 truncate pr-2">
+              <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-1 truncate pr-2 transition-colors">
                 {isEventMode ? (event.eventName || event.name) : event.name}
               </h3>
-              <p className="text-sm font-medium text-zinc-400">
+              <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400 transition-colors">
                 🕒 {event.period.start} ~ {event.period.end}
               </p>
             </div>
@@ -288,41 +287,29 @@ export default function FutureEventCard({
       <div className="hidden md:flex flex-col items-center justify-center relative z-20 w-10 shrink-0">
         <div className="relative flex flex-col justify-center items-center">
           {monthMarker && (
-            <div className="absolute bottom-full mb-4 px-2.5 py-0.5 rounded-full bg-zinc-800 text-zinc-400 text-[11px] font-bold border border-white/10 shadow-sm z-30 whitespace-nowrap">
+            <div className="absolute bottom-full mb-4 px-2.5 py-0.5 rounded-full bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 text-[11px] font-bold border border-zinc-200 dark:border-white/10 shadow-sm z-30 whitespace-nowrap transition-colors">
               {monthMarker}월
             </div>
           )}
 
           {unitLogo ? (
-            <div className="w-9 h-9 rounded-full bg-zinc-900 border-2 border-white/20 shadow-[0_0_15px_rgba(255,255,255,0.3)] z-20 flex items-center justify-center overflow-hidden p-1 transition-all">
-               <img src={unitLogo} alt="Unit Logo" className="w-full h-full object-contain drop-shadow-md" />
+            <div className="w-9 h-9 rounded-full bg-white dark:bg-zinc-900 border-2 border-zinc-200 dark:border-white/20 shadow-md dark:shadow-[0_0_15px_rgba(255,255,255,0.3)] z-20 flex items-center justify-center overflow-hidden p-1 transition-all">
+               <img src={unitLogo} alt="Unit Logo" className="w-full h-full object-contain drop-shadow-sm dark:drop-shadow-md" />
             </div>
           ) : (
-            <div className={`w-4 h-4 rounded-full border-4 border-zinc-950 shadow-[0_0_15px_rgba(255,255,255,0.5)] transition-all ${isFilterActive && !isEventMatched ? 'bg-zinc-600' : 'bg-white'}`} />
+            <div className={`w-4 h-4 rounded-full border-4 border-zinc-200 dark:border-zinc-950 shadow-md dark:shadow-[0_0_15px_rgba(255,255,255,0.5)] transition-all ${isFilterActive && !isEventMatched ? 'bg-zinc-300 dark:bg-zinc-600' : 'bg-primary dark:bg-white'}`} />
           )}
 
-          {/* 🌟 4. 중앙 점 바로 밑에 오늘 날짜 기준 D-Day 뱃지를 아주 예쁘게 달아줍니다! */}
-          {daysLeft !== undefined && (
-            <div className="absolute top-full mt-2.5 z-40 flex flex-col items-center animate-fade-in">
-              <span className={`px-2 py-0.5 rounded-full text-[10px] font-black whitespace-nowrap shadow-sm border ${
-                daysLeft === 0 ? 'bg-amber-500 text-zinc-950 border-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.6)]' 
-                : daysLeft < 0 ? 'bg-zinc-800 text-zinc-500 border-white/10' 
-                : 'bg-zinc-900 text-amber-400 border-amber-400/30'
-              }`}>
-                {daysLeft === 0 ? 'D-Day' : daysLeft < 0 ? '진행/종료' : `D-${daysLeft}`}
-              </span>
-            </div>
-          )}
         </div>
       </div>
 
       {/* ================= 우측: 카드 목록 ================= */}
       <div className="flex-1 w-full relative z-10 flex flex-col justify-center md:px-4 py-2 shrink-0">
-        <div className="bg-zinc-900/30 border border-white/5 rounded-3xl p-6 w-full max-w-[520px] mx-auto flex flex-col h-fit">
+        <div className="bg-white/50 dark:bg-zinc-900/30 border border-zinc-200 dark:border-white/5 rounded-3xl p-6 w-full max-w-[520px] mx-auto flex flex-col h-fit transition-colors">
           
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-white/10 shrink-0">
-            <div className="flex items-center gap-1.5 font-bold text-zinc-300 text-sm">
-              {isEventMode ? <><span className="text-amber-400">🎁</span> 이벤트 보너스 멤버</> : <><span className="text-sky-400">✨</span> 가챠 픽업 멤버</>}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-zinc-200 dark:border-white/10 shrink-0 transition-colors">
+            <div className="flex items-center gap-1.5 font-bold text-zinc-700 dark:text-zinc-300 text-sm transition-colors">
+              {isEventMode ? <><span className="text-amber-500 dark:text-amber-400">🎁</span> 이벤트 보너스 멤버</> : <><span className="text-primary dark:text-sky-400">✨</span> 가챠 픽업 멤버</>}
             </div>
             
             <div className="flex items-center gap-2">
@@ -330,33 +317,33 @@ export default function FutureEventCard({
                  <>
                    <button
                      onClick={() => setSortMode(prev => prev === "bonus" ? "score" : "bonus")}
-                     className="w-7 h-7 flex items-center justify-center rounded-full bg-zinc-800 border border-white/10 text-zinc-400 hover:text-white hover:bg-zinc-700 transition-colors shadow-sm"
+                     className="w-7 h-7 flex items-center justify-center rounded-full bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-white/10 text-zinc-500 dark:text-zinc-400 hover:text-primary dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors shadow-sm"
                      title={sortMode === "bonus" ? "이벤포순 정렬 중 (클릭 시 스업 수치순)" : "스업 수치순 정렬 중 (클릭 시 이벤포순)"}
                    >
                      {sortMode === "bonus" ? "✦" : "⇪"}
                    </button>
 
                    {sortMode === "bonus" ? (
-                     <div className="flex items-center bg-zinc-800 border border-white/10 rounded-full p-1 shadow-sm animate-fade-in">
-                        <span className="text-[10px] text-zinc-400 font-bold px-2 whitespace-nowrap hidden sm:inline-block">미보유 기준 마랭</span>
-                        <span className="text-[10px] text-zinc-400 font-bold pl-2 pr-1 whitespace-nowrap sm:hidden">마랭</span>
+                     <div className="flex items-center bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-white/10 rounded-full p-1 shadow-sm animate-fade-in transition-colors">
+                        <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold px-2 whitespace-nowrap hidden sm:inline-block">미보유 기준 마랭</span>
+                        <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold pl-2 pr-1 whitespace-nowrap sm:hidden">마랭</span>
                         <div className="flex gap-0.5 pr-0.5">
                           {[0, 1, 2, 3, 4, 5].map(lv => (
                             <button key={lv} onClick={() => setRefMasterRank(lv)}
-                              className={`w-[20px] h-[20px] flex items-center justify-center rounded-full text-[10px] font-bold transition-all ${refMasterRank === lv ? 'bg-amber-500/20 text-amber-300 border border-amber-400/50 scale-105' : 'text-zinc-500 hover:bg-zinc-700 hover:text-zinc-200'}`}>
+                              className={`w-[20px] h-[20px] flex items-center justify-center rounded-full text-[10px] font-bold transition-all ${refMasterRank === lv ? 'bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-300 dark:border-amber-400/50 scale-105' : 'text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-700 hover:text-zinc-800 dark:hover:text-zinc-200'}`}>
                               {lv}
                             </button>
                           ))}
                         </div>
                      </div>
                    ) : (
-                     <div className="flex items-center bg-zinc-800 border border-white/10 rounded-full p-1 shadow-sm animate-fade-in">
-                        <span className="text-[10px] text-zinc-400 font-bold px-2 whitespace-nowrap hidden sm:inline-block">미보유 기준 Lv</span>
-                        <span className="text-[10px] text-zinc-400 font-bold pl-2 pr-1 whitespace-nowrap sm:hidden">Lv</span>
+                     <div className="flex items-center bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-white/10 rounded-full p-1 shadow-sm animate-fade-in transition-colors">
+                        <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold px-2 whitespace-nowrap hidden sm:inline-block">미보유 기준 Lv</span>
+                        <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold pl-2 pr-1 whitespace-nowrap sm:hidden">Lv</span>
                         <div className="flex gap-0.5 pr-0.5">
                           {[1, 2, 3, 4].map(lv => (
                             <button key={lv} onClick={() => setRefSkillLevel(lv)}
-                              className={`w-[20px] h-[20px] flex items-center justify-center rounded-full text-[10px] font-bold transition-all ${refSkillLevel === lv ? 'bg-sky-500/20 text-sky-300 border border-sky-400/50 scale-105' : 'text-zinc-500 hover:bg-zinc-700 hover:text-zinc-200'}`}>
+                              className={`w-[20px] h-[20px] flex items-center justify-center rounded-full text-[10px] font-bold transition-all ${refSkillLevel === lv ? 'bg-primary/20 text-primary border border-primary/50 scale-105' : 'text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-700 hover:text-zinc-800 dark:hover:text-zinc-200'}`}>
                               {lv}
                             </button>
                           ))}
@@ -371,8 +358,8 @@ export default function FutureEventCard({
                         onClick={() => setShowCostumes(!showCostumes)} 
                         className={`w-[30px] h-[30px] rounded-full flex items-center justify-center transition-all shadow-md text-[14px] ${
                           showCostumes 
-                            ? 'bg-pink-500/20 border border-pink-500/50 shadow-[0_0_10px_rgba(236,72,153,0.3)]' 
-                            : 'bg-zinc-800 border border-white/10 hover:bg-zinc-700'
+                            ? 'bg-pink-100 dark:bg-pink-500/20 border border-pink-300 dark:border-pink-500/50 shadow-[0_0_10px_rgba(236,72,153,0.3)]' 
+                            : 'bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-white/10 hover:bg-zinc-50 dark:hover:bg-zinc-700'
                         }`}
                         title={showCostumes ? "카드 보기" : "의상 프리뷰 보기"}
                       >
@@ -391,7 +378,7 @@ export default function FutureEventCard({
           </div>
           
           {showCostumes && !isEventMode && costumePreviewPayload ? (
-            <div className="w-full shadow-2xl rounded-2xl bg-zinc-950/80 border border-white/10 overflow-hidden animate-fade-in">
+            <div className="w-full shadow-2xl rounded-2xl bg-white/90 dark:bg-zinc-950/80 border border-zinc-200 dark:border-white/10 overflow-hidden animate-fade-in transition-colors">
               <CostumePreviewCard preview={costumePreviewPayload as any} />
             </div>
           ) : (

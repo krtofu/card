@@ -6,7 +6,6 @@ import { useTheme } from "next-themes";
 import { useThemeColor } from "@/app/providers";
 import { CHARACTER_COLORS, UNIT_COLORS } from "@/lib/colors";
 
-// 🌟 완벽한 교통정리를 위한 그룹화 데이터
 const THEME_GROUPS = [
   { label: "VIRTUAL SINGER", unit: { name: "버싱", hex: UNIT_COLORS["버싱"] }, chars: ["하츠네 미쿠", "카가미네 린", "카가미네 렌", "메구리네 루카", "메이코", "카이토"] },
   { label: "Leo/need", unit: { name: "레오니", hex: UNIT_COLORS["레오니"] }, chars: ["호시노 이치카", "텐마 사키", "모치즈키 호나미", "히노모리 시호"] },
@@ -41,9 +40,10 @@ export default function ThemeToggle() {
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         aria-label="테마 및 색상 설정"
-        className="relative p-1.5 rounded-full text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all active:scale-95"
+        className="relative p-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all active:scale-95"
       >
-        <span className="text-xl leading-none block drop-shadow-[0_0_8px_var(--color-primary)]">
+        {/* 🌟 그림자(drop-shadow)를 제거하고, 아이콘 글씨 색상 자체를 primary로 변경했습니다! */}
+        <span className="text-xl leading-none block text-primary transition-colors">
           {isDark ? "☾" : "☀︎"}
         </span>
       </button>
@@ -68,15 +68,12 @@ export default function ThemeToggle() {
 
           <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 block mb-2">포인트 컬러 테마</span>
           
-          {/* 🌟 [수정됨] 마구잡이로 뛰던 여백을 깔끔하게 통일했습니다! */}
           <div className="flex flex-col">
             {THEME_GROUPS.map((group, idx) => (
               <div 
                 key={group.label} 
-                // 🌟 그룹 간 위아래 패딩(py-2.5)과 밑줄(border-b)을 일괄 적용하고, 첫/마지막 요소 여백을 제거!
                 className="flex flex-col py-2.5 border-b border-zinc-100 dark:border-white/5 first:pt-1 last:pb-0 last:border-0"
               >
-                {/* 🌟 소제목과 버튼 사이의 간격은 mb-1.5 (6px)로 쫀쫀하게! */}
                 <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 tracking-wider mb-1.5">
                   {group.label}
                 </span>

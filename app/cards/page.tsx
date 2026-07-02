@@ -331,12 +331,12 @@ export default function MyCardsPage() {
                   <button onClick={() => toggleFilter(selectedHairs, setSelectedHairs, "hair_o")}
                     className={`relative group aspect-square rounded-full p-1 transition-all duration-300 w-full h-full ${selectedHairs.includes("hair_o") ? "bg-primary/20 scale-105 ring-2 ring-primary" : "bg-zinc-100 dark:bg-zinc-900 scale-[0.85] hover:scale-95"} ${!isAnyHairSelected || selectedHairs.includes("hair_o") ? "opacity-100" : "opacity-40 hover:opacity-100"}`}>
                     <img src="/icons/status/hair_o.png" alt="헤어 O" className="w-full h-full object-contain" />
-                    <span className={TOOLTIP_CLASS}>헤어 개방 가능</span>
+                    <span className={TOOLTIP_CLASS}>헤어 O</span>
                   </button>
                   <button onClick={() => toggleFilter(selectedHairs, setSelectedHairs, "hair_x")}
                     className={`relative group aspect-square rounded-full p-1 transition-all duration-300 w-full h-full ${selectedHairs.includes("hair_x") ? "bg-primary/20 scale-105 ring-2 ring-primary" : "bg-zinc-100 dark:bg-zinc-900 scale-[0.85] hover:scale-95"} ${!isAnyHairSelected || selectedHairs.includes("hair_x") ? "opacity-100" : "opacity-40 hover:opacity-100"}`}>
                     <img src="/icons/status/hair_x.png" alt="헤어 X" className="w-full h-full object-contain" />
-                    <span className={TOOLTIP_CLASS}>헤어 없음</span>
+                    <span className={TOOLTIP_CLASS}>헤어 X</span>
                   </button>
                 </div>
               </div>
