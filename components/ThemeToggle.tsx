@@ -43,8 +43,11 @@ export default function ThemeToggle() {
         aria-label="테마 및 색상 설정"
         className="relative p-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all active:scale-95"
       >
-        {/* 🌟 수정됨: 그림자(drop-shadow)를 완전히 없애고, 아이콘 자체의 텍스트 색상을 text-primary로 지정! */}
-        <span className="text-xl leading-none block text-primary transition-colors">
+        {/* 🌟 이모지 텃세 완벽 제압! 글자 모양대로 배경을 오려내서 강제로 Primary 색상을 입힙니다 */}
+        <span 
+          className="text-xl leading-none block transition-colors bg-clip-text text-transparent"
+          style={{ backgroundImage: "linear-gradient(var(--color-primary), var(--color-primary))" }}
+        >
           {isDark ? "☾" : "☀︎"}
         </span>
       </button>
