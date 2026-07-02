@@ -20,6 +20,9 @@ export default function ThemeToggle() {
   const { themeColor, setThemeColor } = useThemeColor();
   const [mounted, setMounted] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  
+  // 🌟 포인트 컬러 팔레트 잠금 상태 관리 (초기값: 해제 🔓)
+  const [isColorLocked, setIsColorLocked] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -28,11 +31,36 @@ export default function ThemeToggle() {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) setIsOpen(false);
     };
     document.addEventListener("mousedown", handleClickOutside);
+
+    // 🌟 로컬 스토리지에서 잠금 상태 불러오기
+    const savedLock = localStorage.getItem("sekard_color_theme_locked");
+    if (savedLock) {
+      setIsColorLocked(savedLock === "true");
+    }
+
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   if (!mounted) return null;
   const isDark = resolvedTheme === "dark";
+
+  // 🌟 잠금 상태 토글 함수
+  const toggleLock = () => {
+    const nextLock = !isColorLocked;
+    setIsColorLocked(nextLock);
+    localStorage.setItem("sekard_color_theme_locked", String(nextLock));
+  };
+
+  // 🌟 다크/라이트 모드 전환 시 자동 리셋 핸들러
+  const handleModeToggle = () => {
+    const nextTheme = isDark ? "light" : "dark";
+    setTheme(nextTheme);
+
+    // 🌟 잠금 해제(🔓) 상태일 때만 포인트 컬러를 "default"(무채색)로 초기화!
+    if (!isColorLocked) {
+      setThemeColor("default");
+    }
+  };
 
   return (
     <div className="relative" ref={menuRef}>
@@ -42,65 +70,61 @@ export default function ThemeToggle() {
         aria-label="테마 및 색상 설정"
         className="relative p-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all active:scale-95"
       >
-        {/* 🌟 이모지 텃세 완벽 제압! 글자 모양대로 배경을 오려내서 강제로 Primary 색상을 입힙니다 */}
+        {/* 🌟 마법의 CSS: var(--color-primary)가 없으면 자연스럽게 텍스트 기본색(currentColor)으로 폴백! */}
         <span 
-          className="text-xl leading-none block transition-colors bg-clip-text text-transparent"
-          style={{ backgroundImage: "linear-gradient(var(--color-primary), var(--color-primary))" }}
+          className="text-xl leading-none block transition-colors bg-clip-text text-transparent text-zinc-800 dark:text-zinc-100"
+          style={{ backgroundImage: "linear-gradient(var(--color-primary, currentColor), var(--color-primary, currentColor))" }}
         >
           {isDark ? "☾" : "☀︎"}
         </span>
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-full mt-2 w-80 max-h-[80vh] overflow-y-auto custom-scrollbar p-4 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 rounded-2xl shadow-2xl z-50 animate-fade-in origin-top-right">
+        <div className="absolute right-0 top-full mt-2 w-80 max-h-[80vh] overflow-y-auto custom-scrollbar p-4 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 rounded-2xl shadow-2xl z-50 animate-fade-in origin-top-right transition-colors duration-300">
           
-          {/* 다크모드 스위치 */}
-          <div className="mb-3 flex items-center justify-between pb-3 border-b border-zinc-100 dark:border-white/5">
-            <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200">다크 모드</span>
+          {/* 🌟 다크/라이트 모드 토글 (한 줄로 통합) */}
+          <div className="mb-3 flex items-center justify-between pb-3 border-b border-zinc-100 dark:border-white/5 transition-colors">
+            <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 transition-colors">
+              {isDark ? "다크 모드" : "라이트 모드"}
+            </span>
             <button
-              onClick={() => setTheme(isDark ? "light" : "dark")}
+              onClick={handleModeToggle}
               className={`w-11 h-6 rounded-full p-1 transition-colors ${
                 isDark 
-                  ? 'bg-primary dark:shadow-[0_0_0_1px_rgba(255,255,255,0.3)]' 
-                  : 'bg-zinc-300 dark:bg-zinc-700'
+                  ? (themeColor === 'default' ? 'bg-zinc-700 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.3)]' : 'bg-primary dark:shadow-[0_0_0_1px_rgba(255,255,255,0.3)]')
+                  : 'bg-zinc-300'
               }`}
             >
               <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${isDark ? 'translate-x-5' : 'translate-x-0'}`} />
             </button>
           </div>
 
-          <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 block mb-2">포인트 컬러 테마</span>
+          {/* 🌟 포인트 컬러 테마 타이틀 & 잠금 버튼 */}
+          <div className="mb-2 flex items-center justify-between">
+            <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 transition-colors">
+              포인트 컬러 테마
+            </span>
+            <button
+              onClick={toggleLock}
+              className={`text-xs px-2 py-0.5 rounded-md font-bold transition-all border ${
+                isColorLocked 
+                  ? 'bg-red-50 dark:bg-red-500/10 text-red-500 border-red-200 dark:border-red-500/30' 
+                  : 'bg-zinc-50 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 border-zinc-200 dark:border-transparent'
+              }`}
+              title={isColorLocked ? "팔레트 잠김 (모드 변경 시 색상 유지)" : "팔레트 잠금 해제 (모드 변경 시 색상 리셋)"}
+            >
+              {isColorLocked ? "🔒 잠금" : "🔓 잠금 해제"}
+            </button>
+          </div>
           
+          {/* 🌟 유닛 팔레트 리스트 */}
           <div className="flex flex-col">
-            
-            {/* 🌟 1. 순수 다크/라이트 (오리지널 무채색) 그룹 추가 */}
-            <div className="flex flex-col py-2.5 border-b border-zinc-100 dark:border-white/5 first:pt-1">
-              <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 tracking-wider mb-1.5">
-                BASIC & ORIGINAL
-              </span>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setThemeColor("오리지널 먹색" as any)}
-                  className={`w-6 h-6 rounded-md border-2 transition-all shrink-0 ${themeColor === "오리지널 먹색" ? "border-zinc-900 dark:border-white scale-110 shadow-md" : "border-transparent hover:scale-110"}`}
-                  style={{ backgroundColor: "#71717a" }}
-                  title="순수 다크모드 느낌 (오리지널 먹색)"
-                />
-                <button
-                  onClick={() => setThemeColor("퓨어 화이트" as any)}
-                  className={`w-6 h-6 rounded-md border-2 transition-all shrink-0 ${themeColor === "퓨어 화이트" ? "border-zinc-900 dark:border-white scale-110 shadow-md" : "border-transparent hover:scale-110"}`}
-                  style={{ backgroundColor: "#d4d4d8" }}
-                  title="순수 라이트모드 느낌 (퓨어 화이트)"
-                />
-              </div>
-            </div>
-
-            {/* 🌟 2. 기존 유닛 컬러 그룹들 */}
             {THEME_GROUPS.map((group, idx) => (
               <div 
                 key={group.label} 
-                className="flex flex-col py-2.5 border-b border-zinc-100 dark:border-white/5 last:pb-0 last:border-0"
+                className="flex flex-col py-2.5 border-b border-zinc-100 dark:border-white/5 first:pt-1 last:pb-0 last:border-0 transition-colors"
               >
-                <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 tracking-wider mb-1.5">
+                <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 tracking-wider mb-1.5 transition-colors">
                   {group.label}
                 </span>
                 
@@ -112,14 +136,15 @@ export default function ThemeToggle() {
                     title={`${group.label} (유닛 컬러)`}
                   />
                   
-                  <div className="w-px h-4 bg-zinc-200 dark:bg-zinc-700 mx-0.5" />
+                  <div className="w-px h-4 bg-zinc-200 dark:bg-zinc-700 mx-0.5 transition-colors" />
                   
                   <div className="flex flex-wrap gap-1.5">
                     {group.chars.map(charName => (
                       <button
                         key={charName}
                         onClick={() => setThemeColor(charName as any)}
-                        className={`w-5 h-5 rounded-full border-2 transition-all ${themeColor === charName || (themeColor === "default" && charName === "하츠네 미쿠") ? "border-zinc-900 dark:border-white scale-110 shadow-md" : "border-transparent hover:scale-110"}`}
+                        // 🌟 [수정됨] 디폴트일 때는 아무 버튼도 선택되지 않게 변경!
+                        className={`w-5 h-5 rounded-full border-2 transition-all ${themeColor === charName ? "border-zinc-900 dark:border-white scale-110 shadow-md" : "border-transparent hover:scale-110"}`}
                         style={{ backgroundColor: CHARACTER_COLORS[charName as keyof typeof CHARACTER_COLORS] }}
                         title={charName}
                       />

@@ -6,13 +6,7 @@ import { ThemeProvider } from "next-themes";
 import type { ReactNode } from "react";
 import { CHARACTER_COLORS, UNIT_COLORS } from "@/lib/colors"; 
 
-// 🌟 오리지널 무채색 테마 추가! (순수 다크 / 순수 라이트 포인트 컬러)
-const BASIC_COLORS = {
-  "오리지널 먹색": "#71717a", // 차분한 zinc-500 톤
-  "퓨어 화이트": "#d4d4d8", // 깔끔한 zinc-300 톤
-};
-
-const ALL_COLORS = { ...CHARACTER_COLORS, ...UNIT_COLORS, ...BASIC_COLORS };
+const ALL_COLORS = { ...CHARACTER_COLORS, ...UNIT_COLORS };
 type ThemeKey = keyof typeof ALL_COLORS | "default";
 
 type ThemeColorContextType = {
@@ -42,8 +36,11 @@ function ThemeColorProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!mounted) return;
     const root = document.documentElement;
+    
+    // 🌟 [수정됨] 디폴트(기본) 상태일 때는 특정 캐릭터 색상을 강제하지 않고,
+    // 현재 다크/라이트 모드에 최적화된 무채색 기본값(currentColor 또는 테일윈드 기본 zinc색)이 돌도록 변수를 비워주거나 제거합니다!
     if (themeColor === "default") {
-      root.style.setProperty("--color-primary", "#39C5BB"); // 기본: 미쿠
+      root.style.removeProperty("--color-primary"); 
     } else {
       root.style.setProperty("--color-primary", ALL_COLORS[themeColor as keyof typeof ALL_COLORS]);
     }
