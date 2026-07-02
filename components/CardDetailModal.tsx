@@ -202,7 +202,10 @@ export default function CardDetailModal({
 
   // 🌟 여기서부터 createPortal 래핑 시작!
   return createPortal(
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md transition-opacity">
+    <div 
+      className="fixed inset-0 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md transition-opacity"
+      style={{ zIndex: 99999 }} // 🌟 Tailwind 무시! 우주 끝까지 올려버리는 꼼수
+    >
       <div className="absolute inset-0" onClick={onClose} />
 
       <div className="relative w-full max-w-6xl max-h-[95vh] overflow-y-auto rounded-3xl border border-white/10 bg-zinc-950 p-6 shadow-2xl transition-all flex flex-col custom-scrollbar">
@@ -509,6 +512,6 @@ export default function CardDetailModal({
         </div>
       </div>
     </div>,
-    document.body // 🌟 [추가됨] 브라우저 최상단 HTML body에 붙여서 컨트롤 바를 가립니다!
+    document.body // 🌟 [유지] 브라우저 최상단 HTML body에 바로 붙여버립니다!
   );
 }
