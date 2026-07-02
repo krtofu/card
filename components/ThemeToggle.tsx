@@ -52,26 +52,32 @@ export default function ThemeToggle() {
         <div className="absolute right-0 top-full mt-2 w-80 max-h-[80vh] overflow-y-auto custom-scrollbar p-4 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 rounded-2xl shadow-2xl z-50 animate-fade-in origin-top-right">
           
           {/* 다크모드 스위치 */}
-          <div className="mb-4 flex items-center justify-between pb-3 border-b border-zinc-100 dark:border-white/5">
+          <div className="mb-3 flex items-center justify-between pb-3 border-b border-zinc-100 dark:border-white/5">
             <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200">다크 모드</span>
             <button
               onClick={() => setTheme(isDark ? "light" : "dark")}
-              className={`w-11 h-6 rounded-full p-1 transition-colors ${isDark ? 'bg-primary' : 'bg-zinc-300 dark:bg-zinc-700'}`}
+              // 🌟 [수정됨] 다크모드일 때 스위치 모양이 잘 보이도록 하얀색 은은한 테두리(shadow)를 입혔습니다!
+              className={`w-11 h-6 rounded-full p-1 transition-colors ${
+                isDark 
+                  ? 'bg-primary dark:shadow-[0_0_0_1px_rgba(255,255,255,0.3)]' 
+                  : 'bg-zinc-300 dark:bg-zinc-700'
+              }`}
             >
               <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${isDark ? 'translate-x-5' : 'translate-x-0'}`} />
             </button>
           </div>
 
-          <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 block mb-3">포인트 컬러 테마</span>
+          <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 block mb-2">포인트 컬러 테마</span>
           
-          <div className="space-y-4">
+          {/* 🌟 [수정됨] space-y-4 에서 space-y-2 로 전체 그룹 간격을 확 좁혔습니다! */}
+          <div className="space-y-2">
             {THEME_GROUPS.map((group, idx) => (
-              <div key={group.label} className="flex flex-col gap-1.5">
+              // 🌟 [수정됨] 글씨와 버튼 사이 간격도 gap-1.5 에서 gap-0.5 로 아주 쫀쫀하게 조였습니다!
+              <div key={group.label} className="flex flex-col gap-0.5">
                 <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 tracking-wider">
                   {group.label}
                 </span>
                 <div className="flex items-center gap-2">
-                  {/* 🌟 유닛 컬러 버튼 (살짝 네모낳게 차별화) */}
                   <button
                     onClick={() => setThemeColor(group.unit.name as any)}
                     className={`w-6 h-6 rounded-md border-2 transition-all shrink-0 ${themeColor === group.unit.name ? "border-zinc-900 dark:border-white scale-110 shadow-md" : "border-transparent hover:scale-110"}`}
@@ -79,10 +85,8 @@ export default function ThemeToggle() {
                     title={`${group.label} (유닛 컬러)`}
                   />
                   
-                  {/* 세로 구분선 */}
                   <div className="w-px h-4 bg-zinc-200 dark:bg-zinc-700 mx-0.5" />
                   
-                  {/* 🌟 캐릭터 컬러 버튼들 (동그라미) */}
                   <div className="flex flex-wrap gap-1.5">
                     {group.chars.map(charName => (
                       <button
@@ -95,8 +99,8 @@ export default function ThemeToggle() {
                     ))}
                   </div>
                 </div>
-                {/* 가로 얇은 구분선 */}
-                {idx < THEME_GROUPS.length - 1 && <hr className="mt-2 border-zinc-100 dark:border-white/5" />}
+                {/* 🌟 [수정됨] 가로 구분선의 위아래 여백(margin)도 mt-2에서 my-1.5로 타이트하게 맞췄습니다. */}
+                {idx < THEME_GROUPS.length - 1 && <hr className="my-1.5 border-zinc-100 dark:border-white/5" />}
               </div>
             ))}
           </div>
