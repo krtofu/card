@@ -229,25 +229,42 @@ export default function FuturePage() {
 
   const visibleEvents = hideUnmatchedEvents ? processedEvents.filter(e => e.isEventMatched) : processedEvents;
 
-  // 🌟 [안전한 날짜 변환 로직] NaN 에러 방지!
+  // 🌟 [안전한 날짜 변환 + D-Day 진행/종료 완벽 분리 로직]
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const visibleEventsWithDaysLeft = visibleEvents.map((item) => {
+  const visibleEventsWithStatus = visibleEvents.map((item) => {
     let daysLeft = 0;
+    let isOngoing = false;
+    let isEnded = false;
+
     try {
-      // "2024-03-01 15:00" 같은 형태를 브라우저가 좋아하게 "2024/03/01" 로 안전하게 변환
-      const rawDate = item.event.period.start.split(' ')[0];
-      const cleanDateStr = rawDate.replace(/[\.-]/g, '/'); 
-      const eventDate = new Date(cleanDateStr);
-      eventDate.setHours(0, 0, 0, 0);
-      
-      const diffTime = eventDate.getTime() - today.getTime();
+      // 1. 시작일 계산 (D-Day 표기용)
+      const cleanStartStr = item.event.period.start.split(' ')[0].replace(/[\.-]/g, '/');
+      const eventStart = new Date(cleanStartStr);
+      eventStart.setHours(0, 0, 0, 0);
+
+      // 2. 종료일 계산 (진행 / 종료 판별용)
+      // 혹시라도 종료일 데이터가 누락되어 있다면 시작일로 대체하여 뻗는 것을 방지!
+      const cleanEndStr = (item.event.period.end || item.event.period.start).split(' ')[0].replace(/[\.-]/g, '/');
+      const eventEnd = new Date(cleanEndStr);
+      eventEnd.setHours(23, 59, 59, 999);
+
+      const diffTime = eventStart.getTime() - today.getTime();
       daysLeft = Math.ceil(diffTime / 86400000);
+
+      // 🌟 시작일이 지났거나 오늘이라면 (D-day 이하), 오늘이 종료일 이전인지 이후인지 판별!
+      if (daysLeft < 0) {
+        if (today.getTime() <= eventEnd.getTime()) {
+          isOngoing = true; // 아직 종료일 안 지남! (진행 중)
+        } else {
+          isEnded = true;   // 종료일 지남! (종료됨)
+        }
+      }
     } catch(e) {
       daysLeft = 0;
     }
-    return { ...item, daysLeft };
+    return { ...item, daysLeft, isOngoing, isEnded };
   });
 
   let lastRenderedYear = "";
@@ -584,7 +601,7 @@ export default function FuturePage() {
           <div className="absolute left-1/2 top-0 bottom-0 w-px bg-white/10 -translate-x-1/2 hidden md:block" />
           
           <div className="space-y-12 pb-20">
-            {visibleEventsWithDaysLeft.map(({ event, isEventMatched, matchedCardIds, daysLeft }, index) => {
+            {visibleEventsWithStatus.map(({ event, isEventMatched, matchedCardIds, daysLeft, isOngoing, isEnded }, index) => {
               
               const eventYear = event.period.start.split('-')[0];
               const eventMonth = event.period.start.split('-')[1];
@@ -643,15 +660,19 @@ export default function FuturePage() {
                     monthMarker={showMonthMarker ? eventMonth : undefined}
                   />
 
-                  {/* 🌟 여기에 추가! (FutureEventCard 바로 아래, div 닫히기 전) */}
+                  {/* 🌟 [완성됨] 진행(에메랄드)과 종료(숯검댕이) 완벽 분리! */}
                   {hideUnmatchedEvents && !isNaN(daysLeft) && (
                     <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 z-[60] flex flex-col items-center">
-                      {daysLeft < 0 ? (
-                        <span className="bg-zinc-800 text-zinc-400 text-[11px] px-3 py-1 rounded-full border border-white/10 font-bold whitespace-nowrap shadow-md">
-                          ✅ 진행 및 종료됨
+                      {isEnded ? (
+                        <span className="bg-zinc-900 text-zinc-600 text-[11px] px-3 py-1 rounded-full border border-zinc-800 font-bold whitespace-nowrap shadow-inner">
+                          ⬛ 종료됨
+                        </span>
+                      ) : isOngoing ? (
+                        <span className="bg-emerald-500/20 text-emerald-300 text-[11px] px-3 py-1 rounded-full border border-emerald-400/50 font-bold whitespace-nowrap shadow-[0_0_10px_rgba(52,211,153,0.2)]">
+                          ✨ 진행 중
                         </span>
                       ) : daysLeft === 0 ? (
-                        <span className="bg-red-500/20 text-red-400 text-[11px] px-3 py-1 rounded-full border border-red-500/30 font-bold whitespace-nowrap shadow-md shadow-red-500/20 animate-pulse">
+                        <span className="bg-red-500/20 text-red-400 text-[11px] px-3 py-1 rounded-full border border-red-500/30 font-bold whitespace-nowrap shadow-[0_0_10px_rgba(239,68,68,0.2)] animate-pulse">
                           🔥 D-Day (오늘 시작!)
                         </span>
                       ) : (
