@@ -26,7 +26,7 @@ export default function GlobalHeader() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 border-b border-white/10 bg-white/70 backdrop-blur dark:bg-zinc-950/70">
+      <header className="sticky top-0 z-9999 border-b border-white/10 bg-white/70 backdrop-blur dark:bg-zinc-950/70">
         <div className="mx-auto flex h-14 w-full max-w-[1920px] items-center justify-between px-4 md:px-8">
           <Link href="/" className="flex items-baseline gap-2">
             <span className="text-lg font-extrabold tracking-tight">Sekard</span>

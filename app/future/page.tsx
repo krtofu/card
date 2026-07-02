@@ -229,16 +229,24 @@ export default function FuturePage() {
 
   const visibleEvents = hideUnmatchedEvents ? processedEvents.filter(e => e.isEventMatched) : processedEvents;
 
-  // 🌟 [수정됨] 간격(gapDays) 대신 진짜 D-Day 계산 로직으로 교체!
+  // 🌟 [안전한 날짜 변환 로직] NaN 에러 방지!
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
   const visibleEventsWithDaysLeft = visibleEvents.map((item) => {
-    const startStr = item.event.period.start.split(' ')[0].replace(/\./g, '-');
-    const eventDate = new Date(startStr);
-    eventDate.setHours(0, 0, 0, 0);
-    const diffTime = eventDate.getTime() - today.getTime();
-    const daysLeft = Math.ceil(diffTime / 86400000);
+    let daysLeft = 0;
+    try {
+      // "2024-03-01 15:00" 같은 형태를 브라우저가 좋아하게 "2024/03/01" 로 안전하게 변환
+      const rawDate = item.event.period.start.split(' ')[0];
+      const cleanDateStr = rawDate.replace(/[\.-]/g, '/'); 
+      const eventDate = new Date(cleanDateStr);
+      eventDate.setHours(0, 0, 0, 0);
+      
+      const diffTime = eventDate.getTime() - today.getTime();
+      daysLeft = Math.ceil(diffTime / 86400000);
+    } catch(e) {
+      daysLeft = 0;
+    }
     return { ...item, daysLeft };
   });
 
@@ -248,7 +256,7 @@ export default function FuturePage() {
   return (
     <div className="flex flex-col md:flex-row gap-6 px-4 md:px-8 py-6 min-h-screen text-zinc-100 max-w-[1920px] mx-auto w-full">
       
-      {/* 👈 좌측 영역: 필터칸 (기존과 완전히 동일) */}
+      {/* 👈 좌측 영역: 필터칸 */}
       <div className={`flex flex-col shrink-0 md:w-[280px] md:relative md:block md:bg-transparent md:p-0 md:h-auto md:z-0 ${isMobileFilterOpen ? 'fixed inset-0 z-[100] bg-zinc-950 p-6 overflow-y-auto' : 'hidden'}`}>
         <div className="flex items-center justify-between border-b border-white/10 pb-3 mb-6 md:mb-0">
           <h2 className="text-lg md:text-sm font-bold text-zinc-300 tracking-wider uppercase">🔍 미래시 필터</h2>
@@ -576,7 +584,6 @@ export default function FuturePage() {
           <div className="absolute left-1/2 top-0 bottom-0 w-px bg-white/10 -translate-x-1/2 hidden md:block" />
           
           <div className="space-y-12 pb-20">
-            {/* 🌟 [수정됨] 간격(gapDays) 대신 진짜 D-Day 남은 일수(daysLeft)를 map에서 뽑아 넘겨줍니다. */}
             {visibleEventsWithDaysLeft.map(({ event, isEventMatched, matchedCardIds, daysLeft }, index) => {
               
               const eventYear = event.period.start.split('-')[0];
@@ -634,11 +641,27 @@ export default function FuturePage() {
                     isEventMatched={isEventMatched}
                     matchedCardIds={matchedCardIds}
                     monthMarker={showMonthMarker ? eventMonth : undefined}
-                    // 🌟 1. 이 줄이 핵심! props로 daysLeft를 FutureEventCard에 쏴줍니다. 
-                    daysLeft={hideUnmatchedEvents ? daysLeft : undefined}
                   />
 
-                  {/* 🌟 2. 하단에 달려있던 쓸데없는 gapDays 블록은 깔끔하게 삭제했습니다! */}
+                  {/* 🌟 여기에 추가! (FutureEventCard 바로 아래, div 닫히기 전) */}
+                  {hideUnmatchedEvents && !isNaN(daysLeft) && (
+                    <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 z-[60] flex flex-col items-center">
+                      {daysLeft < 0 ? (
+                        <span className="bg-zinc-800 text-zinc-400 text-[11px] px-3 py-1 rounded-full border border-white/10 font-bold whitespace-nowrap shadow-md">
+                          ✅ 진행 및 종료됨
+                        </span>
+                      ) : daysLeft === 0 ? (
+                        <span className="bg-red-500/20 text-red-400 text-[11px] px-3 py-1 rounded-full border border-red-500/30 font-bold whitespace-nowrap shadow-md shadow-red-500/20 animate-pulse">
+                          🔥 D-Day (오늘 시작!)
+                        </span>
+                      ) : (
+                        <span className="bg-sky-500/20 text-sky-400 text-[11px] px-3 py-1 rounded-full border border-sky-500/30 font-bold whitespace-nowrap shadow-md">
+                          ⏳ D-{daysLeft}
+                        </span>
+                      )}
+                    </div>
+                  )}
+
                 </div>
               );
             })}
@@ -651,7 +674,7 @@ export default function FuturePage() {
   );
 }
 
-// (이하 데이터는 생략: 유지)
+// (이하 데이터는 완벽 유지)
 type CharDef = { id: string; name: string; img: string; isVirtual?: boolean; matchKeys?: string[] };
 type UnitDef = { id: string; name: string; logo: string; chars: CharDef[] };
 type AttrDef = { id: string; name: string; img: string };
