@@ -56,7 +56,6 @@ export default function ThemeToggle() {
             <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200">다크 모드</span>
             <button
               onClick={() => setTheme(isDark ? "light" : "dark")}
-              // 🌟 [수정됨] 다크모드일 때 스위치 모양이 잘 보이도록 하얀색 은은한 테두리(shadow)를 입혔습니다!
               className={`w-11 h-6 rounded-full p-1 transition-colors ${
                 isDark 
                   ? 'bg-primary dark:shadow-[0_0_0_1px_rgba(255,255,255,0.3)]' 
@@ -69,14 +68,19 @@ export default function ThemeToggle() {
 
           <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 block mb-2">포인트 컬러 테마</span>
           
-          {/* 🌟 [수정됨] space-y-4 에서 space-y-2 로 전체 그룹 간격을 확 좁혔습니다! */}
-          <div className="space-y-2">
+          {/* 🌟 [수정됨] 마구잡이로 뛰던 여백을 깔끔하게 통일했습니다! */}
+          <div className="flex flex-col">
             {THEME_GROUPS.map((group, idx) => (
-              // 🌟 [수정됨] 글씨와 버튼 사이 간격도 gap-1.5 에서 gap-0.5 로 아주 쫀쫀하게 조였습니다!
-              <div key={group.label} className="flex flex-col gap-0.5">
-                <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 tracking-wider">
+              <div 
+                key={group.label} 
+                // 🌟 그룹 간 위아래 패딩(py-2.5)과 밑줄(border-b)을 일괄 적용하고, 첫/마지막 요소 여백을 제거!
+                className="flex flex-col py-2.5 border-b border-zinc-100 dark:border-white/5 first:pt-1 last:pb-0 last:border-0"
+              >
+                {/* 🌟 소제목과 버튼 사이의 간격은 mb-1.5 (6px)로 쫀쫀하게! */}
+                <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 tracking-wider mb-1.5">
                   {group.label}
                 </span>
+                
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setThemeColor(group.unit.name as any)}
@@ -99,8 +103,6 @@ export default function ThemeToggle() {
                     ))}
                   </div>
                 </div>
-                {/* 🌟 [수정됨] 가로 구분선의 위아래 여백(margin)도 mt-2에서 my-1.5로 타이트하게 맞췄습니다. */}
-                {idx < THEME_GROUPS.length - 1 && <hr className="my-1.5 border-zinc-100 dark:border-white/5" />}
               </div>
             ))}
           </div>
