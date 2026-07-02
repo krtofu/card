@@ -1,3 +1,4 @@
+// src/components/GlobalHeader.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -26,29 +27,31 @@ export default function GlobalHeader() {
 
   return (
     <>
-      <header className="sticky top-0 z-9999 border-b border-white/10 bg-white/70 backdrop-blur dark:bg-zinc-950/70">
+      {/* 🌟 다크/라이트 모드 완벽 지원 + 포인트 컬러 텍스트 적용 */}
+      <header className="sticky top-0 z-[99999] border-b border-zinc-200/50 bg-white/80 backdrop-blur-md dark:border-white/10 dark:bg-zinc-950/80 transition-colors duration-300">
         <div className="mx-auto flex h-14 w-full max-w-[1920px] items-center justify-between px-4 md:px-8">
-          <Link href="/" className="flex items-baseline gap-2">
-            <span className="text-lg font-extrabold tracking-tight">Sekard</span>
-            <span className="text-xs text-zinc-400">I 두부도감</span>
+          <Link href="/" className="flex items-baseline gap-2 group">
+            {/* 🌟 로고에 primary 포인트 컬러 적용! */}
+            <span className="text-lg font-extrabold tracking-tight text-primary transition-colors">Sekard</span>
+            <span className="text-xs text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-800 dark:group-hover:text-zinc-200 transition-colors">I 두부도감</span>
           </Link>
 
           <nav className="flex items-center gap-2 text-sm">
-            <Link href="/cards" className="rounded-lg px-3 py-1.5 text-zinc-700 hover:bg-black/5 dark:text-zinc-200 dark:hover:bg-white/10">
+            {/* 🌟 활성화 느낌을 위해 호버 시 primary 옅은 배경 적용 */}
+            <Link href="/cards" className="rounded-lg px-3 py-1.5 font-semibold text-zinc-600 hover:text-primary hover:bg-primary/10 dark:text-zinc-300 dark:hover:text-primary dark:hover:bg-primary/20 transition-all">
               내 카드
             </Link>
-            <Link href="/future" className="rounded-lg px-3 py-1.5 text-zinc-700 hover:bg-black/5 dark:text-zinc-200 dark:hover:bg-white/10">
+            <Link href="/future" className="rounded-lg px-3 py-1.5 font-semibold text-zinc-600 hover:text-primary hover:bg-primary/10 dark:text-zinc-300 dark:hover:text-primary dark:hover:bg-primary/20 transition-all">
               미래시
             </Link>
 
             <ThemeToggle />
 
-            <div className="w-px h-4 bg-zinc-300 dark:bg-zinc-700 mx-1" />
+            <div className="w-px h-4 bg-zinc-300 dark:bg-zinc-700 mx-1 transition-colors" />
 
-            {/* 🌟 다크모드 버튼 옆 가장 우측 끝에 위치한 설정 버튼! */}
             <button
               onClick={() => setIsSettingsOpen(true)}
-              className="p-1.5 rounded-lg text-zinc-700 hover:bg-black/5 dark:text-zinc-200 dark:hover:bg-white/10 transition-colors"
+              className="p-1.5 rounded-lg text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-white/10 transition-colors"
               title="블룸 페스 랭크 설정"
             >
               ⚙️
