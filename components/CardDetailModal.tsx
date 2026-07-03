@@ -55,16 +55,14 @@ export default function CardDetailModal({
 }: CardDetailModalProps) {
   const [isExpandMode, setIsExpandMode] = useState(false);
   
-  // 미보유 카드를 위한 가상 시뮬레이터 상태
   const [simSkillLevel, setSimSkillLevel] = useState(1);
   const [simMasterRank, setSimMasterRank] = useState(0);
   const [characterRank, setCharacterRank] = useState(1);
 
-  // 🌟 브라우저가 다 그려졌는지(mounted) 확인하는 상태 추가
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true); // 컴포넌트가 화면에 붙으면 true로 변경
+    setMounted(true); 
     if (card) {
       const saved = localStorage.getItem("sekard_character_ranks");
       if (saved) {
@@ -76,7 +74,6 @@ export default function CardDetailModal({
     }
   }, [card]);
 
-  // 카드가 없거나 아직 브라우저에 안 그려졌으면(SSR 방지) 아무것도 안 보여줌
   if (!card || !mounted) return null;
 
   const postIllustration = card.thumbPostPath 
@@ -99,7 +96,6 @@ export default function CardDetailModal({
   const currentSkillLevel = userState.isOwned ? (userState.skillLevel || 1) : simSkillLevel;
   const currentMasterRank = userState.isOwned ? (userState.masterRank || 0) : simMasterRank;
 
-  // 실시간 스킬 배수 계산
   const calculatedSkillBonus = getSkillBonusPercentage(
     card.skillType || "",
     currentSkillLevel,
@@ -124,12 +120,12 @@ export default function CardDetailModal({
 
   const getGachaBadgeStyle = (gachaType: string) => {
     switch (gachaType) {
-      case "통상": return "border-sky-300/45 bg-sky-400/16 text-sky-100 shadow-[0_0_0_1px_rgba(56,189,248,0.18)]";
-      case "한정": return "border-pink-300/45 bg-pink-400/16 text-pink-100 shadow-[0_0_0_1px_rgba(236,72,153,0.18)]";
-      case "페스": return "border-violet-300/45 bg-violet-400/16 text-violet-100 shadow-[0_0_0_1px_rgba(167,139,250,0.20)]";
-      case "월링": return "border-emerald-300/45 bg-emerald-400/16 text-emerald-100 shadow-[0_0_0_1px_rgba(16,185,129,0.18)]";
-      case "콜라보": return "border-amber-300/45 bg-amber-400/16 text-amber-100 shadow-[0_0_0_1px_rgba(251,191,36,0.18)]";
-      default: return "border-white/10 bg-zinc-800 text-zinc-400";
+      case "통상": return "border-sky-300/45 dark:border-sky-300/45 bg-sky-100 dark:bg-sky-400/16 text-sky-600 dark:text-sky-100 shadow-[0_0_0_1px_rgba(56,189,248,0.18)]";
+      case "한정": return "border-pink-300/45 dark:border-pink-300/45 bg-pink-100 dark:bg-pink-400/16 text-pink-600 dark:text-pink-100 shadow-[0_0_0_1px_rgba(236,72,153,0.18)]";
+      case "페스": return "border-violet-300/45 dark:border-violet-300/45 bg-violet-100 dark:bg-violet-400/16 text-violet-600 dark:text-violet-100 shadow-[0_0_0_1px_rgba(167,139,250,0.20)]";
+      case "월링": return "border-emerald-300/45 dark:border-emerald-300/45 bg-emerald-100 dark:bg-emerald-400/16 text-emerald-600 dark:text-emerald-100 shadow-[0_0_0_1px_rgba(16,185,129,0.18)]";
+      case "콜라보": return "border-amber-300/45 dark:border-amber-300/45 bg-amber-100 dark:bg-amber-400/16 text-amber-600 dark:text-amber-100 shadow-[0_0_0_1px_rgba(251,191,36,0.18)]";
+      default: return "border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400";
     }
   };
 
@@ -200,34 +196,33 @@ export default function CardDetailModal({
   const skillInfo = getSkillInfo(card.skillType || ""); 
   const characterIconPath = getCharacterIcon(card.character || "", card.unit || ""); 
 
-  // 🌟 여기서부터 createPortal 래핑 시작!
   return createPortal(
     <div 
-      className="fixed inset-0 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md transition-opacity"
-      style={{ zIndex: 99999 }} // 🌟 Tailwind 무시! 우주 끝까지 올려버리는 꼼수
+      className="fixed inset-0 flex items-center justify-center p-4 bg-white/70 dark:bg-black/80 backdrop-blur-md transition-colors duration-300"
+      style={{ zIndex: 99999 }} 
     >
       <div className="absolute inset-0" onClick={onClose} />
 
-      <div className="relative w-full max-w-6xl max-h-[95vh] overflow-y-auto rounded-3xl border border-white/10 bg-zinc-950 p-6 shadow-2xl transition-all flex flex-col custom-scrollbar">
+      <div className="relative w-full max-w-6xl max-h-[95vh] overflow-y-auto rounded-3xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-950 p-6 shadow-2xl transition-colors duration-300 flex flex-col custom-scrollbar">
         
         <button 
           onClick={onClose}
-          className="absolute top-4 right-4 z-40 w-8 h-8 rounded-full bg-black/60 border border-white/10 flex items-center justify-center text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all text-sm backdrop-blur-md"
+          className="absolute top-4 right-4 z-40 w-8 h-8 rounded-full bg-white/80 dark:bg-black/60 border border-zinc-300 dark:border-white/10 flex items-center justify-center text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all text-sm backdrop-blur-md shadow-sm"
         >
           ✕
         </button>
 
         {/* 🌌 상단 배너 구역 */}
-        <div className={`relative -mx-6 -mt-6 ${isExpandMode ? 'h-auto' : 'h-64 md:h-[360px] border-b border-white/10'} shrink-0 flex overflow-hidden bg-zinc-900 transition-all duration-300 ease-in-out`}>
+        <div className={`relative -mx-6 -mt-6 ${isExpandMode ? 'h-auto' : 'h-64 md:h-[360px] border-b border-zinc-200 dark:border-white/10'} shrink-0 flex overflow-hidden bg-zinc-100 dark:bg-zinc-900 transition-all duration-300 ease-in-out`}>
           {card.hasAwakening ? (
             <>
               <div className="relative h-full flex-1 hover:flex-[3] max-w-[455px] md:max-w-[604px] transition-all duration-700 ease-in-out overflow-hidden group/pre z-10 hover:z-20">
                 <img src={preIllustration} alt="특훈 전 일러스트" className="absolute left-0 top-0 h-full aspect-[16/9] max-w-none object-cover object-center" />
-                <div className="absolute bottom-4 left-5 inline-flex items-center rounded-full border border-white/20 bg-black/60 px-2.5 py-1 text-[10px] font-semibold text-zinc-100 backdrop-blur-md pointer-events-none tracking-wider shadow-md">특훈 전</div>
+                <div className="absolute bottom-4 left-5 inline-flex items-center rounded-full border border-white/40 dark:border-white/20 bg-black/40 dark:bg-black/60 px-2.5 py-1 text-[10px] font-semibold text-white dark:text-zinc-100 backdrop-blur-md pointer-events-none tracking-wider shadow-md">특훈 전</div>
               </div>
-              <div className="relative h-full flex-1 hover:flex-[3] max-w-[455px] md:max-w-[604px] transition-all duration-700 ease-in-out overflow-hidden group/post z-10 hover:z-20 border-l border-white/10">
+              <div className="relative h-full flex-1 hover:flex-[3] max-w-[455px] md:max-w-[604px] transition-all duration-700 ease-in-out overflow-hidden group/post z-10 hover:z-20 border-l border-white/30 dark:border-white/10">
                 <img src={postIllustration} alt="특훈 후 일러스트" className="absolute right-0 top-0 h-full aspect-[16/9] max-w-none object-cover object-center" />
-                <div className="absolute bottom-4 right-5 inline-flex items-center rounded-full border border-cyan-400/20 bg-black/60 px-2.5 py-1 text-[10px] font-semibold text-cyan-300 backdrop-blur-md pointer-events-none tracking-wider shadow-md">특훈 후</div>
+                <div className="absolute bottom-4 right-5 inline-flex items-center rounded-full border border-cyan-300/40 dark:border-cyan-400/20 bg-black/40 dark:bg-black/60 px-2.5 py-1 text-[10px] font-semibold text-cyan-200 dark:text-cyan-300 backdrop-blur-md pointer-events-none tracking-wider shadow-md">특훈 후</div>
               </div>
             </>
           ) : (
@@ -237,11 +232,11 @@ export default function CardDetailModal({
                 alt="일러스트" 
                 className={`w-full ${isExpandMode ? 'h-auto aspect-[16/9] object-contain' : 'h-64 md:h-[360px] object-cover'} object-center transition-all duration-300`} 
               />
-              <div className="absolute bottom-4 left-5 inline-flex items-center rounded-full border border-white/20 bg-black/60 px-3 py-1.5 text-xs font-semibold text-zinc-100 backdrop-blur-md pointer-events-none tracking-wider shadow-md">일러스트</div>
+              <div className="absolute bottom-4 left-5 inline-flex items-center rounded-full border border-white/40 dark:border-white/20 bg-black/40 dark:bg-black/60 px-3 py-1.5 text-xs font-semibold text-white dark:text-zinc-100 backdrop-blur-md pointer-events-none tracking-wider shadow-md">일러스트</div>
               
               <button
                 onClick={() => setIsExpandMode(!isExpandMode)}
-                className="absolute bottom-4 right-4 z-30 w-10 h-10 rounded-xl bg-black/60 border border-white/10 flex items-center justify-center text-white backdrop-blur-sm hover:bg-zinc-800 transition-all text-xl shadow-lg active:scale-95"
+                className="absolute bottom-4 right-4 z-30 w-10 h-10 rounded-xl bg-black/40 dark:bg-black/60 border border-white/40 dark:border-white/10 flex items-center justify-center text-white backdrop-blur-sm hover:bg-black/60 dark:hover:bg-zinc-800 transition-all text-xl shadow-lg active:scale-95"
                 title={isExpandMode ? "축소하기" : "넓게 보기"}
               >
                 {isExpandMode ? "⇱" : "⇲"}
@@ -254,36 +249,34 @@ export default function CardDetailModal({
         <div className="flex flex-col md:flex-row gap-8 pt-2 shrink-0 mt-6">
           
           <div className="flex-[3] flex flex-col gap-6">
-            <div className="flex items-start justify-between gap-4 w-full mt-1 border-b border-white/5 pb-5">
+            <div className="flex items-start justify-between gap-4 w-full mt-1 border-b border-zinc-200 dark:border-white/5 pb-5 transition-colors">
               
               <div className="flex flex-wrap items-center gap-2.5">
                 {getUnitLogo(card.unit || "") && (
-                  <img src={getUnitLogo(card.unit || "")} alt={card.unit} className="h-[28px] w-auto object-contain drop-shadow-md" />
+                  <img src={getUnitLogo(card.unit || "")} alt={card.unit} className="h-[28px] w-auto object-contain drop-shadow-sm dark:drop-shadow-md" />
                 )}
                 
-                <h2 className="text-xl font-bold text-zinc-100 flex items-center gap-1.5">
+                <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5 transition-colors">
                   {isReleased && <span className="text-[16px] drop-shadow-sm" title="한국 서버 출시됨">🇰🇷</span>}
                   {card.cardName}
                 </h2>
-                <span className="text-xl font-bold text-zinc-100">{card.character}</span>
+                <span className="text-xl font-bold text-zinc-900 dark:text-zinc-100 transition-colors">{card.character}</span>
               </div>
               
               <div className="flex flex-wrap items-center justify-end gap-1.5 shrink-0">
                 {skillInfo.src ? (
                   <div className="relative group flex items-center justify-center cursor-help">
-                    <img src={skillInfo.src} alt={skillInfo.label} className="w-[26px] h-[26px] object-contain drop-shadow-md shrink-0" />
+                    <img src={skillInfo.src} alt={skillInfo.label} className="w-[26px] h-[26px] object-contain drop-shadow-sm dark:drop-shadow-md shrink-0" />
                     <div className="pointer-events-none absolute bottom-full mb-3 left-1/2 -translate-x-1/2 opacity-0 transition-all duration-200 group-hover:opacity-100 z-50">
                       <div className="relative flex flex-col items-center">
-                        <div className="relative z-10 whitespace-nowrap rounded-md border border-zinc-600 bg-zinc-950 px-2.5 py-1.5 text-[11px] font-bold text-zinc-200 shadow-xl">
-                          {skillInfo.label}
-                        </div>
-                        <div className="absolute -bottom-[4px] z-20 h-2 w-2 rotate-45 border-b border-r border-zinc-600 bg-zinc-950"></div>
+                        <div className="relative z-10 whitespace-nowrap rounded-md border border-zinc-200 dark:border-zinc-600 bg-white dark:bg-zinc-950 px-2.5 py-1.5 text-[11px] font-bold text-zinc-800 dark:text-zinc-200 shadow-xl transition-colors">{skillInfo.label}</div>
+                        <div className="absolute -bottom-[4px] z-20 h-2 w-2 rotate-45 border-b border-r border-zinc-200 dark:border-zinc-600 bg-white dark:bg-zinc-950 transition-colors"></div>
                       </div>
                     </div>
                   </div>
                 ) : (
                   skillInfo.label && (
-                    <span className="shrink-0 inline-flex items-center px-2.5 py-1 text-[11px] font-bold rounded-full border border-purple-500/20 bg-purple-500/10 text-purple-300 tracking-wide">
+                    <span className="shrink-0 inline-flex items-center px-2.5 py-1 text-[11px] font-bold rounded-full border border-purple-300 dark:border-purple-500/20 bg-purple-100 dark:bg-purple-500/10 text-purple-600 dark:text-purple-300 tracking-wide transition-colors">
                       {skillInfo.label}
                     </span>
                   )
@@ -291,16 +284,16 @@ export default function CardDetailModal({
 
                 {attrInfo.src ? (
                   <div className="relative group flex items-center justify-center cursor-help ml-0.5">
-                    <img src={attrInfo.src} alt={attrInfo.label} className="w-[26px] h-[26px] object-contain drop-shadow-md shrink-0" />
+                    <img src={attrInfo.src} alt={attrInfo.label} className="w-[26px] h-[26px] object-contain drop-shadow-sm dark:drop-shadow-md shrink-0" />
                     <div className="pointer-events-none absolute bottom-full mb-3 left-1/2 -translate-x-1/2 opacity-0 transition-all duration-200 group-hover:opacity-100 z-50">
                       <div className="relative flex flex-col items-center">
-                        <div className="relative z-10 whitespace-nowrap rounded-md border border-zinc-600 bg-zinc-950 px-2.5 py-1.5 text-[11px] font-bold text-zinc-200 shadow-xl">{attrInfo.label}</div>
-                        <div className="absolute -bottom-[4px] z-20 h-2 w-2 rotate-45 border-b border-r border-zinc-600 bg-zinc-950"></div>
+                        <div className="relative z-10 whitespace-nowrap rounded-md border border-zinc-200 dark:border-zinc-600 bg-white dark:bg-zinc-950 px-2.5 py-1.5 text-[11px] font-bold text-zinc-800 dark:text-zinc-200 shadow-xl transition-colors">{attrInfo.label}</div>
+                        <div className="absolute -bottom-[4px] z-20 h-2 w-2 rotate-45 border-b border-r border-zinc-200 dark:border-zinc-600 bg-white dark:bg-zinc-950 transition-colors"></div>
                       </div>
                     </div>
                   </div>
                 ) : (
-                  <span className="shrink-0 inline-flex items-center px-2.5 py-1 text-[11px] font-bold rounded-full border border-zinc-700 bg-zinc-800/50 text-zinc-300 tracking-wide ml-0.5">{attrInfo.label}</span>
+                  <span className="shrink-0 inline-flex items-center px-2.5 py-1 text-[11px] font-bold rounded-full border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800/50 text-zinc-600 dark:text-zinc-300 tracking-wide ml-0.5 transition-colors">{attrInfo.label}</span>
                 )}
 
                 <span className={`shrink-0 inline-flex items-center px-3 py-1 text-xs font-bold rounded-full border tracking-wide transition-all ml-0.5 ${currentGachaStyle}`}>
@@ -311,26 +304,26 @@ export default function CardDetailModal({
 
             {/* 🎲 1. 관련 뽑기 */}
             <div className="flex gap-3.5">
-              <div className="w-10 h-10 rounded-full bg-zinc-900 border border-white/10 shrink-0 overflow-hidden flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 shrink-0 overflow-hidden flex items-center justify-center transition-colors">
                 <img src={characterIconPath} alt="Character Icon" className="w-full h-full object-contain" />
               </div>
               <div className="flex-1 flex flex-col gap-2">
-                <span className="font-bold text-zinc-200 text-sm mt-0.5">관련 뽑기</span>
+                <span className="font-bold text-zinc-800 dark:text-zinc-200 text-sm mt-0.5 transition-colors">관련 뽑기</span>
                 {hasGacha ? (
                   <>
-                    <div className="w-full max-w-[480px] bg-zinc-900 border border-white/5 rounded-xl overflow-hidden flex items-center justify-center shadow-sm">
+                    <div className="w-full max-w-[480px] bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 rounded-xl overflow-hidden flex items-center justify-center shadow-sm transition-colors">
                       {card.gachaBannerPath ? (
                         <img src={card.gachaBannerPath} alt="Gacha Banner" className="w-full h-auto block" />
                       ) : (
                         <div className="w-full h-24 sm:h-28 flex items-center justify-center">
-                          <span className="text-zinc-600 text-xs">No Banner</span>
+                          <span className="text-zinc-400 dark:text-zinc-600 text-xs transition-colors">No Banner</span>
                         </div>
                       )}
                     </div>
-                    <span className="text-xs text-zinc-400 font-medium">({card.gachaPoolName})</span>
+                    <span className="text-xs text-zinc-500 dark:text-zinc-400 font-medium transition-colors">({card.gachaPoolName})</span>
                   </>
                 ) : (
-                  <div className="w-full max-w-[480px] h-24 sm:h-28 bg-zinc-900/30 border border-white/10 border-dashed rounded-xl flex flex-col items-center justify-center gap-2">
+                  <div className="w-full max-w-[480px] h-24 sm:h-28 bg-zinc-50 dark:bg-zinc-900/30 border border-zinc-200 dark:border-white/10 border-dashed rounded-xl flex flex-col items-center justify-center gap-2 transition-colors">
                     <span className="text-xl opacity-50">🎰</span>
                     <span className="text-[11px] text-zinc-500 font-medium tracking-wide">관련 뽑기 없음</span>
                   </div>
@@ -340,26 +333,26 @@ export default function CardDetailModal({
 
             {/* 🎪 2. 관련 이벤트 */}
             <div className="flex gap-3.5 pt-2">
-              <div className="w-10 h-10 rounded-full bg-zinc-900 border border-white/10 shrink-0 overflow-hidden flex items-center justify-center">
-                <span className="text-zinc-500 text-lg">🎪</span>
+              <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 shrink-0 overflow-hidden flex items-center justify-center transition-colors">
+                <span className="text-zinc-400 dark:text-zinc-500 text-lg">🎪</span>
               </div>
               <div className="flex-1 flex flex-col gap-2">
-                <span className="font-bold text-zinc-200 text-sm mt-0.5">관련 이벤트</span>
+                <span className="font-bold text-zinc-800 dark:text-zinc-200 text-sm mt-0.5 transition-colors">관련 이벤트</span>
                 {hasEvent ? (
                   <>
-                    <div className="w-full max-w-[480px] bg-zinc-900 border border-white/5 rounded-xl overflow-hidden flex items-center justify-center shadow-sm">
+                    <div className="w-full max-w-[480px] bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 rounded-xl overflow-hidden flex items-center justify-center shadow-sm transition-colors">
                       {card.eventBannerPath ? (
                         <img src={card.eventBannerPath} alt="Event Banner" className="w-full h-auto block" />
                       ) : (
                         <div className="w-full h-24 sm:h-28 flex items-center justify-center">
-                          <span className="text-zinc-600 text-xs">No Banner</span>
+                          <span className="text-zinc-400 dark:text-zinc-600 text-xs transition-colors">No Banner</span>
                         </div>
                       )}
                     </div>
-                    <span className="text-xs text-zinc-400 font-medium">{card.eventName}</span>
+                    <span className="text-xs text-zinc-500 dark:text-zinc-400 font-medium transition-colors">{card.eventName}</span>
                   </>
                 ) : (
-                  <div className="w-full max-w-[480px] h-24 sm:h-28 bg-zinc-900/30 border border-white/10 border-dashed rounded-xl flex flex-col items-center justify-center gap-2">
+                  <div className="w-full max-w-[480px] h-24 sm:h-28 bg-zinc-50 dark:bg-zinc-900/30 border border-zinc-200 dark:border-white/10 border-dashed rounded-xl flex flex-col items-center justify-center gap-2 transition-colors">
                     <span className="text-xl opacity-50">🛸</span>
                     <span className="text-[11px] text-zinc-500 font-medium tracking-wide">관련 이벤트 없음</span>
                   </div>
@@ -369,26 +362,26 @@ export default function CardDetailModal({
 
             {/* 💿 3. 관련 악곡 */}
             <div className="flex gap-3.5 pt-2">
-              <div className="w-10 h-10 rounded-full bg-zinc-900 border border-white/10 shrink-0 overflow-hidden flex items-center justify-center">
-                <span className="text-zinc-500 text-lg">🎵</span>
+              <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 shrink-0 overflow-hidden flex items-center justify-center transition-colors">
+                <span className="text-zinc-400 dark:text-zinc-500 text-lg">🎵</span>
               </div>
               <div className="flex-1 flex flex-col gap-2">
-                <span className="font-bold text-zinc-200 text-sm mt-0.5">관련 악곡</span>
+                <span className="font-bold text-zinc-800 dark:text-zinc-200 text-sm mt-0.5 transition-colors">관련 악곡</span>
                 {hasSong ? (
                   <div className="flex flex-wrap gap-4">
                     {songJackets.map((jacket, idx) => (
                       <div key={idx} className="flex flex-col gap-2 items-center">
-                        <div className="w-28 sm:w-36 bg-zinc-900 border border-white/5 rounded-xl overflow-hidden shadow-sm shrink-0">
+                        <div className="w-28 sm:w-36 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 rounded-xl overflow-hidden shadow-sm shrink-0 transition-colors">
                           <img src={jacket} alt="Song Jacket" className="w-full h-auto block" />
                         </div>
-                        <span className="text-[11px] sm:text-xs text-zinc-400 font-medium max-w-[112px] sm:max-w-[144px] text-center truncate">
+                        <span className="text-[11px] sm:text-xs text-zinc-600 dark:text-zinc-400 font-medium max-w-[112px] sm:max-w-[144px] text-center truncate transition-colors">
                           {songNames[idx] || ""}
                         </span>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="w-28 sm:w-36 h-28 sm:h-36 bg-zinc-900/30 border border-white/10 border-dashed rounded-xl flex flex-col items-center justify-center gap-2 shrink-0">
+                  <div className="w-28 sm:w-36 h-28 sm:h-36 bg-zinc-50 dark:bg-zinc-900/30 border border-zinc-200 dark:border-white/10 border-dashed rounded-xl flex flex-col items-center justify-center gap-2 shrink-0 transition-colors">
                     <span className="text-2xl opacity-50">💿</span>
                     <span className="text-[11px] text-zinc-500 font-medium tracking-wide">관련 악곡 없음</span>
                   </div>
@@ -397,14 +390,14 @@ export default function CardDetailModal({
             </div>
           </div>
 
-          <div className="hidden md:block w-px bg-white/5 mx-2 self-stretch rounded-full" />
+          <div className="hidden md:block w-px bg-zinc-200 dark:bg-white/5 mx-2 self-stretch rounded-full transition-colors" />
 
           {/* 👉 우측 영역: 카드 상태 및 의상 프리뷰 컨트롤러 */}
           <div className="flex-[2] min-w-[320px] max-w-[380px] shrink-0 flex flex-col gap-6 self-start">
-            <div className="bg-zinc-950/50 border border-white/5 rounded-2xl p-4 flex flex-col justify-between gap-4">
-              <div className="flex items-start justify-between gap-3 pb-2 border-b border-white/5">
+            <div className="bg-zinc-50 dark:bg-zinc-950/50 border border-zinc-200 dark:border-white/5 rounded-2xl p-4 flex flex-col justify-between gap-4 transition-colors">
+              <div className="flex items-start justify-between gap-3 pb-2 border-b border-zinc-200 dark:border-white/5 transition-colors">
                 <div className="min-w-0 flex-1 flex items-baseline">
-                  <p className="text-[15px] font-bold text-zinc-100 tracking-wide whitespace-nowrap">+ 카드 상태</p>
+                  <p className="text-[15px] font-bold text-zinc-800 dark:text-zinc-100 tracking-wide whitespace-nowrap transition-colors">+ 카드 상태</p>
                 </div>
                 
                 <div className="flex items-center gap-1.5 shrink-0">
@@ -413,10 +406,10 @@ export default function CardDetailModal({
                     onClick={() => onUpdateState(card.id, { isTarget: !userState.isTarget })}
                     className={`shrink-0 inline-flex items-center px-2.5 py-1 rounded-md text-[11px] sm:text-xs font-bold border tracking-tight transition-all shadow-sm ${
                       userState.isOwned
-                        ? "opacity-50 cursor-not-allowed bg-zinc-900 text-zinc-600 border-zinc-800"
+                        ? "opacity-50 cursor-not-allowed bg-zinc-100 dark:bg-zinc-900 text-zinc-400 dark:text-zinc-600 border-zinc-200 dark:border-zinc-800"
                         : userState.isTarget
-                          ? "bg-amber-500/20 text-amber-300 border-amber-400/50 shadow-[0_0_10px_rgba(245,158,11,0.15)] active:scale-95"
-                          : "bg-zinc-800 text-zinc-400 border-zinc-700 hover:bg-zinc-700 hover:text-zinc-200 active:scale-95"
+                          ? "bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-300 border-amber-300 dark:border-amber-400/50 shadow-[0_0_10px_rgba(245,158,11,0.15)] active:scale-95"
+                          : "bg-white dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 border-zinc-300 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700 hover:text-zinc-800 dark:hover:text-zinc-200 active:scale-95"
                     }`}
                   >
                     {userState.isTarget && !userState.isOwned ? "⭐ 목표 중" : "☆ 목표 설정"}
@@ -430,10 +423,11 @@ export default function CardDetailModal({
                         ...(nextOwned ? { isTarget: false } : {}) 
                       });
                     }}
+                    // 🌟 라이트/다크 대응 + Primary 색상 연동
                     className={`shrink-0 inline-flex items-center px-2.5 py-1 rounded-md text-[11px] sm:text-xs font-bold border tracking-tight transition-all shadow-sm active:scale-95 ${
                       userState.isOwned
-                        ? "bg-emerald-500/20 text-emerald-300 border-emerald-400/50 shadow-[0_0_10px_rgba(52,211,153,0.15)]"
-                        : "bg-zinc-800 text-zinc-400 border-zinc-700 hover:bg-zinc-700 hover:text-zinc-200"
+                        ? "bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border-primary/30 dark:border-primary/50 shadow-[0_0_10px_var(--color-primary)]"
+                        : "bg-white dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 border-zinc-300 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700 hover:text-zinc-800 dark:hover:text-zinc-200"
                     }`}
                   >
                     {userState.isOwned ? "✓ 보유 중" : "❌ 미보유"}
@@ -443,8 +437,8 @@ export default function CardDetailModal({
 
               <div className="space-y-1.5">
                 <div className="flex justify-between items-center text-xs">
-                  <span className="text-zinc-400 font-medium">마스터 랭크</span>
-                  <span className="font-bold text-sky-400">
+                  <span className="text-zinc-500 dark:text-zinc-400 font-medium transition-colors">마스터 랭크</span>
+                  <span className="font-bold text-primary transition-colors">
                     {userState.isOwned ? `${userState.masterRank || 0} 마랭` : `시뮬레이션: ${simMasterRank} 마랭`}
                   </span>
                 </div>
@@ -453,10 +447,11 @@ export default function CardDetailModal({
                     <button
                       key={rank}
                       onClick={() => userState.isOwned ? onUpdateState(card.id, { masterRank: rank }) : setSimMasterRank(rank)}
+                      // 🌟 Primary 색상 연동
                       className={`flex-1 py-1.5 text-[11px] font-mono font-bold rounded-lg transition-all ${
                         currentMasterRank === rank
-                          ? "bg-sky-500/20 text-sky-400 border border-sky-500/30 shadow-[0_0_8px_rgba(14,165,233,0.2)]"
-                          : "bg-zinc-950 text-zinc-500 border border-white/5 hover:bg-zinc-900"
+                          ? "bg-primary/10 dark:bg-primary/20 text-primary border border-primary/30 dark:border-primary/30 shadow-[0_0_8px_var(--color-primary)]"
+                          : "bg-white dark:bg-zinc-950 text-zinc-500 border border-zinc-200 dark:border-white/5 hover:bg-zinc-50 dark:hover:bg-zinc-900"
                       }`}
                     >
                       {rank}
@@ -465,17 +460,17 @@ export default function CardDetailModal({
                 </div>
               </div>
 
-              <div className="space-y-1.5 pt-2 border-t border-white/5 mt-2">
+              <div className="space-y-1.5 pt-2 border-t border-zinc-200 dark:border-white/5 mt-2 transition-colors">
                 <div className="flex justify-between items-center text-xs mb-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-zinc-400 font-medium">스킬 레벨 (Lv.)</span>
+                    <span className="text-zinc-500 dark:text-zinc-400 font-medium transition-colors">스킬 레벨 (Lv.)</span>
                     {calculatedSkillBonus > 0 && (
-                      <span className="bg-sky-500/20 text-sky-400 border border-sky-400/30 px-1.5 py-0.5 rounded text-[11px] font-medium tracking-wider animate-fade-in shadow-sm flex items-center gap-0.5">
+                      <span className="bg-primary/10 dark:bg-primary/20 text-primary border border-primary/30 px-1.5 py-0.5 rounded text-[11px] font-medium tracking-wider animate-fade-in shadow-sm flex items-center gap-0.5 transition-colors">
                         ⇪ +{calculatedSkillBonus}%
                       </span>
                     )}
                   </div>
-                  <span className="font-bold text-purple-400">
+                  <span className="font-bold text-primary transition-colors">
                     {userState.isOwned ? `Lv.${userState.skillLevel || 1}` : `시뮬레이션: Lv.${simSkillLevel}`}
                   </span>
                 </div>
@@ -484,10 +479,11 @@ export default function CardDetailModal({
                     <button
                       key={lvl}
                       onClick={() => userState.isOwned ? onUpdateState(card.id, { skillLevel: lvl }) : setSimSkillLevel(lvl)}
+                      // 🌟 Primary 색상 연동
                       className={`flex-1 py-1.5 text-[11px] font-mono font-bold rounded-lg transition-all ${
                         currentSkillLevel === lvl
-                          ? "bg-purple-500/20 text-purple-400 border border-purple-500/30 shadow-[0_0_8px_rgba(168,85,247,0.2)]"
-                          : "bg-zinc-950 text-zinc-500 border border-white/5 hover:bg-zinc-900"
+                          ? "bg-primary/10 dark:bg-primary/20 text-primary border border-primary/30 dark:border-primary/30 shadow-[0_0_8px_var(--color-primary)]"
+                          : "bg-white dark:bg-zinc-950 text-zinc-500 border border-zinc-200 dark:border-white/5 hover:bg-zinc-50 dark:hover:bg-zinc-900"
                       }`}
                     >
                       {lvl}
@@ -498,13 +494,13 @@ export default function CardDetailModal({
             </div>
 
             {costumePreviewData ? (
-              <div className="w-full animate-fade-in shadow-xl rounded-2xl bg-zinc-950/50 border border-white/5 overflow-hidden">
+              <div className="w-full animate-fade-in shadow-xl rounded-2xl bg-zinc-50 dark:bg-zinc-950/50 border border-zinc-200 dark:border-white/5 overflow-hidden transition-colors">
                 <ModalCostumePreviewCard preview={costumePreviewData as any} userState={userState} />
               </div>
             ) : (
-              <div className="w-full h-32 bg-zinc-900/20 border border-white/10 border-dashed rounded-2xl flex flex-col items-center justify-center gap-2 shadow-inner animate-fade-in">
+              <div className="w-full h-32 bg-zinc-50 dark:bg-zinc-900/20 border border-zinc-200 dark:border-white/10 border-dashed rounded-2xl flex flex-col items-center justify-center gap-2 shadow-inner animate-fade-in transition-colors">
                 <span className="text-2xl opacity-40">🛍️</span>
-                <span className="text-xs text-zinc-500 font-medium tracking-wide">관련 의상 없음</span>
+                <span className="text-xs text-zinc-400 dark:text-zinc-500 font-medium tracking-wide transition-colors">관련 의상 없음</span>
               </div>
             )}
           </div>
@@ -512,6 +508,6 @@ export default function CardDetailModal({
         </div>
       </div>
     </div>,
-    document.body // 🌟 [유지] 브라우저 최상단 HTML body에 바로 붙여버립니다!
+    document.body
   );
 }
