@@ -16,7 +16,7 @@ type ThemeColorContextType = {
 
 const ThemeColorContext = createContext<ThemeColorContextType | undefined>(undefined);
 
-// 🌟 포인트 컬러의 밝기를 계산해서 글씨색을 흑/백으로 자동 결정해주는 똑똑한 함수!
+// 🌟 제가 멍청하게 빼먹었던 포인트 컬러 밝기 계산기 완벽 복구!!
 const getFgColor = (hex: string) => {
   const r = parseInt(hex.slice(1, 3), 16);
   const g = parseInt(hex.slice(3, 5), 16);
@@ -48,11 +48,12 @@ function ThemeColorProvider({ children }: { children: ReactNode }) {
     const root = document.documentElement;
     
     if (themeColor === "default") {
-      // 🌟 [수정됨] 변수를 삭제하지 않고, 다크/라이트 모드에 맞춰 근본 무채색을 명확히 주입!
+      // 🌟 디폴트(무채색) 상태일 때: 배경은 먹색으로, 글씨는 하얀색/검은색으로 명확하게 주입!
       const isDark = resolvedTheme === "dark";
-      root.style.setProperty("--color-primary", isDark ? "#ffffff" : "#18181b");
+      root.style.setProperty("--color-primary", isDark ? "#52525b" : "#27272a"); 
       root.style.setProperty("--color-primary-foreground", isDark ? "#18181b" : "#ffffff");
     } else {
+      // 🌟 특정 색상을 골랐을 때: 색상과 함께, 계산기로 뽑아낸 대비되는 글씨색을 주입!
       const hex = ALL_COLORS[themeColor as keyof typeof ALL_COLORS];
       root.style.setProperty("--color-primary", hex);
       root.style.setProperty("--color-primary-foreground", getFgColor(hex));
