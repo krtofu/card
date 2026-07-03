@@ -306,7 +306,11 @@ export default function MyCardsPage() {
                     const isSelected = selectedStatuses.includes(status.id);
                     const opacityClass = !isAnyStatusSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100 text-zinc-500 dark:text-white bg-zinc-100 dark:bg-zinc-900";
                     // 🌟 기획자님의 커스텀 디자인 복구 + 산화 방지 기능(text-[var(--color-primary-foreground)]) 추가!
-                    const activeClass = "bg-primary text-[var(--color-primary-foreground)] border-primary shadow-[0_0_10px_var(--color-primary)] scale-105 opacity-90";
+                    const activeClass = status.id === "target" 
+  ? "bg-amber-50 dark:bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-300 dark:border-amber-400/50 shadow-sm scale-105" 
+  : status.id === "owned" 
+    ? "bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border border-primary/30 dark:border-primary/50 shadow-sm scale-105" 
+    : "bg-zinc-100 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-100 border border-zinc-300 dark:border-zinc-500 shadow-sm scale-105";
                     const inactiveClass = "bg-white dark:bg-zinc-900 text-zinc-500 dark:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-transparent scale-95";
                     return (
                       <button key={status.id} onClick={() => toggleFilter(selectedStatuses, setSelectedStatuses, status.id)}
