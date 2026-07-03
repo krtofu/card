@@ -2,7 +2,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-import { ThemeProvider } from "next-themes";
+import { ThemeProvider, useTheme } from "next-themes";
 import type { ReactNode } from "react";
 import { CHARACTER_COLORS, UNIT_COLORS } from "@/lib/colors"; 
 
@@ -16,7 +16,17 @@ type ThemeColorContextType = {
 
 const ThemeColorContext = createContext<ThemeColorContextType | undefined>(undefined);
 
+// 🌟 포인트 컬러의 밝기를 계산해서 글씨색을 흑/백으로 자동 결정해주는 똑똑한 함수!
+const getFgColor = (hex: string) => {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+  return brightness > 150 ? "#18181b" : "#ffffff";
+};
+
 function ThemeColorProvider({ children }: { children: ReactNode }) {
+  const { resolvedTheme } = useTheme();
   const [themeColor, setThemeColorState] = useState<ThemeKey>("default");
   const [mounted, setMounted] = useState(false);
 
@@ -37,14 +47,17 @@ function ThemeColorProvider({ children }: { children: ReactNode }) {
     if (!mounted) return;
     const root = document.documentElement;
     
-    // 🌟 [수정됨] 디폴트(기본) 상태일 때는 특정 캐릭터 색상을 강제하지 않고,
-    // 현재 다크/라이트 모드에 최적화된 무채색 기본값(currentColor 또는 테일윈드 기본 zinc색)이 돌도록 변수를 비워주거나 제거합니다!
     if (themeColor === "default") {
-      root.style.removeProperty("--color-primary"); 
+      // 🌟 [수정됨] 변수를 삭제하지 않고, 다크/라이트 모드에 맞춰 근본 무채색을 명확히 주입!
+      const isDark = resolvedTheme === "dark";
+      root.style.setProperty("--color-primary", isDark ? "#ffffff" : "#18181b");
+      root.style.setProperty("--color-primary-foreground", isDark ? "#18181b" : "#ffffff");
     } else {
-      root.style.setProperty("--color-primary", ALL_COLORS[themeColor as keyof typeof ALL_COLORS]);
+      const hex = ALL_COLORS[themeColor as keyof typeof ALL_COLORS];
+      root.style.setProperty("--color-primary", hex);
+      root.style.setProperty("--color-primary-foreground", getFgColor(hex));
     }
-  }, [themeColor, mounted]);
+  }, [themeColor, mounted, resolvedTheme]);
 
   return (
     <ThemeColorContext.Provider value={{ themeColor, setThemeColor }}>
