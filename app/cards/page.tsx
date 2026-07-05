@@ -285,7 +285,7 @@ export default function MyCardsPage() {
         <div className="flex items-center justify-between border-b border-zinc-200 dark:border-white/10 pb-3 mb-6 md:mb-0 transition-colors">
           <h2 className="text-lg md:text-sm font-bold text-zinc-700 dark:text-zinc-300 tracking-wider uppercase transition-colors">🔍 필터</h2>
           <div className="flex items-center gap-3">
-            <button onClick={handleReset} className="w-8 h-8 md:w-7 md:h-7 flex items-center justify-center rounded-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 text-zinc-500 dark:text-zinc-400 hover:text-primary dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors text-sm md:text-sm shadow-sm">
+            <button onClick={handleReset} className="w-8 h-8 md:w-7 md:h-7 flex items-center justify-center rounded-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors text-sm md:text-sm shadow-sm">
               <span className="leading-none -mt-[1px] inline-block" style={{ transform: `rotate(${spinDeg}deg)`, transition: 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)' }}>↺</span>
             </button>
             <button onClick={() => setIsMobileFilterOpen(false)} className="md:hidden w-8 h-8 flex items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-white font-bold transition-colors">✕</button>
@@ -295,7 +295,7 @@ export default function MyCardsPage() {
         <div className="space-y-6 md:mt-6">
           <div className="space-y-2">
             <button onClick={() => setIsStatusExpanded(!isStatusExpanded)} className="w-full flex items-center justify-between group pb-1 cursor-pointer">
-              <span className="text-[12px] md:text-[11px] font-bold text-zinc-600 dark:text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-800 dark:group-hover:text-zinc-300 transition-colors">STATUS</span>
+              <span className="text-[12px] md:text-[11px] font-bold text-zinc-600 dark:text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-900 dark:group-hover:text-zinc-300 transition-colors">STATUS</span>
               <span className={`text-[10px] text-zinc-400 dark:text-zinc-500 transform transition-transform duration-300 ${isStatusExpanded ? 'rotate-0' : '-rotate-90'}`}>▼</span>
             </button>
             {isStatusExpanded && (
@@ -305,12 +305,12 @@ export default function MyCardsPage() {
                     const isSelected = selectedStatuses.includes(status.id);
                     const opacityClass = !isAnyStatusSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100 text-zinc-500 dark:text-white bg-zinc-100 dark:bg-zinc-900";
                     
-                    // 🌟 [복구 완료] 오리지널 다채로운 파스텔톤 배경 매핑 + 산화 버그 완치!
+                    // 🌟 1. '미보유' 버튼 까만색(zinc-800)으로 원상 복구! (보유/목표는 맘에 들어하신 파스텔톤 유지)
                     const activeClass = status.id === "target" 
                       ? "bg-amber-50 dark:bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-300 dark:border-amber-400/50 shadow-sm scale-105" 
                       : status.id === "owned" 
-                        ? "bg-emerald-50 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-400/50 shadow-sm scale-105" 
-                        : "bg-zinc-100 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-100 border border-zinc-300 dark:border-zinc-500 shadow-sm scale-105";
+                        ? "bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border border-primary/30 dark:border-primary/50 shadow-sm scale-105" 
+                        : "bg-zinc-800 dark:bg-zinc-700 text-white border border-zinc-700 dark:border-zinc-500 shadow-md scale-105"; // ❌ 미보유 까만색 복구!
                     
                     const inactiveClass = "bg-white dark:bg-zinc-900 text-zinc-500 dark:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-transparent scale-95";
                     
@@ -323,23 +323,24 @@ export default function MyCardsPage() {
                   })}
                 </div>
                 <div className="grid grid-cols-4 gap-1.5">
+                  {/* 🌟 2 & 5. 모든 상태 이미지 뱃지의 링(ring) 효과 완전 삭제! */}
                   <button onClick={() => toggleFilter(selectedTypes, setSelectedTypes, "normal")}
-                    className={`relative group aspect-square rounded-full p-1 transition-all duration-300 w-full h-full border ${selectedTypes.includes("normal") ? "bg-primary/10 dark:bg-primary/20 scale-105 ring-2 ring-primary border-transparent" : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-transparent scale-[0.85] hover:scale-95"} ${!isAnyTypeSelected || selectedTypes.includes("normal") ? "opacity-100" : "opacity-40 hover:opacity-100"}`}>
+                    className={`relative group aspect-square rounded-full p-1 transition-all duration-300 w-full h-full border ${selectedTypes.includes("normal") ? "bg-primary/10 dark:bg-primary/20 scale-105 border-primary/30 dark:border-primary/50 shadow-sm" : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-transparent scale-[0.85] hover:scale-95"} ${!isAnyTypeSelected || selectedTypes.includes("normal") ? "opacity-100" : "opacity-40 hover:opacity-100"}`}>
                     <img src="/icons/status/normal.png" alt="통상" className="w-full h-full object-contain drop-shadow-sm" />
                     <span className={TOOLTIP_CLASS}>통상</span>
                   </button>
                   <button onClick={() => toggleFilter(selectedTypes, setSelectedTypes, "limited")}
-                    className={`relative group aspect-square rounded-full p-1 transition-all duration-300 w-full h-full border ${selectedTypes.includes("limited") ? "bg-primary/10 dark:bg-primary/20 scale-105 ring-2 ring-primary border-transparent" : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-transparent scale-[0.85] hover:scale-95"} ${!isAnyTypeSelected || selectedTypes.includes("limited") ? "opacity-100" : "opacity-40 hover:opacity-100"}`}>
+                    className={`relative group aspect-square rounded-full p-1 transition-all duration-300 w-full h-full border ${selectedTypes.includes("limited") ? "bg-primary/10 dark:bg-primary/20 scale-105 border-primary/30 dark:border-primary/50 shadow-sm" : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-transparent scale-[0.85] hover:scale-95"} ${!isAnyTypeSelected || selectedTypes.includes("limited") ? "opacity-100" : "opacity-40 hover:opacity-100"}`}>
                     <img src="/icons/status/limited.png" alt="한정" className="w-full h-full object-contain drop-shadow-sm" />
                     <span className={TOOLTIP_CLASS}>한정/페스/월링</span>
                   </button>
                   <button onClick={() => toggleFilter(selectedHairs, setSelectedHairs, "hair_o")}
-                    className={`relative group aspect-square rounded-full p-1 transition-all duration-300 w-full h-full border ${selectedHairs.includes("hair_o") ? "bg-primary/10 dark:bg-primary/20 scale-105 ring-2 ring-primary border-transparent" : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-transparent scale-[0.85] hover:scale-95"} ${!isAnyHairSelected || selectedHairs.includes("hair_o") ? "opacity-100" : "opacity-40 hover:opacity-100"}`}>
+                    className={`relative group aspect-square rounded-full p-1 transition-all duration-300 w-full h-full border ${selectedHairs.includes("hair_o") ? "bg-primary/10 dark:bg-primary/20 scale-105 border-primary/30 dark:border-primary/50 shadow-sm" : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-transparent scale-[0.85] hover:scale-95"} ${!isAnyHairSelected || selectedHairs.includes("hair_o") ? "opacity-100" : "opacity-40 hover:opacity-100"}`}>
                     <img src="/icons/status/hair_o.png" alt="헤어 O" className="w-full h-full object-contain drop-shadow-sm" />
                     <span className={TOOLTIP_CLASS}>헤어 O</span>
                   </button>
                   <button onClick={() => toggleFilter(selectedHairs, setSelectedHairs, "hair_x")}
-                    className={`relative group aspect-square rounded-full p-1 transition-all duration-300 w-full h-full border ${selectedHairs.includes("hair_x") ? "bg-primary/10 dark:bg-primary/20 scale-105 ring-2 ring-primary border-transparent" : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-transparent scale-[0.85] hover:scale-95"} ${!isAnyHairSelected || selectedHairs.includes("hair_x") ? "opacity-100" : "opacity-40 hover:opacity-100"}`}>
+                    className={`relative group aspect-square rounded-full p-1 transition-all duration-300 w-full h-full border ${selectedHairs.includes("hair_x") ? "bg-primary/10 dark:bg-primary/20 scale-105 border-primary/30 dark:border-primary/50 shadow-sm" : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-transparent scale-[0.85] hover:scale-95"} ${!isAnyHairSelected || selectedHairs.includes("hair_x") ? "opacity-100" : "opacity-40 hover:opacity-100"}`}>
                     <img src="/icons/status/hair_x.png" alt="헤어 X" className="w-full h-full object-contain drop-shadow-sm" />
                     <span className={TOOLTIP_CLASS}>헤어 X</span>
                   </button>
@@ -364,7 +365,7 @@ export default function MyCardsPage() {
                   }}
                   className={`w-full py-1.5 rounded-lg text-[11px] font-bold transition-all duration-300 border ${
                     (selectedTypes.includes("collab_all") || COLLAB_FILTERS.every(c => selectedTypes.includes(c.id)))
-                      ? "bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border-primary/30 dark:border-primary/50 shadow-sm scale-100" 
+                      ? "bg-amber-50 dark:bg-amber-500/20 text-amber-600 dark:text-amber-300 border-amber-300 dark:border-amber-400/30 shadow-sm scale-100" 
                       : "bg-white dark:bg-zinc-900/80 border-zinc-200 dark:border-white/5 text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-800"
                   }`}
                 >
@@ -381,7 +382,7 @@ export default function MyCardsPage() {
                         else nextSelected.push(collab.id);
                         setSelectedTypes(nextSelected);
                       }}
-                        className={`py-2.5 md:py-2 px-1 text-[12px] font-bold tracking-tight rounded-lg transition-all duration-300 border ${isSelected ? "bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary shadow-sm scale-105 border-primary/30 dark:border-primary/50" : "bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-600 dark:text-white border-zinc-200 dark:border-transparent scale-95"} ${opacityClass}`}>
+                        className={`py-2.5 md:py-2 px-1 text-[12px] font-bold tracking-tight rounded-lg transition-all duration-300 border ${isSelected ? "bg-amber-50 dark:bg-amber-500/20 text-amber-600 dark:text-amber-300 shadow-sm border-amber-300 dark:border-amber-500/30 scale-105" : "bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-600 dark:text-white border-zinc-200 dark:border-transparent scale-95"} ${opacityClass}`}>
                         {collab.name}
                       </button>
                     )
@@ -403,8 +404,7 @@ export default function MyCardsPage() {
                   const opacityClass = !isAnyAttrSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100";
                   return (
                   <button key={attr.id} onClick={() => toggleFilter(selectedAttrs, setSelectedAttrs, attr.id)} 
-                    // 🌟 [링 효과 영구 처단!] 오직 scale과 불투명도로만 반응하도록 제거 완료!
-                    className={`relative group aspect-square rounded-full transition-all duration-300 ${isSelected ? "scale-105 drop-shadow-md opacity-100" : "scale-[0.85] hover:scale-95 bg-zinc-100 dark:bg-transparent opacity-50"} ${opacityClass}`}>
+                    className={`relative group aspect-square rounded-full transition-all duration-300 ${isSelected ? "scale-[0.95] opacity-100" : "scale-[0.85] hover:scale-95 bg-zinc-100 dark:bg-transparent opacity-50"} ${opacityClass}`}>
                     <img src={attr.img} alt={attr.name} className="w-full h-full object-contain" />
                     <span className={TOOLTIP_CLASS}>{attr.name}</span>
                   </button>
@@ -421,13 +421,14 @@ export default function MyCardsPage() {
             {isSkillExpanded && (
               <div className="space-y-2 pt-1">
                 <div className="grid grid-cols-4 gap-1.5">
+                  {/* 🌟 2 & 5. 스킬 이미지 뱃지 링(ring) 효과 완전 삭제! */}
                   {SKILL_FILTERS.map(skill => {
                     const isCondGroup = skill.id === "condition_group";
                     const isSelected = isCondGroup ? isAllCondSelected : selectedSkills.includes(skill.id);
                     const opacityClass = !isAnySkillSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100";
                     return (
                       <button key={skill.id} onClick={isCondGroup ? toggleCondSkillGroup : () => toggleFilter(selectedSkills, setSelectedSkills, skill.id)}
-                        className={`relative group aspect-square rounded-full p-1 transition-all duration-300 border ${isSelected ? "bg-primary/10 dark:bg-primary/20 scale-105 ring-2 ring-primary border-transparent" : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-transparent scale-[0.85] hover:scale-95"} ${opacityClass}`}>
+                        className={`relative group aspect-square rounded-full p-1 transition-all duration-300 border ${isSelected ? "bg-primary/10 dark:bg-primary/20 scale-105 border-primary/30 dark:border-primary/50 shadow-sm" : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-transparent scale-[0.85] hover:scale-95"} ${opacityClass}`}>
                         <img src={skill.img} alt={skill.name} className="w-full h-full object-contain drop-shadow-sm" />
                         <span className={TOOLTIP_CLASS}>{skill.name}</span>
                       </button>
@@ -440,7 +441,7 @@ export default function MyCardsPage() {
                     const opacityClass = !isAnySkillSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100 text-zinc-500 dark:text-white bg-zinc-100 dark:bg-zinc-900";
                     return (
                       <button key={sub.id} onClick={() => toggleFilter(selectedSkills, setSelectedSkills, sub.id)}
-                        // 🌟 [유지] 기획자님이 완전 맘에 들어하셨던 SKILL 텍스트 반투명 고유 디자인 킵!
+                        // 🌟 스킬 텍스트 뱃지는 마음에 들어하신 반투명 디자인 유지!
                         className={`py-2.5 md:py-2 px-1 text-[12px] font-medium tracking-tight rounded-lg transition-all duration-300 border ${isSelected ? "bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary scale-105 shadow-sm border-primary/30 dark:border-primary/50" : "bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-500 dark:text-zinc-400 scale-95 border-zinc-200 dark:border-transparent"} ${opacityClass}`}>
                         {sub.name}
                       </button>
@@ -458,12 +459,12 @@ export default function MyCardsPage() {
             </button>
             {isCharExpanded && (
               <div className="space-y-6 pt-3">
-                {/* 🌟 [유지] 기획자님이 극찬하신 CHARACTER 버싱 전용 고유 컬러 & 흑백 필터창 완전 보존! */}
                 <div className="bg-zinc-50 dark:bg-zinc-900/50 p-2 rounded-2xl border border-zinc-200 dark:border-white/5 transition-colors">
                   <button 
                     onClick={toggleAllVirtualSingers}
+                    // 🌟 3. 캐릭터 구역: 기획자님이 주신 709줄 코드 내용으로 100% 통째로 복구!
                     className={`w-full flex items-center justify-center gap-2 py-2 rounded-xl text-[12px] font-bold transition-all duration-300 border ${
-                      isAllVsSelected ? "bg-primary/10 dark:bg-[#00FFD1]/15 text-primary dark:text-[#00FFD1] border-primary/30 dark:border-[#00FFD1]/30 shadow-sm dark:shadow-[0_0_10px_rgba(0,255,209,0.1)] scale-100" : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-white/5 text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-800"
+                      isAllVsSelected ? "bg-primary/15 text-primary border-primary/30 shadow-[0_0_10px_var(--color-primary)] opacity-80 scale-100" : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-white/5 text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800"
                     }`}
                   >
                     <span>🎙️</span>
@@ -472,12 +473,12 @@ export default function MyCardsPage() {
 
                   <div className="grid grid-cols-3 gap-1.5 mt-2">
                     {[
-                      { label: "미쿠", key: "미쿠", activeClass: "bg-[#39C5BB]/10 dark:bg-[#39C5BB]/20 text-[#39C5BB] border-[#39C5BB]/30 dark:border-[#39C5BB]/50 shadow-sm dark:shadow-[0_0_6px_rgba(57,197,187,0.2)] scale-100 font-bold" },
-                      { label: "린", key: "린", activeClass: "bg-[#FFA500]/10 dark:bg-[#FFA500]/20 text-[#FFA500] border-[#FFA500]/30 dark:border-[#FFA500]/50 shadow-sm dark:shadow-[0_0_6px_rgba(255,165,0,0.2)] scale-100 font-bold" },
-                      { label: "렌", key: "렌", activeClass: "bg-[#FFE211]/10 dark:bg-[#FFE211]/20 text-[#D4B800] dark:text-[#FFE211] border-[#FFE211]/30 dark:border-[#FFE211]/50 shadow-sm dark:shadow-[0_0_6px_rgba(255,226,17,0.2)] scale-100 font-bold" },
-                      { label: "루카", key: "루카", activeClass: "bg-[#FFC0CB]/10 dark:bg-[#FFC0CB]/20 text-[#E08A9A] dark:text-[#FFC0CB] border-[#FFC0CB]/30 dark:border-[#FFC0CB]/50 shadow-sm dark:shadow-[0_0_6px_rgba(255,192,203,0.2)] scale-100 font-bold" },
-                      { label: "MEIKO", key: "MEIKO", activeClass: "bg-[#D80000]/10 dark:bg-[#D80000]/20 text-[#D80000] border-[#D80000]/30 dark:border-[#D80000]/50 shadow-sm dark:shadow-[0_0_6px_rgba(216,0,0,0.2)] scale-100 font-bold" },
-                      { label: "KAITO", key: "KAITO", activeClass: "bg-[#3468CD]/10 dark:bg-[#3468CD]/20 text-[#3468CD] border-[#3468CD]/30 dark:border-[#3468CD]/50 shadow-sm dark:shadow-[0_0_6px_rgba(52,104,205,0.2)] scale-100 font-bold" }
+                      { label: "미쿠", key: "미쿠", activeClass: "bg-[#39C5BB]/20 text-[#39C5BB] border-[#39C5BB]/50 shadow-[0_0_8px_rgba(57,197,187,0.3)] scale-100 font-bold" },
+                      { label: "린", key: "린", activeClass: "bg-[#FFA500]/20 text-[#FFA500] border-[#FFA500]/50 shadow-[0_0_8px_rgba(255,165,0,0.3)] scale-100 font-bold" },
+                      { label: "렌", key: "렌", activeClass: "bg-[#FFE211]/20 text-[#D4B800] dark:text-[#FFE211] border-[#FFE211]/50 shadow-[0_0_8px_rgba(255,226,17,0.3)] scale-100 font-bold" },
+                      { label: "루카", key: "루카", activeClass: "bg-[#FFC0CB]/20 text-[#E08A9A] dark:text-[#FFC0CB] border-[#FFC0CB]/50 shadow-[0_0_8px_rgba(255,192,203,0.3)] scale-100 font-bold" },
+                      { label: "MEIKO", key: "MEIKO", activeClass: "bg-[#D80000]/20 text-[#D80000] border-[#D80000]/50 shadow-[0_0_8px_rgba(216,0,0,0.3)] scale-100 font-bold" },
+                      { label: "KAITO", key: "KAITO", activeClass: "bg-[#3468CD]/20 text-[#3468CD] border-[#3468CD]/50 shadow-[0_0_8px_rgba(52,104,205,0.3)] scale-100 font-bold" }
                     ].map(vs => {
                       const specificIds = UNIT_FILTERS.flatMap(u => u.chars).filter(c => c.isVirtual && c.matchKeys?.includes(vs.key)).map(c => c.id);
                       const isAllSpecificSelected = specificIds.length > 0 && specificIds.every(id => selectedChars.includes(id));
@@ -499,7 +500,7 @@ export default function MyCardsPage() {
                   const logoOpacityClass = !isAnyCharSelected || isAllSelected ? "opacity-100" : "opacity-40 hover:opacity-100 filter grayscale-[50%] dark:grayscale-0";
                   return (
                   <div key={unit.id} className="flex flex-col gap-2">
-                    <button onClick={() => toggleUnitFilter(unit.chars)} className={`w-full h-16 py-1 flex items-center justify-center rounded-xl transition-all duration-300 border ${isAllSelected ? "bg-primary/10 dark:bg-primary/15 scale-105 border-primary/20" : "bg-transparent hover:bg-zinc-100 dark:hover:bg-white/5 scale-95 border-transparent"} ${logoOpacityClass}`}>
+                    <button onClick={() => toggleUnitFilter(unit.chars)} className={`w-full h-16 py-1 flex items-center justify-center rounded-xl transition-all duration-300 border ${isAllSelected ? "bg-primary/15 scale-105 border-primary/20" : "bg-transparent hover:bg-zinc-100 dark:hover:bg-white/5 scale-95 border-transparent"} ${logoOpacityClass}`}>
                       <img src={unit.logo} alt={unit.name} className="h-full w-auto object-contain max-w-[90%] drop-shadow-sm dark:drop-shadow-md" />
                     </button>
                     <div className="grid grid-cols-4 gap-1.5 mt-1">
@@ -508,8 +509,7 @@ export default function MyCardsPage() {
                         const charOpacityClass = !isAnyCharSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100";
                         return (
                         <button key={char.id} onClick={() => toggleFilter(selectedChars, setSelectedChars, char.id)}
-                          // 🌟 기획자님의 캐릭터 아이콘 링 효과 보존!
-                          className={`relative group aspect-square rounded-full transition-all duration-300 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-transparent ${isSelected ? "scale-105 ring-2 ring-primary shadow-sm opacity-100 border-primary dark:border-white" : "scale-[0.80] hover:scale-[0.85]"} ${charOpacityClass}`}>
+                          className={`relative group aspect-square rounded-full transition-all duration-300 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-transparent ${isSelected ? "scale-105 ring-2 ring-primary shadow-[0_0_8px_var(--color-primary)] opacity-80" : "scale-[0.80] hover:scale-[0.85]"} ${charOpacityClass}`}>
                           <img src={char.img} alt={char.name} className="w-full h-full object-contain" />
                           <span className={TOOLTIP_CLASS}>{char.name}</span>
                         </button>
@@ -652,7 +652,7 @@ export default function MyCardsPage() {
   );
 }
 
-// 📂 하단 데이터 DB 일괄 복구 완료 (1글자 유실 없음!)
+// 📂 하단 데이터 DB 일괄 복구 완료
 type CharDef = { id: string; name: string; img: string; isVirtual?: boolean; matchKeys?: string[] };
 type UnitDef = { id: string; name: string; logo: string; chars: CharDef[] };
 type AttrDef = { id: string; name: string; img: string };
