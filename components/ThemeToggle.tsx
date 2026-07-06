@@ -70,10 +70,20 @@ export default function ThemeToggle() {
         aria-label="테마 및 색상 설정"
         className="relative p-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all active:scale-95"
       >
-        {/* 🌟 마법의 CSS: var(--color-primary)가 없으면 자연스럽게 텍스트 기본색(currentColor)으로 폴백! */}
+        {/* 🌟 기획자님이 지켜낸 마법의 CSS! 
+            테마색이 있을 땐 '투명 글자+배경색 오려내기' 꼼수를 쓰고, 
+            기본(default)일 때는 정석적인 텍스트 색상을 써서 투명화 버그 방지! */}
         <span 
-          className="text-xl leading-none block transition-colors bg-clip-text text-transparent text-zinc-800 dark:text-zinc-100"
-          style={{ backgroundImage: "linear-gradient(var(--color-primary, currentColor), var(--color-primary, currentColor))" }}
+          className={`text-xl leading-none block transition-colors ${
+            themeColor !== "default" 
+              ? "bg-clip-text text-transparent" 
+              : "text-zinc-800 dark:text-zinc-100"
+          }`}
+          style={
+            themeColor !== "default" 
+              ? { backgroundImage: "linear-gradient(var(--color-primary), var(--color-primary))" } 
+              : {}
+          }
         >
           {isDark ? "☾" : "☀︎"}
         </span>
