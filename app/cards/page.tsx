@@ -6,6 +6,7 @@ import { ALL_CARDS } from "@/data/cards";
 import { FinalCardInfo } from "@/data/cards/template"; 
 import CardDetailModal from "@/components/CardDetailModal";
 import CardItem from "@/components/CardItem"; 
+import { useThemeColor } from "@/app/providers"; // 🌟 직통 전화기 연결!
 
 // 🌟 다크/라이트 완벽 지원하는 툴팁
 const TOOLTIP_CLASS = "absolute bottom-full mb-2 left-1/2 -translate-x-1/2 px-2.5 py-1 bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-100 text-[11px] font-bold rounded-lg shadow-xl border border-zinc-200 dark:border-white/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-[60]";
@@ -59,6 +60,9 @@ const getMockEventBonus = (card: FinalCardInfo) => {
 };
 
 export default function MyCardsPage() {
+  // 🌟 1. 더러운 추적기 모두 삭제! 직통 전화기를 통해 현재 테마 상태를 100% 정확하게 가져옵니다.
+  const { themeColor } = useThemeColor();
+  
   const [cardStates, setCardStates] = useState<Record<string, UserCardState>>({});
   const [activeModalCard, setActiveModalCard] = useState<FinalCardInfo | null>(null);
   const [mounted, setMounted] = useState(false);
@@ -278,8 +282,10 @@ export default function MyCardsPage() {
   const isAllCondSelected = condIds.length > 0 && condIds.every(id => selectedSkills.includes(id));
   
   return (
-    <div className="flex flex-col md:flex-row gap-6 px-4 md:px-8 py-6 min-h-screen text-zinc-900 dark:text-zinc-100 max-w-[1920px] mx-auto w-full transition-colors duration-300">
-      
+    <div 
+      className="flex flex-col md:flex-row gap-6 px-4 md:px-8 py-6 min-h-screen text-zinc-900 dark:text-zinc-100 max-w-[1920px] mx-auto w-full transition-colors duration-300"
+    >
+
       {/* 👈 좌측 영역: 필터칸 */}
       <div className={`flex flex-col shrink-0 md:w-[280px] md:relative md:block md:bg-transparent md:p-0 md:h-auto md:z-0 ${isMobileFilterOpen ? 'fixed inset-0 z-[100] bg-white dark:bg-zinc-950 p-6 overflow-y-auto' : 'hidden'} transition-colors duration-300`}>
         <div className="flex items-center justify-between border-b border-zinc-200 dark:border-white/10 pb-3 mb-6 md:mb-0 transition-colors">
@@ -303,15 +309,17 @@ export default function MyCardsPage() {
                 <div className="grid grid-cols-3 gap-1.5">
                   {[ { id: "owned", label: "✓ 보유" }, { id: "unowned", label: "❌ 미보유" }, { id: "target", label: "⭐ 목표" } ].map(status => {
                     const isSelected = selectedStatuses.includes(status.id);
-                    const opacityClass = !isAnyStatusSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100 text-zinc-500 dark:text-white bg-zinc-100 dark:bg-zinc-900";
+                    const opacityClass = !isAnyStatusSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100";
                     
-                    // 🌟 1. 상태 필터 색상 교정 (보유=에메랄드, 목표=앰버, 미보유=까만색)
+                    // 🌟 [핵심 수정] 버튼을 눌러서 '활성화(Selected)' 되었을 때의 스타일 설정
+                    // 미보유(unowned) 버튼이 활성화되면, 검은색 배경 대신 모달창 스타일처럼 배경을 투명하게 뚫어버립니다!
                     const activeClass = status.id === "target" 
                       ? "bg-amber-50 dark:bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-300 dark:border-amber-400/50 shadow-sm scale-105" 
                       : status.id === "owned" 
                         ? "bg-emerald-50 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-400/50 shadow-sm scale-105" 
-                        : "bg-zinc-800 dark:bg-zinc-700 text-white border border-zinc-700 dark:border-zinc-500 shadow-md scale-105";
+                        : "bg-transparent text-zinc-800 dark:text-zinc-200 border border-zinc-400 dark:border-zinc-500 shadow-md scale-105 font-extrabold"; // ❌ 미보유 활성화 시 스타일!
                     
+                    // 🌟 평소 버튼을 안 눌렀을 때(비활성화)의 기본 순정 스타일 (점선 없음!)
                     const inactiveClass = "bg-white dark:bg-zinc-900 text-zinc-500 dark:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-transparent scale-95";
                     
                     return (
@@ -363,9 +371,20 @@ export default function MyCardsPage() {
                     if (isAllCollab) setSelectedTypes(selectedTypes.filter(id => id !== "collab_all" && !allCollabIds.includes(id)));
                     else setSelectedTypes([...new Set([...selectedTypes, "collab_all", ...allCollabIds])]);
                   }}
+                  // 🌟 활성화 시에만 토널 팔레트 작동
+                  style={((selectedTypes.includes("collab_all") || COLLAB_FILTERS.every(c => selectedTypes.includes(c.id))) && themeColor !== "default") ? {
+                    "--mix-bg": "color-mix(in srgb, var(--color-primary) 15%, transparent)",
+                    "--mix-border": "var(--color-primary)",
+                    "--mix-text-light": "color-mix(in srgb, var(--color-primary) 40%, black)",
+                    "--mix-text-dark": "color-mix(in srgb, var(--color-primary) 40%, white)",
+                    "--mix-glow": "color-mix(in srgb, var(--color-primary) 30%, transparent)",
+                  } as React.CSSProperties : {}}
                   className={`w-full py-1.5 rounded-lg text-[11px] font-bold transition-all duration-300 border ${
                     (selectedTypes.includes("collab_all") || COLLAB_FILTERS.every(c => selectedTypes.includes(c.id)))
-                      ? "bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border-primary/30 dark:border-primary/50 shadow-sm scale-100" 
+                      ? themeColor === "default"
+                        ? "bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border-primary/30 dark:border-primary/50 shadow-sm scale-100"
+                        : "bg-[var(--mix-bg)] border-[var(--mix-border)] text-[var(--mix-text-light)] dark:text-[var(--mix-text-dark)] shadow-[0_0_8px_var(--mix-glow)] scale-100"
+                      // 🌟 비활성화는 무조건 순정 코드로! (오해 방지)
                       : "bg-white dark:bg-zinc-900/80 border-zinc-200 dark:border-white/5 text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-800"
                   }`}
                 >
@@ -382,7 +401,21 @@ export default function MyCardsPage() {
                         else nextSelected.push(collab.id);
                         setSelectedTypes(nextSelected);
                       }}
-                        className={`py-2.5 md:py-2 px-1 text-[12px] font-bold tracking-tight rounded-lg transition-all duration-300 border ${isSelected ? "bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary shadow-sm scale-105 border-primary/30 dark:border-primary/50" : "bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-600 dark:text-white border-zinc-200 dark:border-transparent scale-95"} ${opacityClass}`}>
+                        style={isSelected && themeColor !== "default" ? {
+                          "--mix-bg": "color-mix(in srgb, var(--color-primary) 15%, transparent)",
+                          "--mix-border": "var(--color-primary)",
+                          "--mix-text-light": "color-mix(in srgb, var(--color-primary) 40%, black)",
+                          "--mix-text-dark": "color-mix(in srgb, var(--color-primary) 40%, white)",
+                          "--mix-glow": "color-mix(in srgb, var(--color-primary) 30%, transparent)",
+                        } as React.CSSProperties : {}}
+                        className={`py-2.5 md:py-2 px-1 text-[12px] font-bold tracking-tight rounded-lg transition-all duration-300 border ${
+                          isSelected 
+                            ? themeColor === "default"
+                              ? "bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary shadow-sm scale-105 border-primary/30 dark:border-primary/50"
+                              : "bg-[var(--mix-bg)] border-[var(--mix-border)] text-[var(--mix-text-light)] dark:text-[var(--mix-text-dark)] shadow-[0_0_8px_var(--mix-glow)] scale-105"
+                            // 🌟 비활성화는 오리지널 스타일로 롤백!
+                            : "bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-600 dark:text-white border-zinc-200 dark:border-transparent scale-95"
+                        } ${opacityClass}`}>
                         {collab.name}
                       </button>
                     )
@@ -422,7 +455,6 @@ export default function MyCardsPage() {
             {isSkillExpanded && (
               <div className="space-y-2 pt-1">
                 <div className="grid grid-cols-4 gap-1.5">
-                  {/* 🌟 5번 요청: 스킬 이미지 뱃지 링 효과 삭제 완료! border-transparent 로 투명 테두리 */}
                   {SKILL_FILTERS.map(skill => {
                     const isCondGroup = skill.id === "condition_group";
                     const isSelected = isCondGroup ? isAllCondSelected : selectedSkills.includes(skill.id);
@@ -436,14 +468,28 @@ export default function MyCardsPage() {
                     );
                   })}
                 </div>
+                {/* 스킬 윗부분은 기존과 완전 동일하므로 하단 텍스트 뱃지 구역만 교체합니다 */}
                 <div className="grid grid-cols-5 gap-1.5 mt-2">
                   {condSubs.map(sub => {
                     const isSelected = selectedSkills.includes(sub.id);
                     const opacityClass = !isAnySkillSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100 text-zinc-500 dark:text-white bg-zinc-100 dark:bg-zinc-900";
                     return (
                       <button key={sub.id} onClick={() => toggleFilter(selectedSkills, setSelectedSkills, sub.id)}
-                        // 🌟 2번 요청: 스킬 텍스트 뱃지는 맘에 들어하신 스타일 그대로 유지
-                        className={`py-2.5 md:py-2 px-1 text-[12px] font-medium tracking-tight rounded-lg transition-all duration-300 border ${isSelected ? "bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary scale-105 shadow-sm border-primary/30 dark:border-primary/50" : "bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-500 dark:text-zinc-400 scale-95 border-zinc-200 dark:border-transparent"} ${opacityClass}`}>
+                        style={isSelected && themeColor !== "default" ? {
+                          "--mix-bg": "color-mix(in srgb, var(--color-primary) 15%, transparent)",
+                          "--mix-border": "var(--color-primary)",
+                          "--mix-text-light": "color-mix(in srgb, var(--color-primary) 40%, black)",
+                          "--mix-text-dark": "color-mix(in srgb, var(--color-primary) 40%, white)",
+                          "--mix-glow": "color-mix(in srgb, var(--color-primary) 30%, transparent)",
+                        } as React.CSSProperties : {}}
+                        className={`py-2.5 md:py-2 px-1 text-[12px] font-medium tracking-tight rounded-lg transition-all duration-300 border ${
+                          isSelected 
+                            ? themeColor === "default"
+                              ? "bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary scale-105 shadow-sm border-primary/30 dark:border-primary/50" 
+                              : "bg-[var(--mix-bg)] border-[var(--mix-border)] text-[var(--mix-text-light)] dark:text-[var(--mix-text-dark)] shadow-[0_0_8px_var(--mix-glow)] scale-105"
+                            // 🌟 비활성 시 순정 디자인 롤백 (헷갈림 방지!)
+                            : "bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-500 dark:text-zinc-400 scale-95 border-zinc-200 dark:border-transparent"
+                        } ${opacityClass}`}>
                         {sub.name}
                       </button>
                     )
@@ -460,12 +506,28 @@ export default function MyCardsPage() {
             </button>
             {isCharExpanded && (
               <div className="space-y-6 pt-3">
-                {/* 🌟 3번 요청: 캐릭터 구역 "복구 전 코드(첫 번째 코드)" 완벽하게 100% 롤백! */}
                 <div className="bg-zinc-50 dark:bg-zinc-900/50 p-2 rounded-2xl border border-zinc-200 dark:border-white/5 transition-colors">
                   <button 
                     onClick={toggleAllVirtualSingers}
+                    style={themeColor !== "default" ? {
+                      "--mix-bg": "color-mix(in srgb, var(--color-primary) 15%, transparent)",
+                      "--mix-border": "var(--color-primary)",
+                      "--mix-text-light": "color-mix(in srgb, var(--color-primary) 40%, black)",
+                      "--mix-text-dark": "color-mix(in srgb, var(--color-primary) 40%, white)",
+                      "--mix-glow": "color-mix(in srgb, var(--color-primary) 30%, transparent)",
+                      "--tint-bg": "color-mix(in srgb, var(--color-primary) 6%, transparent)",
+                      "--tint-text-light": "color-mix(in srgb, var(--color-primary) 80%, #3f3f46)",
+                      "--tint-text-dark": "color-mix(in srgb, var(--color-primary) 80%, #f4f4f5)",
+                    } as React.CSSProperties : {}}
                     className={`w-full flex items-center justify-center gap-2 py-2 rounded-xl text-[12px] font-bold transition-all duration-300 border ${
-                      isAllVsSelected ? "bg-primary/10 dark:bg-[#00FFD1]/15 text-primary dark:text-[#00FFD1] border-primary/30 dark:border-[#00FFD1]/30 shadow-sm dark:shadow-[0_0_10px_rgba(0,255,209,0.1)] scale-100" : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-white/5 text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-800"
+                      isAllVsSelected 
+                        ? themeColor === "default"
+                          ? "bg-primary/10 dark:bg-[#00FFD1]/15 text-primary dark:text-[#00FFD1] border-primary/30 dark:border-[#00FFD1]/30 shadow-sm dark:shadow-[0_0_10px_rgba(0,255,209,0.1)] scale-100" 
+                          : "bg-[var(--mix-bg)] border-[var(--mix-border)] text-[var(--mix-text-light)] dark:text-[var(--mix-text-dark)] shadow-[0_0_8px_var(--mix-glow)] scale-100"
+                        : themeColor === "default"
+                          ? "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-white/5 text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-800"
+                          // 🌟 테마 비활성: 링(border)은 원본 유지
+                          : "bg-[var(--tint-bg)] border-zinc-200 dark:border-white/5 text-[var(--tint-text-light)] dark:text-[var(--tint-text-dark)] hover:bg-primary/10 transition-colors"
                     }`}
                   >
                     <span>🎙️</span>
@@ -478,6 +540,7 @@ export default function MyCardsPage() {
                       { label: "린", key: "린", activeClass: "bg-[#FFA500]/10 dark:bg-[#FFA500]/20 text-[#FFA500] border-[#FFA500]/30 dark:border-[#FFA500]/50 shadow-sm dark:shadow-[0_0_6px_rgba(255,165,0,0.2)] scale-100 font-bold" },
                       { label: "렌", key: "렌", activeClass: "bg-[#FFE211]/10 dark:bg-[#FFE211]/20 text-[#D4B800] dark:text-[#FFE211] border-[#FFE211]/30 dark:border-[#FFE211]/50 shadow-sm dark:shadow-[0_0_6px_rgba(255,226,17,0.2)] scale-100 font-bold" },
                       { label: "루카", key: "루카", activeClass: "bg-[#FFC0CB]/10 dark:bg-[#FFC0CB]/20 text-[#E08A9A] dark:text-[#FFC0CB] border-[#FFC0CB]/30 dark:border-[#FFC0CB]/50 shadow-sm dark:shadow-[0_0_6px_rgba(255,192,203,0.2)] scale-100 font-bold" },
+                      // 🌟 기획자님의 MEIKO, KAITO 오리지널 색상 완벽 복구
                       { label: "MEIKO", key: "MEIKO", activeClass: "bg-[#D80000]/10 dark:bg-[#D80000]/20 text-[#D80000] border-[#D80000]/30 dark:border-[#D80000]/50 shadow-sm dark:shadow-[0_0_6px_rgba(216,0,0,0.2)] scale-100 font-bold" },
                       { label: "KAITO", key: "KAITO", activeClass: "bg-[#3468CD]/10 dark:bg-[#3468CD]/20 text-[#3468CD] border-[#3468CD]/30 dark:border-[#3468CD]/50 shadow-sm dark:shadow-[0_0_6px_rgba(52,104,205,0.2)] scale-100 font-bold" }
                     ].map(vs => {
@@ -487,7 +550,19 @@ export default function MyCardsPage() {
                         <button 
                           key={vs.key}
                           onClick={() => toggleSpecificVS(vs.key)}
-                          className={`py-1.5 rounded-lg text-[11px] transition-all duration-300 border ${isAllSpecificSelected ? vs.activeClass : "bg-white dark:bg-zinc-900/80 border-zinc-200 dark:border-white/5 text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-800 font-medium"}`}
+                          style={(!isAllSpecificSelected && themeColor !== "default") ? {
+                            "--tint-bg": "color-mix(in srgb, var(--color-primary) 6%, transparent)",
+                            "--tint-text-light": "color-mix(in srgb, var(--color-primary) 80%, #3f3f46)",
+                            "--tint-text-dark": "color-mix(in srgb, var(--color-primary) 80%, #f4f4f5)",
+                          } as React.CSSProperties : {}}
+                          className={`py-1.5 rounded-lg text-[11px] transition-all duration-300 border ${
+                            isAllSpecificSelected 
+                              ? vs.activeClass 
+                              : themeColor === "default"
+                                ? "bg-white dark:bg-zinc-900/80 border-zinc-200 dark:border-white/5 text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-800 font-medium"
+                                // 🌟 테마 비활성: 링(border)은 원본 유지, 배경 박스만 예쁘게 틴팅!
+                                : "bg-[var(--tint-bg)] border-zinc-200 dark:border-white/5 text-[var(--tint-text-light)] dark:text-[var(--tint-text-dark)] hover:bg-primary/10 font-medium"
+                          }`}
                         >
                           {vs.label}
                         </button>
@@ -495,6 +570,8 @@ export default function MyCardsPage() {
                     })}
                   </div>
                 </div>
+
+                {/* (하단 유닛 로고 & 캐릭터 아이콘 영역 유지) */}
 
                 {UNIT_FILTERS.map((unit) => {
                   const isAllSelected = unit.chars.every(c => selectedChars.includes(c.id));
@@ -528,8 +605,8 @@ export default function MyCardsPage() {
       {/* 🌟 4번 요청: 우측 본문 영역은 최신 베이스 코드의 선명한 스타일 그대로 유지! */}
       <div className="flex-1 flex flex-col min-w-0 bg-zinc-50/50 dark:bg-zinc-900/30 rounded-3xl p-4 md:p-6 border border-zinc-200 dark:border-white/5 relative shadow-sm transition-colors duration-300">
         
-        {/* 컨트롤 바 (Sticky) */}
-        <div className="sticky top-0 bg-white/90 dark:bg-zinc-950/85 backdrop-blur-md px-2 py-4 -mx-4 md:-mx-6 px-4 md:px-6 rounded-t-3xl border-b border-zinc-200 dark:border-white/5 z-50 flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6 transition-colors duration-300">
+        {/* 🌟 컨트롤 바 (Sticky): 상단 여백을 없애서 박스 천장에 완벽하게 밀착시켰습니다! */}
+        <div className="sticky top-0 bg-white/90 dark:bg-zinc-950/85 backdrop-blur-md py-4 -mt-4 md:-mt-6 -mx-4 md:-mx-6 px-4 md:px-6 rounded-t-3xl border-b border-zinc-200 dark:border-white/5 z-50 flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6 transition-colors duration-300">
           <div>
             <h1 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-white transition-colors">카드 목록</h1>
             <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 transition-colors">검색된 카드: <strong className="text-primary">{sortedCards.length}</strong>장</p>

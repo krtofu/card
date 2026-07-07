@@ -6,6 +6,7 @@ import { UserCardState } from "@/app/cards/page";
 import ModalCostumePreviewCard from "@/components/ModalCostumePreviewCard";
 import { createPortal } from "react-dom";
 import { useState, useEffect } from "react";
+import { useThemeColor } from "@/app/providers"; 
 
 // 🌟 스킬 보너스 계산 엔진 (모달 전용)
 const getSkillBonusPercentage = (skillType: string, level: number, unit: string, isAwakened: boolean, charRank: number = 1, isOwned: boolean = false) => {
@@ -53,14 +54,14 @@ export default function CardDetailModal({
   onUpdateState,
   onClose,
 }: CardDetailModalProps) {
+  // 🌟 1. 더러운 추적기(safePrimary 등) 모두 삭제! 직통 전화기로 현재 테마 가져오기
+  const { themeColor } = useThemeColor();
+
   const [isExpandMode, setIsExpandMode] = useState(false);
-  
   const [simSkillLevel, setSimSkillLevel] = useState(1);
   const [simMasterRank, setSimMasterRank] = useState(0);
   const [characterRank, setCharacterRank] = useState(1);
-
   const [mounted, setMounted] = useState(false);
-  const [safePrimary, setSafePrimary] = useState("#10b981"); // 🌟 안전한 테마색 보관소
 
   useEffect(() => {
     setMounted(true); 
@@ -74,26 +75,6 @@ export default function CardDetailModal({
       }
     }
   }, [card]);
-
-  // 🌟 [지능형 테마 추적 엔진] 빈 값이나 이상한 포맷을 100% 에메랄드/테마색으로 복구!
-  useEffect(() => {
-    const updateColor = () => {
-      const rootColor = getComputedStyle(document.documentElement).getPropertyValue('--color-primary').trim();
-      
-      if (!rootColor) {
-        setSafePrimary("#10b981"); // 비어있으면 무조건 에메랄드 강제 주입
-      } else if (/^[0-9]/.test(rootColor)) {
-        setSafePrimary(`rgb(${rootColor})`); // Tailwind RGB 숫자(16 185 129) 포맷이면 rgb() 씌워주기
-      } else {
-        setSafePrimary(rootColor); // 정상적인 #hex 코드면 그대로 사용
-      }
-    };
-    
-    updateColor();
-    const observer = new MutationObserver(updateColor);
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['style', 'class'] });
-    return () => observer.disconnect();
-  }, []);
 
   if (!card || !mounted) return null;
 
@@ -117,14 +98,15 @@ export default function CardDetailModal({
   const currentSkillLevel = userState.isOwned ? (userState.skillLevel || 1) : simSkillLevel;
   const currentMasterRank = userState.isOwned ? (userState.masterRank || 0) : simMasterRank;
 
-  const calculatedSkillBonus = getSkillBonusPercentage(
+  // 💡 기존의 getSkillBonusPercentage 함수 등은 파일 바깥(상단)에 있거나 다른 곳에서 import 해온다고 가정하고 그대로 유지합니다.
+  const calculatedSkillBonus = typeof getSkillBonusPercentage === 'function' ? getSkillBonusPercentage(
     card.skillType || "",
     currentSkillLevel,
     card.unit || "",
     true, 
     characterRank,
     userState.isOwned
-  );
+  ) : 0;
 
   const costumePreviewData = hasCostume && card.costume ? {
     title: card.cardName,
@@ -223,22 +205,21 @@ export default function CardDetailModal({
       style={{ zIndex: 99999 }} 
     >
       <div className="absolute inset-0" onClick={onClose} />
-
-      {/* 🌟 최상단 CSS 마스터 컨트롤: 원래의 가독성 계산 엔진은 100% 유지하면서, 배경색까지 은은하게 물들입니다! */}
+      
+      {/* 🌟 2. 최상단 CSS 마스터 컨트롤: 에메랄드 감염 원인 완벽 제거! */}
       <div 
         style={{
-          "--color-primary": safePrimary,
+          // 🚨 원인 제거: "--color-primary": ... 이 줄을 흔적도 없이 지웠습니다! 
+          // (전역 providers.tsx에서 이미 내려주고 있으므로 안 써도 100% 작동합니다)
           "--mix-bg": "color-mix(in srgb, var(--color-primary) 15%, transparent)",
           "--mix-border": "var(--color-primary)",
           "--mix-text-light": "color-mix(in srgb, var(--color-primary) 40%, black)",
           "--mix-text-dark": "color-mix(in srgb, var(--color-primary) 40%, white)",
           "--mix-glow": "color-mix(in srgb, var(--color-primary) 30%, transparent)",
           
-          // 🌟 [핀셋 추가]: 기존 엔진은 놔두고, 모달 자체 배경을 위한 아주 연한(라이트 4%, 다크 7%) 믹싱 변수만 슬쩍 추가합니다!
-          "--themed-modal-bg-light": "color-mix(in srgb, var(--color-primary) 4%, white)",
-          "--themed-modal-bg-dark": "color-mix(in srgb, var(--color-primary) 7%, #09090b)", // zinc-950 색상값 기준
+          "--themed-modal-bg-light": themeColor === "default" ? "white" : "color-mix(in srgb, var(--color-primary) 12%, white)",
+          "--themed-modal-bg-dark": themeColor === "default" ? "#09090b" : "color-mix(in srgb, var(--color-primary) 18%, #09090b)",
         } as React.CSSProperties}
-        // 🌟 className의 bg-white / bg-zinc-950 부분을 방금 만든 변수로 교체했습니다!
         className="relative w-full max-w-6xl max-h-[95vh] overflow-y-auto rounded-3xl border border-zinc-300 dark:border-zinc-700 bg-[var(--themed-modal-bg-light)] dark:bg-[var(--themed-modal-bg-dark)] p-6 shadow-2xl transition-colors duration-500 flex flex-col custom-scrollbar"
       >
 

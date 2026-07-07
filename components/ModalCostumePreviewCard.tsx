@@ -1,8 +1,9 @@
-"use client";
+// src/components/ModalCostumePreviewCard.tsx
 
 import Image from "next/image";
 import { useMemo, useState } from "react";
 import type { CostumePreview, CostumeSet } from "@/data/costumes";
+import { useThemeColor } from "@/app/providers";
 
 // 모달 전용 Props (유저의 상태를 받음)
 interface ModalCostumePreviewProps {
@@ -68,6 +69,7 @@ function FlipSideButton({ side, onToggle, customBg }: { side: "front" | "back"; 
 }
 
 export default function ModalCostumePreviewCard({ preview, userState }: ModalCostumePreviewProps) {
+  const { themeColor } = useThemeColor(); // 🌟 직통 전화기 수신!
   const [side, setSide] = useState<"front" | "back">("front");
   const [charIdx, setCharIdx] = useState(0);
   const [setIdx, setSetIdx] = useState(0);
@@ -202,13 +204,13 @@ export default function ModalCostumePreviewCard({ preview, userState }: ModalCos
                 const showFull = !isAnother || active || hovered;
                 const visibleLabel = showFull ? s.label : shortLabel;
 
-                // 🌟 [배경색 반응형] 비활성 탭 디자인 지능형 변환
+                // 비활성 탭 디자인
                 const inactiveLightClass = "bg-zinc-100/90 border-zinc-300 text-zinc-500 hover:bg-zinc-200 hover:text-zinc-800";
                 const inactiveDarkClass = "bg-white/5 border-white/10 text-zinc-400 hover:bg-white/10 hover:text-zinc-200";
                 const inactiveAutoClass = "bg-zinc-100/90 dark:bg-white/5 border-zinc-300 dark:border-white/10 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/10";
                 const inactiveClass = customBg === 'light' ? inactiveLightClass : customBg === 'dark' ? inactiveDarkClass : inactiveAutoClass;
 
-                // 🌟 [배경색 반응형] 활성 탭 텍스트 색상 지능형 변환
+                // 🌟 [디자인 원상복구] 디폴트든 팔레트든, 무조건 영롱한 투명 믹스(15%) 양식을 씁니다!
                 const activeTextClass = customBg === 'light' ? "text-[var(--mix-text-light)]" : customBg === 'dark' ? "text-[var(--mix-text-dark)]" : "text-[var(--mix-text-light)] dark:text-[var(--mix-text-dark)]";
                 const activeClass = `bg-[var(--mix-bg)] border-[var(--mix-border)] ${activeTextClass} shadow-[0_0_8px_var(--mix-glow)]`;
 
@@ -219,12 +221,14 @@ export default function ModalCostumePreviewCard({ preview, userState }: ModalCos
                     onClick={() => pickSet(i)}
                     onMouseEnter={() => setHoverSetIdx(i)}
                     onMouseLeave={() => setHoverSetIdx(null)}
+                    // 🌟 에메랄드 찌꺼기(, #10b981)만 뺀 순수 color-mix 엔진을 조건 없이 가동합니다!
+                    // (providers.tsx가 주는 색상을 가져와서 알아서 예쁘게 섞습니다)
                     style={active ? {
-                      "--mix-bg": "color-mix(in srgb, var(--color-primary, #10b981) 15%, transparent)",
-                      "--mix-border": "var(--color-primary, #10b981)",
-                      "--mix-text-light": "color-mix(in srgb, var(--color-primary, #10b981) 40%, black)",
-                      "--mix-text-dark": "color-mix(in srgb, var(--color-primary, #10b981) 40%, white)",
-                      "--mix-glow": "color-mix(in srgb, var(--color-primary, #10b981) 30%, transparent)",
+                      "--mix-bg": "color-mix(in srgb, var(--color-primary) 15%, transparent)",
+                      "--mix-border": "var(--color-primary)",
+                      "--mix-text-light": "color-mix(in srgb, var(--color-primary) 40%, black)",
+                      "--mix-text-dark": "color-mix(in srgb, var(--color-primary) 40%, white)",
+                      "--mix-glow": "color-mix(in srgb, var(--color-primary) 30%, transparent)",
                     } as React.CSSProperties : {}}
                     className={[
                       "relative", 
