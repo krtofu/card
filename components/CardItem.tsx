@@ -23,9 +23,9 @@ const getSkillIconPath = (skill: string) => {
   return "";
 };
 
-// 🌟 보유 상태 뱃지 라이트/다크 대응
+// 🌟 텍스트 뱃지는 언제나 흔들림 없이 고유색(에메랄드/앰버) 유지!
 const getStateBadgeStyle = (isOwned: boolean, isTarget: boolean) => {
-  if (isOwned) return "bg-primary/10 dark:bg-primary/20 text-primary border-primary/30 dark:border-primary/50 shadow-sm"; 
+  if (isOwned) return "bg-emerald-50 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border-emerald-300 dark:border-emerald-500/50 shadow-sm"; 
   if (isTarget) return "bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-300 border-amber-300 dark:border-amber-500/50 shadow-sm"; 
   return "bg-zinc-100 dark:bg-zinc-800/80 text-zinc-400 border-zinc-200 dark:border-white/10"; 
 };
@@ -51,7 +51,6 @@ export default function CardItem({
   return (
     <div onClick={() => onClick(card)} className="relative p-1 cursor-pointer transition-all hover:scale-[1.05] flex flex-col items-center text-center group min-w-0">
       
-      {/* 🌟 썸네일 뒷배경 라이트/다크 대응 */}
       <div className="relative h-[100px] w-fit flex justify-center bg-zinc-100 dark:bg-zinc-900 rounded-lg overflow-hidden border border-transparent group-hover:border-zinc-300 dark:group-hover:border-white/10 transition-colors">
         <img 
           src={showPostAwake ? thumbPost : thumbPre} 
@@ -69,35 +68,35 @@ export default function CardItem({
       
       <div className="mt-2.5 h-[64px] flex flex-col items-center justify-start w-full px-1">
         {sortOrder === "score" ? (
-          // 🌟 스업 수치순 뱃지 도색 (Primary 연동)
+          // 🌟 스업 수치순: 보유 시 무조건 '에메랄드'로 고정!
           <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md shadow-sm mt-1 transition-all w-[90px] justify-center ${
             isOwned 
-              ? "bg-white dark:bg-zinc-900/90 border border-primary dark:border-primary/70 shadow-[0_0_8px_var(--color-primary)]" 
+              ? "bg-white dark:bg-zinc-900/90 border border-emerald-400 dark:border-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.3)]"
               : isTarget 
               ? "bg-amber-50 dark:bg-amber-500/10 border border-amber-300 dark:border-amber-400/50 shadow-[0_0_8px_rgba(245,158,11,0.2)] text-amber-500 dark:text-amber-300" 
               : "bg-zinc-50 dark:bg-zinc-900/80 border border-zinc-200 dark:border-white/5"
           }`}>
             <img src={getSkillIconPath(card.skillType || "")} className="w-[14px] h-[14px] object-contain drop-shadow-sm" alt="스킬" />
-            <span className={`text-[12px] font-bold tracking-tight ${isOwned ? 'text-primary' : isTarget ? 'text-amber-500 dark:text-amber-300' : 'text-zinc-400'}`}>{scoreBonus}%</span>
+            <span className={`text-[12px] font-bold tracking-tight ${isOwned ? 'text-emerald-500 dark:text-emerald-400' : isTarget ? 'text-amber-500 dark:text-amber-300' : 'text-zinc-400'}`}>{scoreBonus}%</span>
           </div>
         ) : sortOrder === "bonus" ? (
-          // 🌟 이벤트 보너스 뱃지 도색
+          // 🌟 이벤트 보너스순: 기존의 핑크색을 버리고, 일반 정렬과 똑같이 '에메랄드'로 통일!
           <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md shadow-sm mt-1 transition-all w-[90px] justify-center ${
             isOwned 
-              ? "bg-pink-50 dark:bg-amber-950/40 border border-pink-300 dark:border-primary/70 shadow-[0_0_8px_var(--color-primary)]" 
+              ? "bg-white dark:bg-zinc-900/90 border border-emerald-400 dark:border-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.3)]"
               : isTarget 
               ? "bg-amber-50 dark:bg-amber-500/10 border border-amber-300 dark:border-amber-400/50 shadow-[0_0_8px_rgba(245,158,11,0.2)] text-amber-500 dark:text-amber-300" 
               : "bg-zinc-50 dark:bg-zinc-900/80 border border-zinc-200 dark:border-white/5"
           }`}>
             <span className="text-[11px] drop-shadow-sm">🌟</span>
-            <span className={`text-[12px] font-bold tracking-tight ${isOwned ? 'text-pink-500 dark:text-pink-300' : isTarget ? 'text-amber-500 dark:text-amber-300' : 'text-zinc-400'}`}>{eventBonus}%</span>
+            <span className={`text-[12px] font-bold tracking-tight ${isOwned ? 'text-emerald-500 dark:text-emerald-400' : isTarget ? 'text-amber-500 dark:text-amber-300' : 'text-zinc-400'}`}>{eventBonus}%</span>
           </div>
         ) : (
           <>
-            {/* 🌟 카드 이름 글씨색 라이트/다크 + Primary 연동 */}
+            {/* 🌟 일반 정렬 (최신순/출시순): 보유 시 무조건 '에메랄드'로 고정! */}
             <p className={`text-[11px] font-semibold truncate w-full max-w-[100px] transition-colors flex items-center justify-center gap-0.5 ${
               isOwned 
-                ? "text-primary dark:text-primary" 
+                ? "text-emerald-600 dark:text-emerald-400" 
                 : isTarget 
                 ? "text-amber-500 dark:text-amber-400" 
                 : "text-zinc-600 dark:text-zinc-200 group-hover:text-zinc-900 dark:group-hover:text-white"
@@ -112,7 +111,6 @@ export default function CardItem({
               </span>
             )}
 
-            {/* 🌟 캐릭터 이름 글씨색 라이트/다크 대응 */}
             <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-1 truncate w-full max-w-[100px] transition-colors">{card.character}</p>
           </>
         )}

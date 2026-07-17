@@ -1,14 +1,21 @@
-// src/components/GlobalHeader.tsx
 "use client";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import ThemeToggle from "@/components/ThemeToggle";
 import CharacterSettingsModal from "@/components/CharacterSettingsModal";
 
 export default function GlobalHeader() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [characterRanks, setCharacterRanks] = useState<Record<string, number>>({});
+  
+  // 🌟 워키토키 수신 상태: 기본적으로 서랍은 열려있다고 가정합니다.
+  const [isFilterOpen, setIsFilterOpen] = useState(true); 
+  const pathname = usePathname();
+  
+  // 🌟 [핵심 변경] 카드 페이지('/cards') 또는 미래시 페이지('/future')일 때 햄버거 버튼 활성화 허가!
+  const isShowHamburgerAllowed = pathname === "/cards" || pathname === "/future";
 
   useEffect(() => {
     const savedRanks = localStorage.getItem("sekard_character_ranks");
@@ -16,6 +23,16 @@ export default function GlobalHeader() {
       try { setCharacterRanks(JSON.parse(savedRanks)); } 
       catch (e) { console.error(e); }
     }
+  }, []);
+
+  // 🌟 무전기 수신: 각 페이지에서 쏘는 무전을 받아 상태를 즉각 반영합니다.
+  useEffect(() => {
+    const handleFilterState = (e: any) => {
+      // console.log("헤더가 무전을 받았습니다! 서랍 열림 상태:", e.detail); // 확인용 로그 (숨김 처리)
+      setIsFilterOpen(e.detail);
+    };
+    window.addEventListener("sekard_filter_state", handleFilterState);
+    return () => window.removeEventListener("sekard_filter_state", handleFilterState);
   }, []);
 
   const updateCharacterRank = (charName: string, rank: number) => {
@@ -27,17 +44,28 @@ export default function GlobalHeader() {
 
   return (
     <>
-      {/* 🌟 다크/라이트 모드 완벽 지원 + 포인트 컬러 텍스트 적용 */}
       <header className="sticky top-0 z-[99999] border-b border-zinc-200/50 bg-white/80 backdrop-blur-md dark:border-white/10 dark:bg-zinc-950/80 transition-colors duration-300">
         <div className="mx-auto flex h-14 w-full max-w-[1920px] items-center justify-between px-4 md:px-8">
-          <Link href="/" className="flex items-baseline gap-2 group">
-            {/* 🌟 로고에 primary 포인트 컬러 적용! */}
-            <span className="text-lg font-extrabold tracking-tight text-primary transition-colors">Sekard</span>
-            <span className="text-xs text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-800 dark:group-hover:text-zinc-200 transition-colors">I 두부도감</span>
-          </Link>
+          
+          <div className="flex items-center gap-2 shrink-0 mr-auto">
+            {/* 🌟 햄버거 버튼: 카드 또는 미래시 페이지이면서, 필터가 닫혀있을 때만 뿅 나타납니다! */}
+            {isShowHamburgerAllowed && !isFilterOpen && (
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent("toggle_sekard_filter"))}
+                className="w-8 h-8 flex items-center justify-center rounded-lg text-zinc-600 hover:text-primary hover:bg-zinc-100 dark:text-zinc-300 dark:hover:text-primary dark:hover:bg-zinc-800 transition-colors text-lg mr-1 animate-fade-in"
+                title="필터 서랍 열기"
+              >
+                ☰
+              </button>
+            )}
 
-          <nav className="flex items-center gap-2 text-sm">
-            {/* 🌟 활성화 느낌을 위해 호버 시 primary 옅은 배경 적용 */}
+            <Link href="/" className="flex items-baseline gap-2 group shrink-0">
+              <span className="text-lg font-extrabold tracking-tight text-primary transition-colors">Sekard</span>
+              <span className="text-xs text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-800 dark:group-hover:text-zinc-200 transition-colors hidden sm:inline-block">I 두부도감</span>
+            </Link>
+          </div>
+
+          <nav className="flex items-center gap-2 text-sm shrink-0">
             <Link href="/cards" className="rounded-lg px-3 py-1.5 font-semibold text-zinc-600 hover:text-primary hover:bg-primary/10 dark:text-zinc-300 dark:hover:text-primary dark:hover:bg-primary/20 transition-all">
               내 카드
             </Link>
@@ -46,7 +74,6 @@ export default function GlobalHeader() {
             </Link>
 
             <ThemeToggle />
-
             <div className="w-px h-4 bg-zinc-300 dark:bg-zinc-700 mx-1 transition-colors" />
 
             <button

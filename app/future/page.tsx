@@ -8,16 +8,20 @@ import FutureEventCard from "@/components/FutureEventCard";
 import CardDetailModal from "@/components/CardDetailModal";
 import { FinalCardInfo } from "@/data/cards/template";
 import { UserCardState } from "@/app/cards/page"; 
+import { useThemeColor } from "@/app/providers"; // 🌟 직통 전화기 연결!
 
 const TOOLTIP_CLASS = "absolute bottom-full mb-2 left-1/2 -translate-x-1/2 px-2.5 py-1 bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-100 text-[11px] font-bold rounded-lg shadow-xl border border-zinc-200 dark:border-white/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-[60]";
 
 export default function FuturePage() {
+  const { themeColor } = useThemeColor(); // 🌟 테마 색상 상태 가져오기
+
   const [cardStates, setCardStates] = useState<Record<string, UserCardState>>({});
   const [activeModalCard, setActiveModalCard] = useState<FinalCardInfo | null>(null);
   const [mounted, setMounted] = useState(false);
   
   const [showPostAwake, setShowPostAwake] = useState(false);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+  const [isDesktopFilterOpen, setIsDesktopFilterOpen] = useState(true); // 🌟 데스크톱 서랍 상태 추가
   const [spinDeg, setSpinDeg] = useState(0);
   const [openYearMarker, setOpenYearMarker] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -27,6 +31,7 @@ export default function FuturePage() {
   const [excludeCollab, setExcludeCollab] = useState(false);
   const [isStatusExpanded, setIsStatusExpanded] = useState(true);
   const [isEventTypeExpanded, setIsEventTypeExpanded] = useState(true);
+  const [isGachaTypeExpanded, setIsGachaTypeExpanded] = useState(true);
   const [isCollabExpanded, setIsCollabExpanded] = useState(true);
   const [isAttrExpanded, setIsAttrExpanded] = useState(true);
   const [isSkillExpanded, setIsSkillExpanded] = useState(true);
@@ -34,6 +39,7 @@ export default function FuturePage() {
 
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]); 
   const [selectedEventTypes, setSelectedEventTypes] = useState<string[]>([]);
+  const [selectedGachaTypes, setSelectedGachaTypes] = useState<string[]>([]);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedHairs, setSelectedHairs] = useState<string[]>([]);
   const [selectedChars, setSelectedChars] = useState<string[]>([]);
@@ -42,6 +48,27 @@ export default function FuturePage() {
 
   const yearRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const monthRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  // 🌟 워키토키 발신: 모바일이든 데스크톱이든, 뭐 하나라도 열려있으면 "열림(true)"으로 무전 발송!
+  useEffect(() => {
+    const checkAndSend = () => {
+      const isVisible = window.innerWidth < 768 ? isMobileFilterOpen : isDesktopFilterOpen;
+      window.dispatchEvent(new CustomEvent("sekard_filter_state", { detail: isVisible }));
+    };
+    checkAndSend();
+    window.addEventListener("resize", checkAndSend);
+    return () => window.removeEventListener("resize", checkAndSend);
+  }, [isMobileFilterOpen, isDesktopFilterOpen]);
+
+  // 🌟 워키토키 수신: 헤더의 햄버거 버튼이 "서랍 열어!" 라고 무전을 치면 응답!
+  useEffect(() => {
+    const handleToggle = () => {
+      if (window.innerWidth < 768) setIsMobileFilterOpen(true);
+      else setIsDesktopFilterOpen(true);
+    };
+    window.addEventListener("toggle_sekard_filter", handleToggle);
+    return () => window.removeEventListener("toggle_sekard_filter", handleToggle);
+  }, []);
 
   useEffect(() => {
     setMounted(true);
@@ -85,6 +112,7 @@ export default function FuturePage() {
     setSpinDeg(prev => prev - 360); 
     setSelectedChars([]); setSelectedAttrs([]); setSelectedSkills([]); 
     setSelectedStatuses([]); setSelectedTypes([]); setSelectedHairs([]); setSelectedEventTypes([]);
+    setSelectedGachaTypes([]);
     setExcludeCollab(false);
     setSearchQuery(""); 
   };
@@ -203,13 +231,13 @@ export default function FuturePage() {
   const isAnyStatusSelected = selectedStatuses.length > 0;
   const isAnyTypeSelected = selectedTypes.length > 0;
   const isAnyEventTypeSelected = selectedEventTypes.length > 0;
+  const isAnyGachaTypeSelected = selectedGachaTypes.length > 0;
   const isAnyHairSelected = selectedHairs.length > 0;
   const isAnyAttrSelected = selectedAttrs.length > 0;
   const isAnySkillSelected = selectedSkills.length > 0;
   const isAnyCharSelected = selectedChars.length > 0;
 
-  const isFilterActive = isAnyStatusSelected || isAnyTypeSelected || isAnyEventTypeSelected || isAnyHairSelected || isAnyAttrSelected || isAnySkillSelected || isAnyCharSelected || excludeCollab || searchQuery.trim() !== "";
-
+  const isFilterActive = isAnyStatusSelected || isAnyTypeSelected || isAnyEventTypeSelected || isAnyGachaTypeSelected || isAnyHairSelected || isAnyAttrSelected || isAnySkillSelected || isAnyCharSelected || excludeCollab || searchQuery.trim() !== "";
   const condSubs = SKILL_FILTERS.find(s => s.id === "condition_group")?.subs || [];
   const condIds = condSubs.map(s => s.id);
   const isAllCondSelected = condIds.length > 0 && condIds.every(id => selectedSkills.includes(id));
@@ -219,17 +247,18 @@ export default function FuturePage() {
     let matchedCardIds: string[] = [];
     if (isFilterActive) {
       const passEventType = !isAnyEventTypeSelected || selectedEventTypes.includes(event.eventType || "없음");
+      const passGachaType = !isAnyGachaTypeSelected || (event.gacha.types && event.gacha.types.some(t => selectedGachaTypes.includes(t)));
+      
       const eventCards = event.gacha.featuredCardIds.map(id => ALL_CARDS.find(c => c.id === id || ((c as any).info && (c as any).info.id === id))).filter(c => c !== undefined) as any[];
       const matchedCards = eventCards.filter(c => checkCardMatch(c));
       matchedCardIds = matchedCards.map(c => (c as any).info ? (c as any).info.id : c.id);
-      if (!passEventType || matchedCardIds.length === 0) isEventMatched = false;
+      if (!passEventType || !passGachaType || matchedCardIds.length === 0) isEventMatched = false;
     }
     return { event, isEventMatched, matchedCardIds };
   });
 
   const visibleEvents = hideUnmatchedEvents ? processedEvents.filter(e => e.isEventMatched) : processedEvents;
 
-  // 🌟 [안전한 날짜 변환 + D-Day 진행/종료 완벽 분리 로직]
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -239,13 +268,10 @@ export default function FuturePage() {
     let isEnded = false;
 
     try {
-      // 1. 시작일 계산 (D-Day 표기용)
       const cleanStartStr = item.event.period.start.split(' ')[0].replace(/[\.-]/g, '/');
       const eventStart = new Date(cleanStartStr);
       eventStart.setHours(0, 0, 0, 0);
 
-      // 2. 종료일 계산 (진행 / 종료 판별용)
-      // 혹시라도 종료일 데이터가 누락되어 있다면 시작일로 대체하여 뻗는 것을 방지!
       const cleanEndStr = (item.event.period.end || item.event.period.start).split(' ')[0].replace(/[\.-]/g, '/');
       const eventEnd = new Date(cleanEndStr);
       eventEnd.setHours(23, 59, 59, 999);
@@ -253,12 +279,11 @@ export default function FuturePage() {
       const diffTime = eventStart.getTime() - today.getTime();
       daysLeft = Math.ceil(diffTime / 86400000);
 
-      // 🌟 시작일이 지났거나 오늘이라면 (D-day 이하), 오늘이 종료일 이전인지 이후인지 판별!
       if (daysLeft < 0) {
         if (today.getTime() <= eventEnd.getTime()) {
-          isOngoing = true; // 아직 종료일 안 지남! (진행 중)
+          isOngoing = true; 
         } else {
-          isEnded = true;   // 종료일 지남! (종료됨)
+          isEnded = true;   
         }
       }
     } catch(e) {
@@ -271,87 +296,116 @@ export default function FuturePage() {
   let lastRenderedMonth = "";
 
   return (
-    <div className="flex flex-col md:flex-row gap-6 px-4 md:px-8 py-6 min-h-screen text-zinc-900 dark:text-zinc-100 max-w-[1920px] mx-auto w-full transition-colors">
+    <div className="flex flex-col md:flex-row gap-6 px-4 md:px-8 py-6 min-h-screen text-zinc-900 dark:text-zinc-100 max-w-[1920px] mx-auto w-full transition-colors duration-300 relative overflow-hidden">
       
-      {/* 👈 좌측 영역: 필터칸 */}
-      <div className={`flex flex-col shrink-0 md:w-[280px] md:relative md:block md:bg-transparent md:p-0 md:h-auto md:z-0 ${isMobileFilterOpen ? 'fixed inset-0 z-[100] bg-white dark:bg-zinc-950 p-6 overflow-y-auto' : 'hidden'} transition-colors`}>
-        <div className="flex items-center justify-between border-b border-zinc-200 dark:border-white/10 pb-3 mb-6 md:mb-0 transition-colors">
-          <h2 className="text-lg md:text-sm font-bold text-zinc-700 dark:text-zinc-300 tracking-wider uppercase transition-colors">🔍 미래시 필터</h2>
-          <div className="flex items-center gap-3">
-            <button onClick={handleReset} className="w-8 h-8 md:w-7 md:h-7 flex items-center justify-center rounded-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors text-sm md:text-sm shadow-sm" title="필터 초기화">
-              <span className="leading-none -mt-[1px] inline-block" style={{ transform: `rotate(${spinDeg}deg)`, transition: 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)' }}>↺</span>
-            </button>
-            <button onClick={() => setIsMobileFilterOpen(false)} className="md:hidden w-8 h-8 flex items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-white font-bold transition-colors">✕</button>
-          </div>
-        </div>
+      {/* 🌟 모바일 필터 배경 방어막 (Dim Overlay) */}
+      <div 
+        className={`md:hidden fixed inset-0 bg-black/40 dark:bg-black/60 z-[100000] transition-opacity duration-300 ${
+          isMobileFilterOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}
+        onClick={() => setIsMobileFilterOpen(false)}
+      />
 
-        <div className="space-y-6 md:mt-6">
-          <div className="space-y-2">
-            <button onClick={() => setIsStatusExpanded(!isStatusExpanded)} className="w-full flex items-center justify-between group pb-1 cursor-pointer">
-              <span className="text-[12px] md:text-[11px] font-bold text-zinc-500 dark:text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-800 dark:group-hover:text-zinc-300 transition-colors">STATUS & TYPE</span>
-              <span className={`text-[10px] text-zinc-400 dark:text-zinc-500 transform transition-transform duration-300 ${isStatusExpanded ? 'rotate-0' : '-rotate-90'}`}>▼</span>
-            </button>
-            {isStatusExpanded && (
-              <div className="space-y-3 pt-1">
-                <div className="grid grid-cols-3 gap-1.5">
-                  {[ { id: "owned", label: "✓ 보유" }, { id: "unowned", label: "❌ 미보유" }, { id: "target", label: "⭐ 목표" } ].map(status => {
-                    const isSelected = selectedStatuses.includes(status.id);
-                    const opacityClass = !isAnyStatusSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100 text-zinc-500 dark:text-white bg-zinc-100 dark:bg-zinc-900";
-                    const activeClass = status.id === "target" 
-                      ? "bg-amber-50 dark:bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-300 dark:border-amber-400/50 shadow-sm scale-105" 
-                      : status.id === "owned" 
-                        ? "bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border border-primary/30 dark:border-primary/50 shadow-sm scale-105" 
-                        : "bg-zinc-100 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-100 border border-zinc-300 dark:border-zinc-500 shadow-sm scale-105";
-                    return (
-                      <button key={status.id} onClick={() => toggleFilter(selectedStatuses, setSelectedStatuses, status.id)}
-                        className={`py-2.5 md:py-2 px-1 text-[13px] md:text-[12px] font-bold tracking-tight rounded-lg transition-all duration-300 ${isSelected ? activeClass : "bg-white dark:bg-zinc-900 text-zinc-500 dark:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-transparent scale-95"} ${opacityClass}`}>
-                        {status.label}
-                      </button>
-                    )
-                  })}
-                </div>
-                <div className="grid grid-cols-4 gap-1.5">
-                  <button onClick={() => toggleFilter(selectedTypes, setSelectedTypes, "normal")}
-                    className={`relative group aspect-square rounded-full p-1 transition-all duration-300 w-full h-full border ${selectedTypes.includes("normal") ? "bg-zinc-100 dark:bg-zinc-800 border-zinc-300 dark:border-transparent scale-105 shadow-inner" : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-transparent scale-[0.85] hover:scale-95"} ${!isAnyTypeSelected || selectedTypes.includes("normal") ? "opacity-100" : "opacity-40 hover:opacity-100"}`}>
-                    <img src="/icons/status/normal.png" alt="통상" className="w-full h-full object-contain drop-shadow-sm" />
-                    <span className={TOOLTIP_CLASS}>통상</span>
-                  </button>
-                  <button onClick={() => toggleFilter(selectedTypes, setSelectedTypes, "limited")}
-                    className={`relative group aspect-square rounded-full p-1 transition-all duration-300 w-full h-full border ${selectedTypes.includes("limited") ? "bg-zinc-100 dark:bg-zinc-800 border-zinc-300 dark:border-transparent scale-105 shadow-inner" : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-transparent scale-[0.85] hover:scale-95"} ${!isAnyTypeSelected || selectedTypes.includes("limited") ? "opacity-100" : "opacity-40 hover:opacity-100"}`}>
-                    <img src="/icons/status/limited.png" alt="한정" className="w-full h-full object-contain drop-shadow-sm" />
-                    <span className={TOOLTIP_CLASS}>한정/페스/월링</span>
-                  </button>
-                  <button onClick={() => toggleFilter(selectedHairs, setSelectedHairs, "hair_o")}
-                    className={`relative group aspect-square rounded-full p-1 transition-all duration-300 w-full h-full border ${selectedHairs.includes("hair_o") ? "bg-zinc-100 dark:bg-zinc-800 border-zinc-300 dark:border-transparent scale-105 shadow-inner" : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-transparent scale-[0.85] hover:scale-95"} ${!isAnyHairSelected || selectedHairs.includes("hair_o") ? "opacity-100" : "opacity-40 hover:opacity-100"}`}>
-                    <img src="/icons/status/hair_o.png" alt="헤어 O" className="w-full h-full object-contain drop-shadow-sm" />
-                    <span className={TOOLTIP_CLASS}>헤어 개방 가능</span>
-                  </button>
-                  <button onClick={() => toggleFilter(selectedHairs, setSelectedHairs, "hair_x")}
-                    className={`relative group aspect-square rounded-full p-1 transition-all duration-300 w-full h-full border ${selectedHairs.includes("hair_x") ? "bg-zinc-100 dark:bg-zinc-800 border-zinc-300 dark:border-transparent scale-105 shadow-inner" : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-transparent scale-[0.85] hover:scale-95"} ${!isAnyHairSelected || selectedHairs.includes("hair_x") ? "opacity-100" : "opacity-40 hover:opacity-100"}`}>
-                    <img src="/icons/status/hair_x.png" alt="헤어 X" className="w-full h-full object-contain drop-shadow-sm" />
-                    <span className={TOOLTIP_CLASS}>헤어 없음</span>
-                  </button>
-                </div>
-              </div>
-            )}
+      {/* 👈 좌측 영역: 필터칸 (300px 쾌적한 너비 + 제미나이 서랍 + 스크롤바 숨김 + 팔레트 연동!) */}
+      <div className={`
+        shrink-0 transition-all duration-300 ease-in-out z-[100001] md:z-10
+        ${isDesktopFilterOpen ? 'md:w-[300px] md:opacity-100' : 'md:w-0 md:opacity-0 md:overflow-hidden'}
+        fixed top-0 left-0 h-full w-[300px] bg-white dark:bg-zinc-950 shadow-2xl 
+        md:static md:h-auto md:bg-transparent md:shadow-none
+        ${isMobileFilterOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+        overflow-y-auto md:overflow-visible [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']
+      `}>
+        <div className="w-[300px] h-full flex flex-col p-6 md:p-0">
+          
+          {/* 필터 헤더 구역 */}
+          <div className="flex items-center justify-between border-b border-zinc-200 dark:border-white/10 pb-3 mb-6 transition-colors">
+            <h2 className="text-lg md:text-sm font-bold text-zinc-700 dark:text-zinc-300 tracking-wider uppercase transition-colors">🔍 필터</h2>
+            <div className="flex items-center gap-2">
+              <button onClick={handleReset} className="w-8 h-8 md:w-7 md:h-7 flex items-center justify-center rounded-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 text-zinc-500 dark:text-zinc-400 hover:text-primary dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors text-sm md:text-sm shadow-sm" title="초기화">
+                <span className="leading-none -mt-[1px] inline-block" style={{ transform: `rotate(${spinDeg}deg)`, transition: 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)' }}>↺</span>
+              </button>
+              
+              <button onClick={() => setIsDesktopFilterOpen(false)} className="hidden md:flex w-8 h-8 items-center justify-center rounded-lg bg-transparent text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-primary transition-colors text-lg" title="필터 접기">
+                ☰
+              </button>
+
+              <button onClick={() => setIsMobileFilterOpen(false)} className="md:hidden w-8 h-8 flex items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 hover:text-red-500 font-bold transition-colors">
+                ✕
+              </button>
+            </div>
           </div>
 
-          <div className="space-y-2 pt-2 border-t border-zinc-200 dark:border-white/5 transition-colors">
-            <button onClick={() => setIsEventTypeExpanded(!isEventTypeExpanded)} className="w-full flex items-center justify-between group pt-2 pb-1 cursor-pointer">
-              <span className="text-[12px] md:text-[11px] font-bold text-zinc-500 dark:text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-800 dark:group-hover:text-zinc-300 transition-colors">EVENT TYPE</span>
-              <span className={`text-[10px] text-zinc-400 dark:text-zinc-500 transform transition-transform duration-300 ${isEventTypeExpanded ? 'rotate-0' : '-rotate-90'}`}>▼</span>
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <button onClick={() => setIsStatusExpanded(!isStatusExpanded)} className="w-full flex items-center justify-between group pb-1 cursor-pointer">
+                <span className="text-[12px] md:text-[11px] font-bold text-zinc-600 dark:text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-800 dark:group-hover:text-zinc-300 transition-colors">STATUS & TYPE</span>
+                <span className={`text-[10px] text-zinc-400 dark:text-zinc-500 transform transition-transform duration-300 ${isStatusExpanded ? 'rotate-0' : '-rotate-90'}`}>▼</span>
+              </button>
+              {isStatusExpanded && (
+                <div className="space-y-3 pt-1">
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {[ { id: "owned", label: "✓ 보유" }, { id: "unowned", label: "❌ 미보유" }, { id: "target", label: "⭐ 목표" } ].map(status => {
+                      const isSelected = selectedStatuses.includes(status.id);
+                      const opacityClass = !isAnyStatusSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100";
+                      
+                      const activeClass = status.id === "target" 
+                        ? "bg-amber-50 dark:bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-300 dark:border-amber-400/50 shadow-sm scale-105" 
+                        : status.id === "owned" 
+                          ? "bg-emerald-50 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-400/50 shadow-sm scale-105" 
+                          : "bg-transparent text-zinc-800 dark:text-zinc-200 border border-zinc-400 dark:border-zinc-500 shadow-md scale-105 font-extrabold";
+                      
+                      const inactiveClass = "bg-white dark:bg-zinc-900 text-zinc-500 dark:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-transparent scale-95";
+                      
+                      return (
+                        <button key={status.id} onClick={() => toggleFilter(selectedStatuses, setSelectedStatuses, status.id)}
+                          className={`py-2.5 md:py-2 px-1 text-[13px] md:text-[12px] font-bold tracking-tight rounded-lg transition-all duration-300 ${isSelected ? activeClass : inactiveClass} ${opacityClass}`}>
+                          {status.label}
+                        </button>
+                      )
+                    })}
+                  </div>
+                  <div className="grid grid-cols-4 gap-1.5">
+                    <button onClick={() => toggleFilter(selectedTypes, setSelectedTypes, "normal")}
+                      className={`relative group aspect-square rounded-full p-1 transition-all duration-300 w-full h-full border ${selectedTypes.includes("normal") ? "bg-primary/10 dark:bg-primary/20 scale-105 border-transparent" : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-transparent scale-[0.85] hover:scale-95"} ${!isAnyTypeSelected || selectedTypes.includes("normal") ? "opacity-100" : "opacity-40 hover:opacity-100"}`}>
+                      <img src="/icons/status/normal.png" alt="통상" className="w-full h-full object-contain drop-shadow-sm" />
+                      <span className={TOOLTIP_CLASS}>통상 씰</span>
+                    </button>
+                    <button onClick={() => toggleFilter(selectedTypes, setSelectedTypes, "limited")}
+                      className={`relative group aspect-square rounded-full p-1 transition-all duration-300 w-full h-full border ${selectedTypes.includes("limited") ? "bg-primary/10 dark:bg-primary/20 scale-105 border-transparent" : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-transparent scale-[0.85] hover:scale-95"} ${!isAnyTypeSelected || selectedTypes.includes("limited") ? "opacity-100" : "opacity-40 hover:opacity-100"}`}>
+                      <img src="/icons/status/limited.png" alt="한정" className="w-full h-full object-contain drop-shadow-sm" />
+                      <span className={TOOLTIP_CLASS}>한정 씰</span>
+                    </button>
+                    <button onClick={() => toggleFilter(selectedHairs, setSelectedHairs, "hair_o")}
+                      className={`relative group aspect-square rounded-full p-1 transition-all duration-300 w-full h-full border ${selectedHairs.includes("hair_o") ? "bg-primary/10 dark:bg-primary/20 scale-105 border-transparent" : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-transparent scale-[0.85] hover:scale-95"} ${!isAnyHairSelected || selectedHairs.includes("hair_o") ? "opacity-100" : "opacity-40 hover:opacity-100"}`}>
+                      <img src="/icons/status/hair_o.png" alt="헤어 O" className="w-full h-full object-contain drop-shadow-sm" />
+                      <span className={TOOLTIP_CLASS}>헤어 O</span>
+                    </button>
+                    <button onClick={() => toggleFilter(selectedHairs, setSelectedHairs, "hair_x")}
+                      className={`relative group aspect-square rounded-full p-1 transition-all duration-300 w-full h-full border ${selectedHairs.includes("hair_x") ? "bg-primary/10 dark:bg-primary/20 scale-105 border-transparent" : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-transparent scale-[0.85] hover:scale-95"} ${!isAnyHairSelected || selectedHairs.includes("hair_x") ? "opacity-100" : "opacity-40 hover:opacity-100"}`}>
+                      <img src="/icons/status/hair_x.png" alt="헤어 X" className="w-full h-full object-contain drop-shadow-sm" />
+                      <span className={TOOLTIP_CLASS}>헤어 X</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-2 pt-2 border-t border-zinc-200 dark:border-white/5 transition-colors">
+            <button onClick={() => setIsGachaTypeExpanded(!isGachaTypeExpanded)} className="w-full flex items-center justify-between group pt-2 pb-1 cursor-pointer">
+              <span className="text-[12px] md:text-[11px] font-bold text-zinc-500 dark:text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-800 dark:group-hover:text-zinc-300 transition-colors">GACHA TYPE</span>
+              <span className={`text-[10px] text-zinc-400 dark:text-zinc-500 transform transition-transform duration-300 ${isGachaTypeExpanded ? 'rotate-0' : '-rotate-90'}`}>▼</span>
             </button>
-            {isEventTypeExpanded && (
+            {isGachaTypeExpanded && (
               <div className="grid grid-cols-3 gap-1.5 pt-1">
                 {[ 
-                  { id: "하코", name: "하코", activeClass: "bg-rose-50 dark:bg-rose-500/20 text-rose-600 dark:text-rose-300 border-rose-300 dark:border-rose-400/50 shadow-sm" }, 
-                  { id: "혼합", name: "혼합", activeClass: "bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 border-indigo-300 dark:border-indigo-400/50 shadow-sm" }, 
-                  { id: "월링", name: "월링", activeClass: "bg-emerald-50 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border-emerald-300 dark:border-emerald-400/50 shadow-sm" } 
+                  { id: "exclude_rerun", name: "복각 제외", activeClass: "bg-red-50 dark:bg-red-500/20 text-red-600 dark:text-red-300 border-red-300 dark:border-red-400/50 shadow-sm" },
+                  { id: "복각", name: "복각", activeClass: "bg-purple-50 dark:bg-purple-500/20 text-purple-600 dark:text-purple-300 border-purple-300 dark:border-purple-400/50 shadow-sm" }, 
+                  { id: "뾱각", name: "뾱각", activeClass: "bg-fuchsia-50 dark:bg-fuchsia-500/20 text-fuchsia-600 dark:text-fuchsia-300 border-fuchsia-300 dark:border-fuchsia-400/50 shadow-sm" } 
                 ].map(type => {
-                  const isSelected = selectedEventTypes.includes(type.id);
-                  const opacityClass = !isAnyEventTypeSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100 text-zinc-500 dark:text-white bg-zinc-100 dark:bg-zinc-900";
+                  const isSelected = selectedGachaTypes.includes(type.id);
+                  const opacityClass = !isAnyGachaTypeSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100 text-zinc-500 dark:text-white bg-zinc-100 dark:bg-zinc-900";
                   return (
-                    <button key={type.id} onClick={() => toggleFilter(selectedEventTypes, setSelectedEventTypes, type.id)}
+                    <button key={type.id} onClick={() => toggleFilter(selectedGachaTypes, setSelectedGachaTypes, type.id)}
                       className={`py-2.5 md:py-2 px-1 text-[13px] md:text-[12px] font-bold tracking-tight rounded-lg transition-all duration-300 border ${isSelected ? `${type.activeClass} scale-105` : "bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-600 dark:text-white border-zinc-200 dark:border-transparent scale-95"} ${opacityClass}`}>
                       {type.name}
                     </button>
@@ -361,175 +415,283 @@ export default function FuturePage() {
             )}
           </div>
 
-          <div className="space-y-2 pt-2 border-t border-zinc-200 dark:border-white/5 transition-colors">
-            <button onClick={() => setIsCollabExpanded(!isCollabExpanded)} className="w-full flex items-center justify-between group pt-2 pb-1 cursor-pointer">
-              <span className="text-[12px] md:text-[11px] font-bold text-zinc-500 dark:text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-800 dark:group-hover:text-zinc-300 transition-colors">COLLAB</span>
-              <span className={`text-[10px] text-zinc-400 dark:text-zinc-500 transform transition-transform duration-300 ${isCollabExpanded ? 'rotate-0' : '-rotate-90'}`}>▼</span>
-            </button>
-            {isCollabExpanded && (
-              <div className="space-y-2 pt-1">
-                <button 
-                  onClick={() => {
-                    const allCollabIds = COLLAB_FILTERS.map(c => c.id);
-                    const isAllCollab = selectedTypes.includes("collab_all") || allCollabIds.every(id => selectedTypes.includes(id));
-                    if (isAllCollab) setSelectedTypes(selectedTypes.filter(id => id !== "collab_all" && !allCollabIds.includes(id)));
-                    else setSelectedTypes([...new Set([...selectedTypes, "collab_all", ...allCollabIds])]);
-                  }}
-                  className={`w-full py-1.5 rounded-lg text-[11px] font-bold transition-all duration-300 border ${
-                    (selectedTypes.includes("collab_all") || COLLAB_FILTERS.every(c => selectedTypes.includes(c.id)))
-                      ? "bg-amber-50 dark:bg-amber-500/20 text-amber-600 dark:text-amber-300 border-amber-300 dark:border-amber-400/30 shadow-sm scale-100" 
-                      : "bg-white dark:bg-zinc-900/80 border-zinc-200 dark:border-white/5 text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-800"
-                  }`}
-                >
-                  🤝 콜라보 일괄 선택
-                </button>
-                <div className="grid grid-cols-4 gap-1.5">
-                  {COLLAB_FILTERS.map(collab => {
-                    const isSelected = selectedTypes.includes(collab.id) || selectedTypes.includes("collab_all");
-                    const opacityClass = !isAnyTypeSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100 text-zinc-500 dark:text-white bg-zinc-100 dark:bg-zinc-900";
+            {/* EVENT TYPE 필터 유지 */}
+            <div className="space-y-2 pt-2 border-t border-zinc-200 dark:border-white/5 transition-colors">
+              <button onClick={() => setIsEventTypeExpanded(!isEventTypeExpanded)} className="w-full flex items-center justify-between group pt-2 pb-1 cursor-pointer">
+                <span className="text-[12px] md:text-[11px] font-bold text-zinc-600 dark:text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-800 dark:group-hover:text-zinc-300 transition-colors">EVENT TYPE</span>
+                <span className={`text-[10px] text-zinc-400 dark:text-zinc-500 transform transition-transform duration-300 ${isEventTypeExpanded ? 'rotate-0' : '-rotate-90'}`}>▼</span>
+              </button>
+              {isEventTypeExpanded && (
+                <div className="grid grid-cols-3 gap-1.5 pt-1">
+                  {[ 
+                    { id: "하코", name: "하코", activeClass: "bg-rose-50 dark:bg-rose-500/20 text-rose-600 dark:text-rose-300 border-rose-300 dark:border-rose-400/50 shadow-sm" }, 
+                    { id: "혼합", name: "혼합", activeClass: "bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 border-indigo-300 dark:border-indigo-400/50 shadow-sm" }, 
+                    { id: "월링", name: "월링", activeClass: "bg-emerald-50 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border-emerald-300 dark:border-emerald-400/50 shadow-sm" } 
+                  ].map(type => {
+                    const isSelected = selectedEventTypes.includes(type.id);
+                    const opacityClass = !isAnyEventTypeSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100 text-zinc-500 dark:text-white bg-zinc-100 dark:bg-zinc-900";
                     return (
-                      <button key={collab.id} onClick={() => {
-                        let nextSelected = [...selectedTypes];
-                        if (nextSelected.includes(collab.id)) nextSelected = nextSelected.filter(id => id !== collab.id && id !== "collab_all");
-                        else nextSelected.push(collab.id);
-                        setSelectedTypes(nextSelected);
-                      }}
-                        className={`py-2.5 md:py-2 px-1 text-[12px] font-bold tracking-tight rounded-lg transition-all duration-300 border ${isSelected ? "bg-amber-50 dark:bg-amber-500/20 text-amber-600 dark:text-amber-300 shadow-sm border-amber-300 dark:border-amber-500/30 scale-105" : "bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-600 dark:text-white border-zinc-200 dark:border-transparent scale-95"} ${opacityClass}`}>
-                        {collab.name}
+                      <button key={type.id} onClick={() => toggleFilter(selectedEventTypes, setSelectedEventTypes, type.id)}
+                        className={`py-2.5 md:py-2 px-1 text-[13px] md:text-[12px] font-bold tracking-tight rounded-lg transition-all duration-300 border ${isSelected ? `${type.activeClass} scale-105` : "bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-600 dark:text-white border-zinc-200 dark:border-transparent scale-95"} ${opacityClass}`}>
+                        {type.name}
                       </button>
                     )
                   })}
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
 
-          <div className="space-y-2 pt-2 border-t border-zinc-200 dark:border-white/5 transition-colors">
-            <button onClick={() => setIsAttrExpanded(!isAttrExpanded)} className="w-full flex items-center justify-between group pt-2 pb-1 cursor-pointer">
-              <span className="text-[12px] md:text-[11px] font-bold text-zinc-500 dark:text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-800 dark:group-hover:text-zinc-300 transition-colors">ATTRIBUTE</span>
-              <span className={`text-[10px] text-zinc-400 dark:text-zinc-500 transform transition-transform duration-300 ${isAttrExpanded ? 'rotate-0' : '-rotate-90'}`}>▼</span>
-            </button>
-            {isAttrExpanded && (
-              <div className="grid grid-cols-5 gap-1.5 pt-1">
-                {ATTR_FILTERS.map(attr => {
-                  const isSelected = selectedAttrs.includes(attr.id);
-                  const opacityClass = !isAnyAttrSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100";
-                  return (
-                  <button key={attr.id} onClick={() => toggleFilter(selectedAttrs, setSelectedAttrs, attr.id)} 
-                    className={`relative group aspect-square rounded-full transition-all duration-300 ${isSelected ? "scale-105 drop-shadow-md" : "scale-[0.85] hover:scale-95"} ${opacityClass}`}>
-                    <img src={attr.img} alt={attr.name} className="w-full h-full object-contain" />
-                    <span className={TOOLTIP_CLASS}>{attr.name}</span>
-                  </button>
-                )})}
-              </div>
-            )}
-          </div>
-
-          <div className="space-y-2 pt-2 border-t border-zinc-200 dark:border-white/5 transition-colors">
-            <button onClick={() => setIsSkillExpanded(!isSkillExpanded)} className="w-full flex items-center justify-between group pt-2 pb-1 cursor-pointer">
-              <span className="text-[12px] md:text-[11px] font-bold text-zinc-500 dark:text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-800 dark:group-hover:text-zinc-300 transition-colors">SKILL</span>
-              <span className={`text-[10px] text-zinc-400 dark:text-zinc-500 transform transition-transform duration-300 ${isSkillExpanded ? 'rotate-0' : '-rotate-90'}`}>▼</span>
-            </button>
-            {isSkillExpanded && (
-              <div className="space-y-2 pt-1">
-                <div className="grid grid-cols-4 gap-1.5">
-                  {SKILL_FILTERS.map(skill => {
-                    const isCondGroup = skill.id === "condition_group";
-                    const isSelected = isCondGroup ? isAllCondSelected : selectedSkills.includes(skill.id);
-                    const opacityClass = !isAnySkillSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100";
-                    return (
-                      <button key={skill.id} onClick={isCondGroup ? toggleCondSkillGroup : () => toggleFilter(selectedSkills, setSelectedSkills, skill.id)}
-                        className={`relative group aspect-square rounded-full p-1 transition-all duration-300 border ${isSelected ? "bg-zinc-100 dark:bg-zinc-800 border-zinc-300 dark:border-transparent scale-105 shadow-inner" : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-transparent scale-[0.85] hover:scale-95"} ${opacityClass}`}>
-                        <img src={skill.img} alt={skill.name} className="w-full h-full object-contain drop-shadow-sm" />
-                        <span className={TOOLTIP_CLASS}>{skill.name}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-                <div className="grid grid-cols-5 gap-1.5 mt-2">
-                  {condSubs.map(sub => {
-                    const isSelected = selectedSkills.includes(sub.id);
-                    const opacityClass = !isAnySkillSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100 text-zinc-500 dark:text-white bg-zinc-100 dark:bg-zinc-900";
-                    return (
-                      <button key={sub.id} onClick={() => toggleFilter(selectedSkills, setSelectedSkills, sub.id)}
-                        className={`py-2.5 md:py-2 px-1 text-[12px] font-medium tracking-tight rounded-lg transition-all duration-300 border ${isSelected ? "bg-zinc-200 dark:bg-zinc-700 text-zinc-800 dark:text-white scale-105 shadow-sm border-zinc-300 dark:border-white/20" : "bg-zinc-50 dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 dark:text-zinc-400 scale-95 border-zinc-200 dark:border-transparent"} ${opacityClass}`}>
-                        {sub.name}
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="pt-2 pb-10 md:pb-0">
-            <button onClick={() => setIsCharExpanded(!isCharExpanded)} className="w-full flex items-center justify-between group border-t border-zinc-200 dark:border-white/5 pt-4 pb-2 cursor-pointer transition-colors">
-              <span className="text-[12px] md:text-[11px] font-bold text-zinc-500 dark:text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-800 dark:group-hover:text-zinc-300 transition-colors">CHARACTER</span>
-              <span className={`text-[10px] text-zinc-400 dark:text-zinc-500 transform transition-transform duration-300 ${isCharExpanded ? 'rotate-0' : '-rotate-90'}`}>▼</span>
-            </button>
-            {isCharExpanded && (
-              <div className="space-y-6 pt-3">
-                <div className="bg-zinc-50 dark:bg-zinc-900/50 p-2 rounded-2xl border border-zinc-200 dark:border-white/5 transition-colors">
+            <div className="space-y-2 pt-2 border-t border-zinc-200 dark:border-white/5 transition-colors">
+              <button onClick={() => setIsCollabExpanded(!isCollabExpanded)} className="w-full flex items-center justify-between group pt-2 pb-1 cursor-pointer">
+                <span className="text-[12px] md:text-[11px] font-bold text-zinc-600 dark:text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-900 dark:group-hover:text-zinc-300 transition-colors">COLLAB</span>
+                <span className={`text-[10px] text-zinc-400 dark:text-zinc-500 transform transition-transform duration-300 ${isCollabExpanded ? 'rotate-0' : '-rotate-90'}`}>▼</span>
+              </button>
+              {isCollabExpanded && (
+                <div className="space-y-2 pt-1">
                   <button 
-                    onClick={toggleAllVirtualSingers}
-                    className={`w-full flex items-center justify-center gap-2 py-2 rounded-xl text-[12px] font-bold transition-all duration-300 border ${
-                      isAllVsSelected ? "bg-primary/10 dark:bg-[#00FFD1]/15 text-primary dark:text-[#00FFD1] border-primary/30 dark:border-[#00FFD1]/30 shadow-sm dark:shadow-[0_0_10px_rgba(0,255,209,0.1)] scale-100" : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-white/5 text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                    onClick={() => {
+                      const allCollabIds = COLLAB_FILTERS.map(c => c.id);
+                      const isAllCollab = selectedTypes.includes("collab_all") || allCollabIds.every(id => selectedTypes.includes(id));
+                      if (isAllCollab) setSelectedTypes(selectedTypes.filter(id => id !== "collab_all" && !allCollabIds.includes(id)));
+                      else setSelectedTypes([...new Set([...selectedTypes, "collab_all", ...allCollabIds])]);
+                    }}
+                    style={((selectedTypes.includes("collab_all") || COLLAB_FILTERS.every(c => selectedTypes.includes(c.id))) && themeColor !== "default") ? {
+                      "--mix-bg": "color-mix(in srgb, var(--color-primary) 15%, transparent)",
+                      "--mix-border": "var(--color-primary)",
+                      "--mix-text-light": "color-mix(in srgb, var(--color-primary) 40%, black)",
+                      "--mix-text-dark": "color-mix(in srgb, var(--color-primary) 40%, white)",
+                      "--mix-glow": "color-mix(in srgb, var(--color-primary) 30%, transparent)",
+                    } as React.CSSProperties : {}}
+                    className={`w-full py-1.5 rounded-lg text-[11px] font-bold transition-all duration-300 border ${
+                      (selectedTypes.includes("collab_all") || COLLAB_FILTERS.every(c => selectedTypes.includes(c.id)))
+                        ? themeColor === "default"
+                          ? "bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border-primary/30 dark:border-primary/50 shadow-sm scale-100"
+                          : "bg-[var(--mix-bg)] border-[var(--mix-border)] text-[var(--mix-text-light)] dark:text-[var(--mix-text-dark)] shadow-[0_0_8px_var(--mix-glow)] scale-100"
+                        : "bg-white dark:bg-zinc-900/80 border-zinc-200 dark:border-white/5 text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-800"
                     }`}
                   >
-                    <span>🎙️</span>
-                    <span>버추얼 싱어 일괄 선택</span>
+                    🤝 콜라보 일괄 선택
                   </button>
-
-                  <div className="grid grid-cols-3 gap-1.5 mt-2">
-                    {[
-                      { label: "미쿠", key: "미쿠", activeClass: "bg-teal-50 dark:bg-teal-500/20 text-teal-600 dark:text-teal-300 border-teal-300 dark:border-teal-400/30 shadow-sm dark:shadow-[0_0_6px_rgba(45,212,191,0.2)] scale-100" },
-                      { label: "린", key: "린", activeClass: "bg-amber-50 dark:bg-amber-500/20 text-amber-600 dark:text-amber-300 border-amber-300 dark:border-amber-400/30 shadow-sm dark:shadow-[0_0_6px_rgba(251,191,36,0.2)] scale-100" },
-                      { label: "렌", key: "렌", activeClass: "bg-yellow-50 dark:bg-yellow-500/20 text-yellow-600 dark:text-yellow-300 border-yellow-300 dark:border-yellow-400/30 shadow-sm dark:shadow-[0_0_6px_rgba(250,204,21,0.2)] scale-100" },
-                      { label: "루카", key: "루카", activeClass: "bg-pink-50 dark:bg-pink-500/20 text-pink-600 dark:text-pink-300 border-pink-300 dark:border-pink-400/30 shadow-sm dark:shadow-[0_0_6px_rgba(244,114,182,0.2)] scale-100" },
-                      { label: "MEIKO", key: "MEIKO", activeClass: "bg-red-50 dark:bg-red-500/20 text-red-600 dark:text-red-400 border-red-300 dark:border-red-400/30 shadow-sm dark:shadow-[0_0_6px_rgba(248,113,113,0.2)] scale-100" },
-                      { label: "KAITO", key: "KAITO", activeClass: "bg-blue-50 dark:bg-blue-500/20 text-blue-600 dark:text-blue-300 border-blue-300 dark:border-blue-400/30 shadow-sm dark:shadow-[0_0_6px_rgba(96,165,250,0.2)] scale-100" }
-                    ].map(vs => {
-                      const specificIds = UNIT_FILTERS.flatMap(u => u.chars).filter(c => c.isVirtual && c.matchKeys?.includes(vs.key)).map(c => c.id);
-                      const isAllSpecificSelected = specificIds.length > 0 && specificIds.every(id => selectedChars.includes(id));
+                  <div className="grid grid-cols-4 gap-1.5">
+                    {COLLAB_FILTERS.map(collab => {
+                      const isSelected = selectedTypes.includes(collab.id) || selectedTypes.includes("collab_all");
+                      const opacityClass = !isAnyTypeSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100 text-zinc-500 dark:text-white bg-zinc-100 dark:bg-zinc-900";
                       return (
-                        <button 
-                          key={vs.key}
-                          onClick={() => toggleSpecificVS(vs.key)}
-                          className={`py-1.5 rounded-lg text-[11px] font-bold transition-all duration-300 border ${isAllSpecificSelected ? vs.activeClass : "bg-white dark:bg-zinc-900/80 border-zinc-200 dark:border-white/5 text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800"}`}
-                        >
-                          {vs.label}
+                        <button key={collab.id} onClick={() => {
+                          let nextSelected = [...selectedTypes];
+                          if (nextSelected.includes(collab.id)) nextSelected = nextSelected.filter(id => id !== collab.id && id !== "collab_all");
+                          else nextSelected.push(collab.id);
+                          setSelectedTypes(nextSelected);
+                        }}
+                          style={isSelected && themeColor !== "default" ? {
+                            "--mix-bg": "color-mix(in srgb, var(--color-primary) 15%, transparent)",
+                            "--mix-border": "var(--color-primary)",
+                            "--mix-text-light": "color-mix(in srgb, var(--color-primary) 40%, black)",
+                            "--mix-text-dark": "color-mix(in srgb, var(--color-primary) 40%, white)",
+                            "--mix-glow": "color-mix(in srgb, var(--color-primary) 30%, transparent)",
+                          } as React.CSSProperties : {}}
+                          className={`py-2.5 md:py-2 px-1 text-[12px] font-bold tracking-tight rounded-lg transition-all duration-300 border ${
+                            isSelected 
+                              ? themeColor === "default"
+                                ? "bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary shadow-sm scale-105 border-primary/30 dark:border-primary/50"
+                                : "bg-[var(--mix-bg)] border-[var(--mix-border)] text-[var(--mix-text-light)] dark:text-[var(--mix-text-dark)] shadow-[0_0_8px_var(--mix-glow)] scale-105"
+                              : "bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-600 dark:text-white border-zinc-200 dark:border-transparent scale-95"
+                          } ${opacityClass}`}>
+                          {collab.name}
                         </button>
                       )
                     })}
                   </div>
                 </div>
+              )}
+            </div>
 
-                {UNIT_FILTERS.map((unit) => {
-                  const isAllSelected = unit.chars.every(c => selectedChars.includes(c.id));
-                  const logoOpacityClass = !isAnyCharSelected || isAllSelected ? "opacity-100" : "opacity-40 hover:opacity-100";
-                  return (
-                  <div key={unit.id} className="flex flex-col gap-2">
-                    <button onClick={() => toggleUnitFilter(unit.chars)} className={`w-full h-16 py-1 flex items-center justify-center rounded-xl transition-all duration-300 ${isAllSelected ? "bg-primary/10 dark:bg-primary/15 scale-105" : "bg-transparent hover:bg-zinc-100 dark:hover:bg-white/5 scale-95"} ${logoOpacityClass}`}>
-                      <img src={unit.logo} alt={unit.name} className="h-full w-auto object-contain max-w-[90%] drop-shadow-sm dark:drop-shadow-md" />
+            <div className="space-y-2 pt-2 border-t border-zinc-200 dark:border-white/5 transition-colors">
+              <button onClick={() => setIsAttrExpanded(!isAttrExpanded)} className="w-full flex items-center justify-between group pt-2 pb-1 cursor-pointer">
+                <span className="text-[12px] md:text-[11px] font-bold text-zinc-600 dark:text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-900 dark:group-hover:text-zinc-300 transition-colors">ATTRIBUTE</span>
+                <span className={`text-[10px] text-zinc-400 dark:text-zinc-500 transform transition-transform duration-300 ${isAttrExpanded ? 'rotate-0' : '-rotate-90'}`}>▼</span>
+              </button>
+              {isAttrExpanded && (
+                <div className="grid grid-cols-5 gap-1.5 pt-1">
+                  {ATTR_FILTERS.map(attr => {
+                    const isSelected = selectedAttrs.includes(attr.id);
+                    const opacityClass = !isAnyAttrSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100";
+                    return (
+                    <button key={attr.id} onClick={() => toggleFilter(selectedAttrs, setSelectedAttrs, attr.id)} 
+                      className={`relative group aspect-square rounded-full transition-all duration-300 ${isSelected ? "scale-105 drop-shadow-md bg-primary/10 dark:bg-primary/20" : "scale-[0.85] hover:scale-95 bg-zinc-100 dark:bg-transparent"} ${opacityClass}`}>
+                      <img src={attr.img} alt={attr.name} className="w-full h-full object-contain" />
+                      <span className={TOOLTIP_CLASS}>{attr.name}</span>
                     </button>
-                    <div className="grid grid-cols-4 gap-1.5 mt-1">
-                      {unit.chars.map(char => {
-                        const isSelected = selectedChars.includes(char.id);
-                        const charOpacityClass = !isAnyCharSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100";
-                        return (
-                        <button key={char.id} onClick={() => toggleFilter(selectedChars, setSelectedChars, char.id)}
-                          className={`relative group aspect-square rounded-full transition-all duration-300 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-transparent ${isSelected ? "scale-105 shadow-md border-primary dark:border-white" : "scale-[0.80] hover:scale-[0.85]"} ${charOpacityClass}`}>
-                          <img src={char.img} alt={char.name} className="w-full h-full object-contain" />
-                          <span className={TOOLTIP_CLASS}>{char.name}</span>
+                  )})}
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-2 pt-2 border-t border-zinc-200 dark:border-white/5 transition-colors">
+              <button onClick={() => setIsSkillExpanded(!isSkillExpanded)} className="w-full flex items-center justify-between group pt-2 pb-1 cursor-pointer">
+                <span className="text-[12px] md:text-[11px] font-bold text-zinc-600 dark:text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-900 dark:group-hover:text-zinc-300 transition-colors">SKILL</span>
+                <span className={`text-[10px] text-zinc-400 dark:text-zinc-500 transform transition-transform duration-300 ${isSkillExpanded ? 'rotate-0' : '-rotate-90'}`}>▼</span>
+              </button>
+              {isSkillExpanded && (
+                <div className="space-y-2 pt-1">
+                  <div className="grid grid-cols-4 gap-1.5">
+                    {SKILL_FILTERS.map(skill => {
+                      const isCondGroup = skill.id === "condition_group";
+                      const isSelected = isCondGroup ? isAllCondSelected : selectedSkills.includes(skill.id);
+                      const opacityClass = !isAnySkillSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100";
+                      return (
+                        <button key={skill.id} onClick={isCondGroup ? toggleCondSkillGroup : () => toggleFilter(selectedSkills, setSelectedSkills, skill.id)}
+                          className={`relative group aspect-square rounded-full p-1 transition-all duration-300 border ${isSelected ? "bg-primary/10 dark:bg-primary/20 scale-105 border-transparent" : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-transparent scale-[0.85] hover:scale-95"} ${opacityClass}`}>
+                          <img src={skill.img} alt={skill.name} className="w-full h-full object-contain drop-shadow-sm" />
+                          <span className={TOOLTIP_CLASS}>{skill.name}</span>
                         </button>
-                      )})}
+                      );
+                    })}
+                  </div>
+                  <div className="grid grid-cols-5 gap-1.5 mt-2">
+                    {condSubs.map(sub => {
+                      const isSelected = selectedSkills.includes(sub.id);
+                      const opacityClass = !isAnySkillSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100 text-zinc-500 dark:text-white bg-zinc-100 dark:bg-zinc-900";
+                      return (
+                        <button key={sub.id} onClick={() => toggleFilter(selectedSkills, setSelectedSkills, sub.id)}
+                          style={isSelected && themeColor !== "default" ? {
+                            "--mix-bg": "color-mix(in srgb, var(--color-primary) 15%, transparent)",
+                            "--mix-border": "var(--color-primary)",
+                            "--mix-text-light": "color-mix(in srgb, var(--color-primary) 40%, black)",
+                            "--mix-text-dark": "color-mix(in srgb, var(--color-primary) 40%, white)",
+                            "--mix-glow": "color-mix(in srgb, var(--color-primary) 30%, transparent)",
+                          } as React.CSSProperties : {}}
+                          className={`py-2.5 md:py-2 px-1 text-[12px] font-medium tracking-tight rounded-lg transition-all duration-300 border ${
+                            isSelected 
+                              ? themeColor === "default"
+                                ? "bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary scale-105 shadow-sm border-primary/30 dark:border-primary/50" 
+                                : "bg-[var(--mix-bg)] border-[var(--mix-border)] text-[var(--mix-text-light)] dark:text-[var(--mix-text-dark)] shadow-[0_0_8px_var(--mix-glow)] scale-105"
+                              : "bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-500 dark:text-zinc-400 scale-95 border-zinc-200 dark:border-transparent"
+                          } ${opacityClass}`}>
+                          {sub.name}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="pt-2 pb-10 md:pb-0">
+              <button onClick={() => setIsCharExpanded(!isCharExpanded)} className="w-full flex items-center justify-between group border-t border-zinc-200 dark:border-white/5 pt-4 pb-2 cursor-pointer transition-colors">
+                <span className="text-[12px] md:text-[11px] font-bold text-zinc-600 dark:text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-900 dark:group-hover:text-zinc-300 transition-colors">CHARACTER</span>
+                <span className={`text-[10px] text-zinc-400 dark:text-zinc-500 transform transition-transform duration-300 ${isCharExpanded ? 'rotate-0' : '-rotate-90'}`}>▼</span>
+              </button>
+              {isCharExpanded && (
+                <div className="space-y-6 pt-3">
+                  <div className="bg-zinc-50 dark:bg-zinc-900/50 p-2 rounded-2xl border border-zinc-200 dark:border-white/5 transition-colors">
+                    <button 
+                      onClick={toggleAllVirtualSingers}
+                      style={themeColor !== "default" ? {
+                        "--mix-bg": "color-mix(in srgb, var(--color-primary) 15%, transparent)",
+                        "--mix-border": "var(--color-primary)",
+                        "--mix-text-light": "color-mix(in srgb, var(--color-primary) 40%, black)",
+                        "--mix-text-dark": "color-mix(in srgb, var(--color-primary) 40%, white)",
+                        "--mix-glow": "color-mix(in srgb, var(--color-primary) 30%, transparent)",
+                        "--tint-bg": "color-mix(in srgb, var(--color-primary) 6%, transparent)",
+                        "--tint-text-light": "color-mix(in srgb, var(--color-primary) 80%, #3f3f46)",
+                        "--tint-text-dark": "color-mix(in srgb, var(--color-primary) 80%, #f4f4f5)",
+                      } as React.CSSProperties : {}}
+                      className={`w-full flex items-center justify-center gap-2 py-2 rounded-xl text-[12px] font-bold transition-all duration-300 border ${
+                        isAllVsSelected 
+                          ? themeColor === "default"
+                            ? "bg-primary/10 dark:bg-[#00FFD1]/15 text-primary dark:text-[#00FFD1] border-primary/30 dark:border-[#00FFD1]/30 shadow-sm dark:shadow-[0_0_10px_rgba(0,255,209,0.1)] scale-100" 
+                            : "bg-[var(--mix-bg)] border-[var(--mix-border)] text-[var(--mix-text-light)] dark:text-[var(--mix-text-dark)] shadow-[0_0_8px_var(--mix-glow)] scale-100"
+                          : themeColor === "default"
+                            ? "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-white/5 text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-800"
+                            : "bg-[var(--tint-bg)] border-zinc-200 dark:border-white/5 text-[var(--tint-text-light)] dark:text-[var(--tint-text-dark)] hover:bg-primary/10 transition-colors"
+                      }`}
+                    >
+                      <span>🎙️</span>
+                      <span>버추얼 싱어 일괄 선택</span>
+                    </button>
+
+                    <div className="grid grid-cols-3 gap-1.5 mt-2">
+                      {[
+                        { label: "미쿠", key: "미쿠", activeClass: "bg-[#39C5BB]/10 dark:bg-[#39C5BB]/20 text-[#39C5BB] border-[#39C5BB]/30 dark:border-[#39C5BB]/50 shadow-sm dark:shadow-[0_0_6px_rgba(57,197,187,0.2)] scale-100 font-bold" },
+                        { label: "린", key: "린", activeClass: "bg-[#FFA500]/10 dark:bg-[#FFA500]/20 text-[#FFA500] border-[#FFA500]/30 dark:border-[#FFA500]/50 shadow-sm dark:shadow-[0_0_6px_rgba(255,165,0,0.2)] scale-100 font-bold" },
+                        { label: "렌", key: "렌", activeClass: "bg-[#FFE211]/10 dark:bg-[#FFE211]/20 text-[#D4B800] dark:text-[#FFE211] border-[#FFE211]/30 dark:border-[#FFE211]/50 shadow-sm dark:shadow-[0_0_6px_rgba(255,226,17,0.2)] scale-100 font-bold" },
+                        { label: "루카", key: "루카", activeClass: "bg-[#FFC0CB]/10 dark:bg-[#FFC0CB]/20 text-[#E08A9A] dark:text-[#FFC0CB] border-[#FFC0CB]/30 dark:border-[#FFC0CB]/50 shadow-sm dark:shadow-[0_0_6px_rgba(255,192,203,0.2)] scale-100 font-bold" },
+                        { label: "MEIKO", key: "MEIKO", activeClass: "bg-[#D80000]/10 dark:bg-[#D80000]/20 text-[#D80000] border-[#D80000]/30 dark:border-[#D80000]/50 shadow-sm dark:shadow-[0_0_6px_rgba(216,0,0,0.2)] scale-100 font-bold" },
+                        { label: "KAITO", key: "KAITO", activeClass: "bg-[#3468CD]/10 dark:bg-[#3468CD]/20 text-[#3468CD] border-[#3468CD]/30 dark:border-[#3468CD]/50 shadow-sm dark:shadow-[0_0_6px_rgba(52,104,205,0.2)] scale-100 font-bold" }
+                      ].map(vs => {
+                        const specificIds = UNIT_FILTERS.flatMap(u => u.chars).filter(c => c.isVirtual && c.matchKeys?.includes(vs.key)).map(c => c.id);
+                        const isAllSpecificSelected = specificIds.length > 0 && specificIds.every(id => selectedChars.includes(id));
+                        return (
+                          <button 
+                            key={vs.key}
+                            onClick={() => toggleSpecificVS(vs.key)}
+                            style={(!isAllSpecificSelected && themeColor !== "default") ? {
+                              "--tint-bg": "color-mix(in srgb, var(--color-primary) 6%, transparent)",
+                              "--tint-text-light": "color-mix(in srgb, var(--color-primary) 80%, #3f3f46)",
+                              "--tint-text-dark": "color-mix(in srgb, var(--color-primary) 80%, #f4f4f5)",
+                            } as React.CSSProperties : {}}
+                            className={`py-1.5 rounded-lg text-[11px] transition-all duration-300 border ${
+                              isAllSpecificSelected 
+                                ? vs.activeClass 
+                                : themeColor === "default"
+                                  ? "bg-white dark:bg-zinc-900/80 border-zinc-200 dark:border-white/5 text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-800 font-medium"
+                                  : "bg-[var(--tint-bg)] border-zinc-200 dark:border-white/5 text-[var(--tint-text-light)] dark:text-[var(--tint-text-dark)] hover:bg-primary/10 font-medium"
+                            }`}
+                          >
+                            {vs.label}
+                          </button>
+                        )
+                      })}
                     </div>
                   </div>
-                )})}
-              </div>
-            )}
-          </div>
 
+                  {UNIT_FILTERS.map((unit) => {
+                    const isAllSelected = unit.chars.every(c => selectedChars.includes(c.id));
+                    const logoOpacityClass = !isAnyCharSelected || isAllSelected ? "opacity-100" : "opacity-40 hover:opacity-100 filter grayscale-[50%] dark:grayscale-0";
+                    return (
+                    <div key={unit.id} className="flex flex-col gap-2">
+                      <button onClick={() => toggleUnitFilter(unit.chars)} 
+                        style={(isAllSelected && themeColor !== "default") ? {
+                          "--mix-border": "var(--color-primary)",
+                        } as React.CSSProperties : {}}
+                        className={`w-full h-16 py-1 flex items-center justify-center rounded-xl transition-all duration-300 border ${
+                          isAllSelected 
+                            ? themeColor === "default"
+                              ? "bg-primary/10 dark:bg-primary/15 scale-105 border-primary/20" 
+                              : "bg-transparent border-[var(--mix-border)] scale-105" 
+                            : "bg-transparent hover:bg-zinc-100 dark:hover:bg-white/5 scale-95 border-transparent"
+                        } ${logoOpacityClass}`}>
+                        <img src={unit.logo} alt={unit.name} className="h-full w-auto object-contain max-w-[90%] drop-shadow-sm dark:drop-shadow-md" />
+                      </button>
+                      <div className="grid grid-cols-4 gap-1.5 mt-1">
+                        {unit.chars.map(char => {
+                          const isSelected = selectedChars.includes(char.id);
+                          const charOpacityClass = !isAnyCharSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100";
+                          return (
+                          <button key={char.id} onClick={() => toggleFilter(selectedChars, setSelectedChars, char.id)}
+                            style={(isSelected && themeColor !== "default") ? {
+                              "--mix-ring": "var(--color-primary)",
+                            } as React.CSSProperties : {}}
+                            className={`relative group aspect-square rounded-full transition-all duration-300 bg-white dark:bg-zinc-950 border ${
+                              isSelected 
+                                ? themeColor === "default"
+                                  ? "scale-105 ring-2 ring-primary shadow-sm opacity-100 border-primary dark:border-white" 
+                                  : "scale-105 border-4 border-[var(--mix-ring)] shadow-sm opacity-100" 
+                                : "scale-[0.80] hover:scale-[0.85] border-zinc-200 dark:border-transparent"
+                            } ${charOpacityClass}`}>
+                            <img src={char.img} alt={char.name} className="w-full h-full object-contain" />
+                            <span className={TOOLTIP_CLASS}>{char.name}</span>
+                          </button>
+                        )})}
+                      </div>
+                    </div>
+                  )})}
+                </div>
+              )}
+            </div>
+
+          </div>
         </div>
       </div>
 
