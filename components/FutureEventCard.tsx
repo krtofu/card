@@ -53,26 +53,29 @@ const matchAttribute = (cardAttr: string, targetAttr: string) => {
 };
 
 const matchUnit = (cardUnit: string, targetUnit: string) => {
-  const c = (cardUnit || "").toLowerCase().replace(/[^a-z0-9가-힣]/g, "");
-  const t = (targetUnit || "").toLowerCase().replace(/[^a-z0-9가-힣]/g, "");
+  const c = (cardUnit || "").toLowerCase();
+  const t = (targetUnit || "").toLowerCase();
   if (!c || !t) return false;
-  if (t.includes("leo") && (c.includes("leo") || c.includes("레오니") || c.includes("ln"))) return true;
-  if (t.includes("more") && (c.includes("more") || c.includes("모모점") || c.includes("mmj"))) return true;
-  if (t.includes("vivid") && (c.includes("vivid") || c.includes("비배스") || c.includes("vbs"))) return true;
-  if (t.includes("wonder") && (c.includes("wonder") || c.includes("원더쇼") || c.includes("wxs"))) return true;
-  if (t.includes("25") && (c.includes("25") || c.includes("니고") || c.includes("niigo") || c.includes("n25"))) return true;
+  
+  if (t.includes("leo") && c.includes("leo")) return true;
+  if (t.includes("mmj") && c.includes("mmj")) return true;
+  if (t.includes("vbs") && c.includes("vbs")) return true;
+  if (t.includes("wds") && c.includes("wds")) return true;
+  if (t.includes("niigo") && c.includes("niigo")) return true;
+  if (t.includes("vs") && (c.includes("vs") || c.includes("virtual"))) return true;
+  
   return c.includes(t) || t.includes(c);
 };
 
 const getUnitLogo = (unitName: string) => {
   if (!unitName) return null;
-  const u = unitName.toLowerCase().replace(/[^a-z0-9가-힣]/g, "");
-  if (u.includes("leo") || u.includes("레오니")) return "/icons/Leoneed_icon.png";
-  if (u.includes("more") || u.includes("모모점")) return "/icons/MMJ_icon.png";
-  if (u.includes("vivid") || u.includes("비배스")) return "/icons/VBS_icon.png";
-  if (u.includes("wonder") || u.includes("원더쇼")) return "/icons/Wds_icon.png";
-  if (u.includes("25") || u.includes("니고")) return "/icons/Niigo_icon.png";
-  if (u.includes("virtual") || u.includes("버싱")) return "/icons/VS_icon.png";
+  const u = unitName.toLowerCase();
+  if (u.includes("leo")) return "/icons/Leoneed_icon.png";
+  if (u.includes("mmj")) return "/icons/MMJ_icon.png";
+  if (u.includes("vbs")) return "/icons/VBS_icon.png";
+  if (u.includes("wds")) return "/icons/Wds_icon.png";
+  if (u.includes("niigo")) return "/icons/Niigo_icon.png";
+  if (u.includes("vs") || u.includes("virtual")) return "/icons/VS_icon.png";
   return null;
 };
 
@@ -119,11 +122,13 @@ interface FutureEventCardProps {
   matchedCardIds: string[]; 
   monthMarker?: string;
   daysLeft?: number; 
+  isOngoing?: boolean;
+  isEnded?: boolean;
 }
 
 export default function FutureEventCard({ 
-  event, userStates, onCardClick, showPostAwake, 
-  isFilterActive, isEventMatched, matchedCardIds, monthMarker, daysLeft
+  event, index, userStates, onCardClick, showPostAwake, 
+  isFilterActive, isEventMatched, matchedCardIds, monthMarker, daysLeft, isOngoing, isEnded
 }: FutureEventCardProps) {
   
   const [isEventMode, setIsEventMode] = useState(false);
@@ -222,10 +227,38 @@ export default function FutureEventCard({
   const costumePreviewPayload = combinedCostumeData();
 
   return (
-    <div className={`flex flex-col md:flex-row items-stretch gap-8 ${fadeClass}`}>
+    <div className={`flex flex-col xl:flex-row items-stretch gap-4 xl:gap-8 ${fadeClass}`}>
       
+      {/* 🌟 ================= 모바일 전용 타임라인 (배너 위쪽) ================= */}
+      <div className="xl:hidden relative flex flex-col items-center justify-center w-full mt-2 mb-2">
+        {/* 윗 배너에서 동그라미로 내려오는 연결선 (맨 위 index 0 이면 선 없음!) */}
+        {index > 0 && (
+          <div className="absolute -top-[52px] bottom-1/2 w-px bg-zinc-200 dark:bg-white/10 -z-10" />
+        )}
+        
+        <div className="relative flex justify-center items-center">
+          {monthMarker && (
+            <div className="absolute right-full mr-3 px-2 py-0.5 rounded-full bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 text-[10px] font-bold border border-zinc-200 dark:border-white/10 shadow-sm whitespace-nowrap z-30">
+              {monthMarker}월
+            </div>
+          )}
+          
+          {/* 🌟 이벤트 모드일 때만 유닛 로고 렌더링! 뽑기 모드일 땐 작은 점! */}
+          {isEventMode && unitLogo ? (
+            <div className="w-8 h-8 rounded-full bg-white dark:bg-zinc-900 border-2 border-zinc-200 dark:border-white/20 shadow-md flex items-center justify-center overflow-hidden p-1 z-20">
+              <img src={unitLogo} alt="Unit Logo" className="w-full h-full object-contain drop-shadow-sm" />
+            </div>
+          ) : (
+            <div className={`w-3.5 h-3.5 rounded-full border-[3px] border-zinc-200 dark:border-zinc-800 z-20 shadow-sm ${isFilterActive && !isEventMatched ? 'bg-zinc-300 dark:bg-zinc-600' : 'bg-primary dark:bg-white'}`} />
+          )}
+        </div>
+
+        {/* 동그라미에서 배너(아래)로 향해 내려가는 짧은 연결선 */}
+        <div className="absolute top-1/2 -bottom-2 w-px bg-zinc-200 dark:bg-white/10 -z-10" />
+      </div>
+
       {/* ================= 좌측: 배너 영역 ================= */}
-      <div className="flex-1 w-full relative z-10 flex flex-col justify-center md:px-4 py-2 shrink-0">
+      <div className="flex-1 w-full relative z-10 flex flex-col justify-center xl:px-4 py-2 shrink-0">
         {/* 🌟 다크/라이트모드 배경 대응 */}
         <div className="w-full max-w-[520px] mx-auto bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 rounded-2xl overflow-visible shadow-xl flex flex-col relative h-fit transition-colors">
           
@@ -270,21 +303,44 @@ export default function FutureEventCard({
             )}
           </div>
           
-          <div className="p-4 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-sm relative z-20 flex justify-between items-end flex-1 rounded-b-2xl transition-colors">
-            <div className="min-w-0">
-              <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-1 truncate pr-2 transition-colors">
+          <div className="p-4 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-sm relative z-20 flex justify-between items-start flex-1 rounded-b-2xl transition-colors">
+            <div className="min-w-0 pr-2">
+              <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-1 truncate transition-colors">
                 {isEventMode ? (event.eventName || event.name) : event.name}
               </h3>
-              <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400 transition-colors">
-                🕒 {event.period.start} ~ {event.period.end}
+              <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400 transition-colors tracking-wide">
+                🕒 {event.period.start.replace(/-/g, '.')} ~ {event.period.end.replace(/-/g, '.')}
               </p>
             </div>
+            
+            {/* 🌟 xl:hidden을 제거하여 데스크톱/모바일 전체 뷰 공통으로 이름 우측 박스에 안착시킵니다! */}
+            {daysLeft !== undefined && !isNaN(daysLeft) && (
+              <div className="shrink-0 flex items-center pt-0.5">
+                {isEnded ? (
+                  <span className="bg-zinc-700 dark:bg-zinc-800 text-zinc-300 dark:text-zinc-400 text-[10px] px-2.5 py-0.5 rounded-full border border-zinc-600 dark:border-zinc-900 font-bold whitespace-nowrap shadow-inner transition-colors">
+                    종료됨
+                  </span>
+                ) : isOngoing ? (
+                  <span className="bg-emerald-50 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 text-[10px] px-2.5 py-0.5 rounded-full border border-emerald-300 dark:border-amber-400/50 font-bold whitespace-nowrap shadow-sm transition-colors">
+                    ✨ 진행 중
+                  </span>
+                ) : daysLeft === 0 ? (
+                  <span className="bg-red-50 dark:bg-red-500/20 text-red-600 dark:text-red-400 text-[10px] px-2.5 py-0.5 rounded-full border border-red-300 dark:border-red-500/30 font-bold whitespace-nowrap shadow-sm animate-pulse transition-colors">
+                    🔥 D-Day
+                  </span>
+                ) : (
+                  <span className="bg-sky-50 dark:bg-sky-500/20 text-sky-600 dark:text-sky-400 text-[10px] px-2.5 py-0.5 rounded-full border border-sky-300 dark:border-sky-500/30 font-bold whitespace-nowrap shadow-sm transition-colors">
+                    ⏳ D-{daysLeft}
+                  </span>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      {/* ================= 중앙 타임라인 선 ================= */}
-      <div className="hidden md:flex flex-col items-center justify-center relative z-20 w-10 shrink-0">
+      {/* ================= 중앙 타임라인 선 (데스크톱 전용) ================= */}
+      <div className="hidden xl:flex flex-col items-center justify-center relative z-20 w-10 shrink-0">
         <div className="relative flex flex-col justify-center items-center">
           {monthMarker && (
             <div className="absolute bottom-full mb-4 px-2.5 py-0.5 rounded-full bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 text-[11px] font-bold border border-zinc-200 dark:border-white/10 shadow-sm z-30 whitespace-nowrap transition-colors">
@@ -292,27 +348,30 @@ export default function FutureEventCard({
             </div>
           )}
 
-          {unitLogo ? (
+          {/* 🌟 데스크톱 뷰에서도 이벤트 모드일 때만 조건부로 유닛 로고 노출, 뽑기 모드일 땐 깔끔한 점 표시! */}
+          {isEventMode && unitLogo ? (
             <div className="w-9 h-9 rounded-full bg-white dark:bg-zinc-900 border-2 border-zinc-200 dark:border-white/20 shadow-md dark:shadow-[0_0_15px_rgba(255,255,255,0.3)] z-20 flex items-center justify-center overflow-hidden p-1 transition-all">
                <img src={unitLogo} alt="Unit Logo" className="w-full h-full object-contain drop-shadow-sm dark:drop-shadow-md" />
             </div>
           ) : (
             <div className={`w-4 h-4 rounded-full border-4 border-zinc-200 dark:border-zinc-950 shadow-md dark:shadow-[0_0_15px_rgba(255,255,255,0.5)] transition-all ${isFilterActive && !isEventMatched ? 'bg-zinc-300 dark:bg-zinc-600' : 'bg-primary dark:bg-white'}`} />
           )}
-
         </div>
       </div>
 
       {/* ================= 우측: 카드 목록 ================= */}
-      <div className="flex-1 w-full relative z-10 flex flex-col justify-center md:px-4 py-2 shrink-0">
+      <div className="flex-1 w-full relative z-10 flex flex-col justify-center xl:px-4 py-2 shrink-0">
         <div className="bg-white/50 dark:bg-zinc-900/30 border border-zinc-200 dark:border-white/5 rounded-3xl p-6 w-full max-w-[520px] mx-auto flex flex-col h-fit transition-colors">
           
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-zinc-200 dark:border-white/10 shrink-0 transition-colors">
-            <div className="flex items-center gap-1.5 font-bold text-zinc-700 dark:text-zinc-300 text-sm transition-colors">
+          {/* 🎯 한 줄이 뭉개지기 전에 우측 뱃지 그룹 전체가 아랫줄 좌측 정렬로 떨어지도록 유연한 flex-wrap 마감 처리 */}
+          <div className="flex flex-wrap items-center justify-start sm:justify-between gap-3 mb-4 pb-3 border-b border-zinc-200 dark:border-white/10 shrink-0 transition-colors">
+            {/* 왼쪽 타이틀 구역 */}
+            <div className="flex items-center gap-1.5 font-bold text-zinc-700 dark:text-zinc-300 text-sm transition-colors shrink-0">
               {isEventMode ? <><span className="text-amber-500 dark:text-amber-400">🎁</span> 이벤트 보너스 멤버</> : <><span className="text-primary dark:text-sky-400">✨</span> 가챠 픽업 멤버</>}
             </div>
             
-            <div className="flex items-center gap-2">
+            {/* 오른쪽 뱃지 및 정렬 버튼 그룹 (덩어리로 묶어서 탈락하게 만듦) */}
+            <div className="flex flex-wrap items-center gap-2 shrink-0">
                {isEventMode ? (
                  <>
                    <button
@@ -382,7 +441,7 @@ export default function FutureEventCard({
               <CostumePreviewCard preview={costumePreviewPayload as any} />
             </div>
           ) : (
-            <div className="flex flex-wrap justify-center md:justify-start gap-4">
+            <div className="flex flex-wrap justify-center xl:justify-start gap-4">
               {displayItems.length > 0 ? displayItems.map(({ card, myState, bonus, score }, idx) => {
                 const realId = (card as any).info ? (card as any).info.id : (card as any).id;
                 const isCardMatched = !isFilterActive || matchedCardIds.includes(realId);

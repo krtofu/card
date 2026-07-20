@@ -1,4 +1,3 @@
-// src/app/future/page.tsx
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -8,12 +7,25 @@ import FutureEventCard from "@/components/FutureEventCard";
 import CardDetailModal from "@/components/CardDetailModal";
 import { FinalCardInfo } from "@/data/cards/template";
 import { UserCardState } from "@/app/cards/page"; 
-import { useThemeColor } from "@/app/providers"; // 🌟 직통 전화기 연결!
+import { useThemeColor } from "@/app/providers";
 
 const TOOLTIP_CLASS = "absolute bottom-full mb-2 left-1/2 -translate-x-1/2 px-2.5 py-1 bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-100 text-[11px] font-bold rounded-lg shadow-xl border border-zinc-200 dark:border-white/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-[60]";
 
+// 🌟 [추가] 모바일 타임라인 연결선에 쓸 유닛 로고 호출기!
+const getUnitLogo = (unitName?: string) => {
+  if (!unitName) return null;
+  const u = unitName.toLowerCase().replace(/[^a-z0-9가-힣]/g, "");
+  if (u.includes("leo") || u.includes("레오니")) return "/icons/Leoneed_icon.png";
+  if (u.includes("more") || u.includes("모모점")) return "/icons/MMJ_icon.png";
+  if (u.includes("vivid") || u.includes("비배스")) return "/icons/VBS_icon.png";
+  if (u.includes("wonder") || u.includes("원더쇼")) return "/icons/Wds_icon.png";
+  if (u.includes("25") || u.includes("니고")) return "/icons/Niigo_icon.png";
+  if (u.includes("virtual") || u.includes("버싱")) return "/icons/VS_icon.png";
+  return null;
+};
+
 export default function FuturePage() {
-  const { themeColor } = useThemeColor(); // 🌟 테마 색상 상태 가져오기
+  const { themeColor } = useThemeColor(); 
 
   const [cardStates, setCardStates] = useState<Record<string, UserCardState>>({});
   const [activeModalCard, setActiveModalCard] = useState<FinalCardInfo | null>(null);
@@ -21,25 +33,26 @@ export default function FuturePage() {
   
   const [showPostAwake, setShowPostAwake] = useState(false);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
-  const [isDesktopFilterOpen, setIsDesktopFilterOpen] = useState(true); // 🌟 데스크톱 서랍 상태 추가
+  const [isDesktopFilterOpen, setIsDesktopFilterOpen] = useState(true);
   const [spinDeg, setSpinDeg] = useState(0);
   const [openYearMarker, setOpenYearMarker] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeYear, setActiveYear] = useState<string>(""); // 🌟 현재 스크롤 위치의 연도를 기억할 녀석!
 
   const [hideUnmatchedEvents, setHideUnmatchedEvents] = useState(false);
-
   const [excludeCollab, setExcludeCollab] = useState(false);
+  
   const [isStatusExpanded, setIsStatusExpanded] = useState(true);
-  const [isEventTypeExpanded, setIsEventTypeExpanded] = useState(true);
   const [isGachaTypeExpanded, setIsGachaTypeExpanded] = useState(true);
+  const [isEventTypeExpanded, setIsEventTypeExpanded] = useState(true);
   const [isCollabExpanded, setIsCollabExpanded] = useState(true);
   const [isAttrExpanded, setIsAttrExpanded] = useState(true);
   const [isSkillExpanded, setIsSkillExpanded] = useState(true);
   const [isCharExpanded, setIsCharExpanded] = useState(true);
 
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]); 
-  const [selectedEventTypes, setSelectedEventTypes] = useState<string[]>([]);
   const [selectedGachaTypes, setSelectedGachaTypes] = useState<string[]>([]);
+  const [selectedEventTypes, setSelectedEventTypes] = useState<string[]>([]);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedHairs, setSelectedHairs] = useState<string[]>([]);
   const [selectedChars, setSelectedChars] = useState<string[]>([]);
@@ -49,7 +62,6 @@ export default function FuturePage() {
   const yearRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const monthRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
-  // 🌟 워키토키 발신: 모바일이든 데스크톱이든, 뭐 하나라도 열려있으면 "열림(true)"으로 무전 발송!
   useEffect(() => {
     const checkAndSend = () => {
       const isVisible = window.innerWidth < 768 ? isMobileFilterOpen : isDesktopFilterOpen;
@@ -60,7 +72,6 @@ export default function FuturePage() {
     return () => window.removeEventListener("resize", checkAndSend);
   }, [isMobileFilterOpen, isDesktopFilterOpen]);
 
-  // 🌟 워키토키 수신: 헤더의 햄버거 버튼이 "서랍 열어!" 라고 무전을 치면 응답!
   useEffect(() => {
     const handleToggle = () => {
       if (window.innerWidth < 768) setIsMobileFilterOpen(true);
@@ -81,6 +92,33 @@ export default function FuturePage() {
     else document.body.style.overflow = "auto";
     return () => { document.body.style.overflow = "auto"; };
   }, [isMobileFilterOpen]);
+
+  // 🌟 스크롤스파이 (Scrollspy) 감지 로직
+  useEffect(() => {
+    if (!mounted) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const year = entry.target.getAttribute("data-year");
+            if (year) setActiveYear(year);
+          }
+        });
+      },
+      { rootMargin: "-20% 0px -70% 0px" } // 화면 상단을 지날 때 더 민감하게 켜지도록 조정!
+    );
+
+    const timeout = setTimeout(() => {
+      Object.values(yearRefs.current).forEach((el) => {
+        if (el) observer.observe(el);
+      });
+    }, 300);
+
+    return () => {
+      clearTimeout(timeout);
+      observer.disconnect();
+    };
+  }, [mounted, searchQuery, hideUnmatchedEvents, isMobileFilterOpen]);
 
   const handleUpdateCardState = (id: string, newState: Partial<UserCardState>) => {
     const updated = { 
@@ -111,8 +149,8 @@ export default function FuturePage() {
   const handleReset = () => {
     setSpinDeg(prev => prev - 360); 
     setSelectedChars([]); setSelectedAttrs([]); setSelectedSkills([]); 
-    setSelectedStatuses([]); setSelectedTypes([]); setSelectedHairs([]); setSelectedEventTypes([]);
-    setSelectedGachaTypes([]);
+    setSelectedStatuses([]); setSelectedTypes([]); setSelectedHairs([]); 
+    setSelectedEventTypes([]); setSelectedGachaTypes([]); 
     setExcludeCollab(false);
     setSearchQuery(""); 
   };
@@ -132,30 +170,30 @@ export default function FuturePage() {
     else setSelectedChars([...new Set([...selectedChars, ...specificIds])]);
   };
 
-  const checkCardMatch = (card: any) => {
+  const checkCardMatch = (card: any, currentEvent: any) => {
     if (searchQuery.trim() !== "") {
-      const q = searchQuery.toLowerCase().trim();
-      
+      const q = searchQuery.toLowerCase().trim().replace("년", "");
       const getStr = (val: any) => {
         if (val === null || val === undefined) return "";
         if (Array.isArray(val)) return val.join(" ").toLowerCase();
         return String(val).toLowerCase();
       };
       
+      // 🌟 날짜 데이터 형식(2023-01-05 등)에서 하이픈을 빼고 순수 문자열로 만들어 검색 유연성을 확보합니다!
+      const cleanEventDate = getStr(currentEvent?.period?.start).replace(/[^0-9]/g, "");
+      const matchYear = cleanEventDate.includes(q) || getStr(currentEvent?.period?.start).includes(q);
       const matchName = getStr(card.cardName).includes(q);
       const matchChar = getStr(card.character).includes(q);
       const matchEvent = getStr(card.eventName).includes(q);
       const matchGacha = getStr(card.gachaPoolName).includes(q);
-      
       const matchCostume = getStr(card.costume?.name).includes(q); 
       const matchSong = getStr(card.songName).includes(q);        
       const matchSkill = getStr(card.skillType).includes(q);       
       const matchUnit = getStr(card.unit).includes(q);             
-      
       const matchGachaType = getStr(card.gachaType).includes(q);
       const matchAttribute = getStr(card.attribute).includes(q);
       
-      if (!(matchName || matchChar || matchEvent || matchGacha || matchCostume || matchSong || matchSkill || matchUnit || matchGachaType || matchAttribute)) {
+      if (!(matchYear || matchName || matchChar || matchEvent || matchGacha || matchCostume || matchSong || matchSkill || matchUnit || matchGachaType || matchAttribute)) {
         return false;
       }
     }
@@ -238,6 +276,7 @@ export default function FuturePage() {
   const isAnyCharSelected = selectedChars.length > 0;
 
   const isFilterActive = isAnyStatusSelected || isAnyTypeSelected || isAnyEventTypeSelected || isAnyGachaTypeSelected || isAnyHairSelected || isAnyAttrSelected || isAnySkillSelected || isAnyCharSelected || excludeCollab || searchQuery.trim() !== "";
+
   const condSubs = SKILL_FILTERS.find(s => s.id === "condition_group")?.subs || [];
   const condIds = condSubs.map(s => s.id);
   const isAllCondSelected = condIds.length > 0 && condIds.every(id => selectedSkills.includes(id));
@@ -247,12 +286,23 @@ export default function FuturePage() {
     let matchedCardIds: string[] = [];
     if (isFilterActive) {
       const passEventType = !isAnyEventTypeSelected || selectedEventTypes.includes(event.eventType || "없음");
-      const passGachaType = !isAnyGachaTypeSelected || (event.gacha.types && event.gacha.types.some(t => selectedGachaTypes.includes(t)));
       
+      const passGachaType = !isAnyGachaTypeSelected || (event.gacha.types && selectedGachaTypes.some(sel => {
+        if (sel === "exclude_rerun") return !event.gacha.types.includes("복각") && !event.gacha.types.includes("뾱각");
+        return event.gacha.types.includes(sel);
+      }));
+
       const eventCards = event.gacha.featuredCardIds.map(id => ALL_CARDS.find(c => c.id === id || ((c as any).info && (c as any).info.id === id))).filter(c => c !== undefined) as any[];
-      const matchedCards = eventCards.filter(c => checkCardMatch(c));
+      const matchedCards = eventCards.filter(c => checkCardMatch(c, event)); 
       matchedCardIds = matchedCards.map(c => (c as any).info ? (c as any).info.id : c.id);
-      if (!passEventType || !passGachaType || matchedCardIds.length === 0) isEventMatched = false;
+      
+      // 🌟 [핵심] 연도나 이벤트 이름이 직접 맞았을 때는 카드가 0장이라도 무조건 노출되게 예외 처리!
+      const q = searchQuery.toLowerCase().trim().replace("년", "");
+      const isDirectMatch = q.length > 0 && (event.period.start.includes(q) || event.name.toLowerCase().includes(q) || (event.eventName && event.eventName.toLowerCase().includes(q)));
+
+      if (!passEventType || !passGachaType || (matchedCardIds.length === 0 && !isDirectMatch)) {
+        isEventMatched = false;
+      }
     }
     return { event, isEventMatched, matchedCardIds };
   });
@@ -266,29 +316,20 @@ export default function FuturePage() {
     let daysLeft = 0;
     let isOngoing = false;
     let isEnded = false;
-
     try {
       const cleanStartStr = item.event.period.start.split(' ')[0].replace(/[\.-]/g, '/');
       const eventStart = new Date(cleanStartStr);
       eventStart.setHours(0, 0, 0, 0);
-
       const cleanEndStr = (item.event.period.end || item.event.period.start).split(' ')[0].replace(/[\.-]/g, '/');
       const eventEnd = new Date(cleanEndStr);
       eventEnd.setHours(23, 59, 59, 999);
-
       const diffTime = eventStart.getTime() - today.getTime();
       daysLeft = Math.ceil(diffTime / 86400000);
-
       if (daysLeft < 0) {
-        if (today.getTime() <= eventEnd.getTime()) {
-          isOngoing = true; 
-        } else {
-          isEnded = true;   
-        }
+        if (today.getTime() <= eventEnd.getTime()) isOngoing = true; 
+        else isEnded = true;   
       }
-    } catch(e) {
-      daysLeft = 0;
-    }
+    } catch(e) { daysLeft = 0; }
     return { ...item, daysLeft, isOngoing, isEnded };
   });
 
@@ -296,9 +337,9 @@ export default function FuturePage() {
   let lastRenderedMonth = "";
 
   return (
-    <div className="flex flex-col md:flex-row gap-6 px-4 md:px-8 py-6 min-h-screen text-zinc-900 dark:text-zinc-100 max-w-[1920px] mx-auto w-full transition-colors duration-300 relative overflow-hidden">
+    <div className="flex flex-col md:flex-row gap-6 px-4 md:px-8 py-6 min-h-screen text-zinc-900 dark:text-zinc-100 max-w-[1920px] mx-auto w-full transition-colors duration-300 relative overflow-x-clip">
       
-      {/* 🌟 모바일 필터 배경 방어막 (Dim Overlay) */}
+      {/* 🌟 모바일 필터 배경 방어막 */}
       <div 
         className={`md:hidden fixed inset-0 bg-black/40 dark:bg-black/60 z-[100000] transition-opacity duration-300 ${
           isMobileFilterOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
@@ -306,7 +347,7 @@ export default function FuturePage() {
         onClick={() => setIsMobileFilterOpen(false)}
       />
 
-      {/* 👈 좌측 영역: 필터칸 (300px 쾌적한 너비 + 제미나이 서랍 + 스크롤바 숨김 + 팔레트 연동!) */}
+      {/* 👈 좌측 영역: 필터 서랍 */}
       <div className={`
         shrink-0 transition-all duration-300 ease-in-out z-[100001] md:z-10
         ${isDesktopFilterOpen ? 'md:w-[300px] md:opacity-100' : 'md:w-0 md:opacity-0 md:overflow-hidden'}
@@ -315,20 +356,17 @@ export default function FuturePage() {
         ${isMobileFilterOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
         overflow-y-auto md:overflow-visible [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']
       `}>
-        <div className="w-[300px] h-full flex flex-col p-6 md:p-0">
+        <div className="w-[300px] h-full flex flex-col p-6 md:p-0 bg-white dark:bg-zinc-950 md:bg-transparent">
           
-          {/* 필터 헤더 구역 */}
           <div className="flex items-center justify-between border-b border-zinc-200 dark:border-white/10 pb-3 mb-6 transition-colors">
             <h2 className="text-lg md:text-sm font-bold text-zinc-700 dark:text-zinc-300 tracking-wider uppercase transition-colors">🔍 필터</h2>
             <div className="flex items-center gap-2">
               <button onClick={handleReset} className="w-8 h-8 md:w-7 md:h-7 flex items-center justify-center rounded-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 text-zinc-500 dark:text-zinc-400 hover:text-primary dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors text-sm md:text-sm shadow-sm" title="초기화">
                 <span className="leading-none -mt-[1px] inline-block" style={{ transform: `rotate(${spinDeg}deg)`, transition: 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)' }}>↺</span>
               </button>
-              
               <button onClick={() => setIsDesktopFilterOpen(false)} className="hidden md:flex w-8 h-8 items-center justify-center rounded-lg bg-transparent text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-primary transition-colors text-lg" title="필터 접기">
                 ☰
               </button>
-
               <button onClick={() => setIsMobileFilterOpen(false)} className="md:hidden w-8 h-8 flex items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 hover:text-red-500 font-bold transition-colors">
                 ✕
               </button>
@@ -347,15 +385,12 @@ export default function FuturePage() {
                     {[ { id: "owned", label: "✓ 보유" }, { id: "unowned", label: "❌ 미보유" }, { id: "target", label: "⭐ 목표" } ].map(status => {
                       const isSelected = selectedStatuses.includes(status.id);
                       const opacityClass = !isAnyStatusSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100";
-                      
                       const activeClass = status.id === "target" 
                         ? "bg-amber-50 dark:bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-300 dark:border-amber-400/50 shadow-sm scale-105" 
                         : status.id === "owned" 
                           ? "bg-emerald-50 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-400/50 shadow-sm scale-105" 
                           : "bg-transparent text-zinc-800 dark:text-zinc-200 border border-zinc-400 dark:border-zinc-500 shadow-md scale-105 font-extrabold";
-                      
                       const inactiveClass = "bg-white dark:bg-zinc-900 text-zinc-500 dark:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-transparent scale-95";
-                      
                       return (
                         <button key={status.id} onClick={() => toggleFilter(selectedStatuses, setSelectedStatuses, status.id)}
                           className={`py-2.5 md:py-2 px-1 text-[13px] md:text-[12px] font-bold tracking-tight rounded-lg transition-all duration-300 ${isSelected ? activeClass : inactiveClass} ${opacityClass}`}>
@@ -391,31 +426,30 @@ export default function FuturePage() {
             </div>
 
             <div className="space-y-2 pt-2 border-t border-zinc-200 dark:border-white/5 transition-colors">
-            <button onClick={() => setIsGachaTypeExpanded(!isGachaTypeExpanded)} className="w-full flex items-center justify-between group pt-2 pb-1 cursor-pointer">
-              <span className="text-[12px] md:text-[11px] font-bold text-zinc-500 dark:text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-800 dark:group-hover:text-zinc-300 transition-colors">GACHA TYPE</span>
-              <span className={`text-[10px] text-zinc-400 dark:text-zinc-500 transform transition-transform duration-300 ${isGachaTypeExpanded ? 'rotate-0' : '-rotate-90'}`}>▼</span>
-            </button>
-            {isGachaTypeExpanded && (
-              <div className="grid grid-cols-3 gap-1.5 pt-1">
-                {[ 
-                  { id: "exclude_rerun", name: "복각 제외", activeClass: "bg-red-50 dark:bg-red-500/20 text-red-600 dark:text-red-300 border-red-300 dark:border-red-400/50 shadow-sm" },
-                  { id: "복각", name: "복각", activeClass: "bg-purple-50 dark:bg-purple-500/20 text-purple-600 dark:text-purple-300 border-purple-300 dark:border-purple-400/50 shadow-sm" }, 
-                  { id: "뾱각", name: "뾱각", activeClass: "bg-fuchsia-50 dark:bg-fuchsia-500/20 text-fuchsia-600 dark:text-fuchsia-300 border-fuchsia-300 dark:border-fuchsia-400/50 shadow-sm" } 
-                ].map(type => {
-                  const isSelected = selectedGachaTypes.includes(type.id);
-                  const opacityClass = !isAnyGachaTypeSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100 text-zinc-500 dark:text-white bg-zinc-100 dark:bg-zinc-900";
-                  return (
-                    <button key={type.id} onClick={() => toggleFilter(selectedGachaTypes, setSelectedGachaTypes, type.id)}
-                      className={`py-2.5 md:py-2 px-1 text-[13px] md:text-[12px] font-bold tracking-tight rounded-lg transition-all duration-300 border ${isSelected ? `${type.activeClass} scale-105` : "bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-600 dark:text-white border-zinc-200 dark:border-transparent scale-95"} ${opacityClass}`}>
-                      {type.name}
-                    </button>
-                  )
-                })}
-              </div>
-            )}
-          </div>
+              <button onClick={() => setIsGachaTypeExpanded(!isGachaTypeExpanded)} className="w-full flex items-center justify-between group pt-2 pb-1 cursor-pointer">
+                <span className="text-[12px] md:text-[11px] font-bold text-zinc-600 dark:text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-800 dark:group-hover:text-zinc-300 transition-colors">GACHA TYPE</span>
+                <span className={`text-[10px] text-zinc-400 dark:text-zinc-500 transform transition-transform duration-300 ${isGachaTypeExpanded ? 'rotate-0' : '-rotate-90'}`}>▼</span>
+              </button>
+              {isGachaTypeExpanded && (
+                <div className="grid grid-cols-3 gap-1.5 pt-1">
+                  {[ 
+                    { id: "exclude_rerun", name: "⁰ 복각 제외", activeClass: "bg-red-50 dark:bg-red-500/20 text-red-600 dark:text-red-300 border-red-300 dark:border-red-400/50 shadow-sm" },
+                    { id: "복각", name: "¹ 복각", activeClass: "bg-purple-50 dark:bg-purple-500/20 text-purple-600 dark:text-purple-300 border-purple-300 dark:border-purple-400/50 shadow-sm" }, 
+                    { id: "뾱각", name: "² 뾱각", activeClass: "bg-fuchsia-50 dark:bg-fuchsia-500/20 text-fuchsia-600 dark:text-fuchsia-300 border-fuchsia-300 dark:border-fuchsia-400/50 shadow-sm" } 
+                  ].map(type => {
+                    const isSelected = selectedGachaTypes.includes(type.id);
+                    const opacityClass = !isAnyGachaTypeSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100 text-zinc-500 dark:text-white bg-zinc-100 dark:bg-zinc-900";
+                    return (
+                      <button key={type.id} onClick={() => toggleFilter(selectedGachaTypes, setSelectedGachaTypes, type.id)}
+                        className={`py-2.5 md:py-2 px-1 text-[13px] md:text-[12px] font-bold tracking-tight rounded-lg transition-all duration-300 border ${isSelected ? `${type.activeClass} scale-105` : "bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-600 dark:text-white border-zinc-200 dark:border-transparent scale-95"} ${opacityClass}`}>
+                        {type.name}
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
 
-            {/* EVENT TYPE 필터 유지 */}
             <div className="space-y-2 pt-2 border-t border-zinc-200 dark:border-white/5 transition-colors">
               <button onClick={() => setIsEventTypeExpanded(!isEventTypeExpanded)} className="w-full flex items-center justify-between group pt-2 pb-1 cursor-pointer">
                 <span className="text-[12px] md:text-[11px] font-bold text-zinc-600 dark:text-zinc-500 tracking-widest pl-1 group-hover:text-zinc-800 dark:group-hover:text-zinc-300 transition-colors">EVENT TYPE</span>
@@ -700,8 +734,9 @@ export default function FuturePage() {
       {/* ========================================= */}
       <div className="flex-1 flex flex-col min-w-0 bg-zinc-50/50 dark:bg-zinc-900/30 rounded-3xl p-4 md:p-6 border border-zinc-200 dark:border-white/5 relative transition-colors">
         
-        <div className="sticky top-0 bg-white/85 dark:bg-zinc-950/85 backdrop-blur-md py-4 -mx-4 md:-mx-6 px-4 md:px-6 rounded-t-3xl border-b border-zinc-200 dark:border-white/5 z-50 flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-4 transition-colors">
-          <div>
+        {/* 🌟 글로벌 헤더(<GlobalHeader />) 바로 아랫선에 빈틈없이 붙어서 따라오도록 높이 재단 완료! */}
+        <div className="sticky top-14 xl:top-16 bg-white/85 dark:bg-zinc-950/85 backdrop-blur-md py-4 -mx-4 md:-mx-6 px-4 md:px-6 rounded-t-3xl border-b border-zinc-200 dark:border-white/5 z-[100] flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-4 transition-colors">
+          <div className="shrink-0 mr-auto">
             <div className="flex items-center gap-3">
               <h1 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-white shrink-0 transition-colors">📅 미래시 타임라인</h1>
               <div className="flex flex-wrap items-center gap-1.5">
@@ -709,44 +744,25 @@ export default function FuturePage() {
                   <button
                     key={year}
                     onClick={() => scrollToYear(year)}
-                    className="px-2.5 py-1 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-white/10 hover:bg-zinc-100 dark:hover:bg-white text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-black text-[11px] font-bold rounded-md transition-all shadow-sm whitespace-nowrap"
+                    className={`px-2.5 py-1 border text-[11px] font-bold rounded-md transition-all shadow-sm whitespace-nowrap ${
+                      activeYear === year
+                        ? "bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 border-zinc-900 dark:border-white scale-105"
+                        : "bg-white dark:bg-zinc-800 border-zinc-200 dark:border-white/10 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-white/90 hover:text-zinc-900 dark:hover:text-black"
+                    }`}
                   >
                     {year}년
                   </button>
                 ))}
               </div>
             </div>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 transition-colors">앞으로 다가올 가챠 일정과 픽업 멤버를 확인해보세요.</p>
+            {/* 🌟 2번 요청 완벽 반영: 지저분한 회색 텍스트 삭제 */}
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 self-start xl:self-auto relative w-full xl:w-auto">
-            <button onClick={() => setIsMobileFilterOpen(true)} className="md:hidden flex items-center justify-center gap-1.5 h-[34px] px-3 rounded-full bg-white/80 dark:bg-zinc-800/80 border border-zinc-200 dark:border-white/10 text-[12px] font-bold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-white transition-colors shadow-sm">
-              🔍 필터
-            </button>
-
-            <button 
-              onClick={() => setHideUnmatchedEvents(!hideUnmatchedEvents)}
-              className={`hidden sm:flex items-center justify-center h-[34px] rounded-full text-[12px] font-bold transition-all shadow-sm border ${
-                hideUnmatchedEvents 
-                  ? 'bg-indigo-100 dark:bg-indigo-600 border-indigo-300 dark:border-indigo-500 text-indigo-700 dark:text-white shadow-sm dark:shadow-[0_0_12px_rgba(79,70,229,0.5)] px-4 gap-1.5' 
-                  : 'bg-white dark:bg-zinc-800/80 border-zinc-200 dark:border-white/10 text-indigo-500 dark:text-indigo-300 hover:text-indigo-600 dark:hover:text-indigo-200 hover:bg-zinc-50 dark:hover:bg-zinc-700 px-3 gap-1.5'
-              }`}
-              title="비활성 배너 숨기기"
-            >
-              👻 {hideUnmatchedEvents ? '숨겨짐!' : '비활성 배너 숨기기'}
-            </button>
-            <button 
-              onClick={() => setHideUnmatchedEvents(!hideUnmatchedEvents)} 
-              className={`sm:hidden flex items-center justify-center w-[34px] h-[34px] rounded-full text-[14px] transition-all shadow-sm border ${
-                hideUnmatchedEvents 
-                  ? 'bg-indigo-100 dark:bg-indigo-600 border-indigo-300 dark:border-indigo-500 text-indigo-700 dark:text-white shadow-sm dark:shadow-[0_0_12px_rgba(79,70,229,0.5)]' 
-                  : 'bg-white dark:bg-zinc-800/80 border-zinc-200 dark:border-white/10 text-indigo-500 dark:text-indigo-300'
-              }`}
-            >
-              👻
-            </button>
-
-            <div className="relative flex items-center w-full sm:w-64 lg:w-80">
+          {/* 🎯 검색창과 버튼 묶음을 분리하여, 공간 부족 시 버튼들이 통째로 떨어지도록 구조 변경 */}
+          <div className="flex flex-wrap items-center justify-end gap-x-4 gap-y-3 self-start xl:self-auto w-full xl:w-auto">
+            
+            {/* 1. 검색창: 화면 폭이 좁아져도 자신의 크기를 유지하며 상단에 버팀 */}
+            <div className="relative flex items-center w-full sm:w-[180px] lg:w-64 xl:w-80 shrink-0">
               <span className="absolute left-3 text-zinc-400 text-sm">🔍</span>
               <input
                 type="text"
@@ -756,23 +772,52 @@ export default function FuturePage() {
                 className="w-full h-[34px] bg-white/80 dark:bg-zinc-800/80 border border-zinc-200 dark:border-white/10 text-zinc-900 dark:text-white text-xs rounded-full pl-8 pr-8 focus:outline-none focus:border-primary dark:focus:border-primary transition-all shadow-sm placeholder:text-zinc-400 dark:placeholder:text-zinc-500"
               />
               {searchQuery && (
-                <button onClick={() => setSearchQuery("")} className="absolute right-3 text-zinc-400 hover:text-zinc-600 dark:hover:text-white text-xs font-bold">✕</button>
+                <button onClick={() => setSearchQuery("")} className="absolute right-3 text-zinc-400 hover:text-zinc-600 dark:hover:text-white text-xs font-bold transition-colors">✕</button>
               )}
             </div>
 
-            <button onClick={() => setExcludeCollab(!excludeCollab)} className={`hidden sm:flex items-center gap-1.5 h-[34px] px-3 rounded-full text-[12px] font-bold transition-all shadow-sm border ${excludeCollab ? 'bg-red-50 dark:bg-red-500/20 text-red-600 dark:text-red-300 border-red-300 dark:border-red-400/50' : 'bg-white dark:bg-zinc-800/80 border-zinc-200 dark:border-white/10 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-700 hover:text-zinc-800 dark:hover:text-zinc-200'}`}>
-              {excludeCollab ? '🚫 콜라보 제외' : '🤝 콜라보 포함'}
-            </button>
-            <button onClick={() => setShowPostAwake(!showPostAwake)} className="p-1 rounded-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 shrink-0 ml-auto sm:ml-0 shadow-sm transition-colors" aria-label="썸네일 전환">
-              <img src={showPostAwake ? "/icons/post_star.png" : "/icons/pre_star.png"} alt="스위치" className="h-8 w-auto object-contain block drop-shadow-sm" />
-            </button>
+            {/* 🌟 2. 나머지 버튼 묶음: 새로운 div로 묶어 하나의 덩어리로 인식하게 함 */}
+            <div className="flex items-center justify-end gap-2 shrink-0">
+              <button 
+                onClick={() => setHideUnmatchedEvents(!hideUnmatchedEvents)}
+                className={`hidden sm:flex items-center justify-center shrink-0 h-[34px] rounded-full text-[12px] font-bold transition-all shadow-sm border ${
+                  hideUnmatchedEvents 
+                    ? 'bg-indigo-100 dark:bg-indigo-600 border-indigo-300 dark:border-indigo-500 text-indigo-700 dark:text-white shadow-sm dark:shadow-[0_0_12px_rgba(79,70,229,0.5)] px-4 gap-1.5' 
+                    : 'bg-white dark:bg-zinc-800/80 border-zinc-200 dark:border-white/10 text-indigo-500 dark:text-indigo-300 hover:text-indigo-600 dark:hover:text-indigo-200 hover:bg-zinc-50 dark:hover:bg-zinc-700 px-3 gap-1.5'
+                }`}
+                title="비활성 배너 숨기기"
+              >
+                👻 {hideUnmatchedEvents ? '숨겨짐!' : '비활성 배너 숨기기'}
+              </button>
+              
+              <button 
+                onClick={() => setHideUnmatchedEvents(!hideUnmatchedEvents)} 
+                className={`sm:hidden shrink-0 flex items-center justify-center w-[34px] h-[34px] rounded-full text-[14px] transition-all shadow-sm border ${
+                  hideUnmatchedEvents 
+                    ? 'bg-indigo-100 dark:bg-indigo-600 border-indigo-300 dark:border-indigo-500 text-indigo-700 dark:text-white shadow-sm dark:shadow-[0_0_12px_rgba(79,70,229,0.5)]' 
+                    : 'bg-white dark:bg-zinc-800/80 border-zinc-200 dark:border-white/10 text-indigo-500 dark:text-indigo-300'
+                }`}
+              >
+                👻
+              </button>
+
+              <button onClick={() => setExcludeCollab(!excludeCollab)} className={`hidden sm:flex shrink-0 items-center gap-1.5 h-[34px] px-3 rounded-full text-[12px] font-bold transition-all shadow-sm border ${excludeCollab ? 'bg-red-50 dark:bg-red-500/20 text-red-600 dark:text-red-300 border-red-300 dark:border-red-400/50' : 'bg-white dark:bg-zinc-800/80 border-zinc-200 dark:border-white/10 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-700 hover:text-zinc-800 dark:hover:text-zinc-200'}`}>
+                {excludeCollab ? '🚫 콜라보 제외' : '🤝 콜라보 포함'}
+              </button>
+              
+              <button onClick={() => setShowPostAwake(!showPostAwake)} className="p-1 rounded-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 shrink-0 shadow-sm transition-colors" aria-label="썸네일 전환">
+                <img src={showPostAwake ? "/icons/post_star.png" : "/icons/pre_star.png"} alt="스위치" className="h-8 w-auto object-contain block drop-shadow-sm" />
+              </button>
+            </div>
+
           </div>
         </div>
 
         <div className="relative pt-4">
-          <div className="absolute left-1/2 top-0 bottom-0 w-px bg-zinc-200 dark:bg-white/10 -translate-x-1/2 hidden md:block transition-colors" />
+          <div className="absolute left-1/2 top-0 bottom-0 w-px bg-zinc-200 dark:bg-white/10 -translate-x-1/2 hidden xl:block transition-colors" />
           
-          <div className="space-y-12 pb-20">
+          {/* 모바일 타임라인 선 연결을 위해 간격을 넓힙니다 */}
+          <div className="space-y-20 xl:space-y-12 pb-20">
             {visibleEventsWithStatus.map(({ event, isEventMatched, matchedCardIds, daysLeft, isOngoing, isEnded }, index) => {
               
               const eventYear = event.period.start.split('-')[0];
@@ -789,7 +834,7 @@ export default function FuturePage() {
                 <div key={event.id} ref={(el) => { if(showMonthMarker) monthRefs.current[eventYearMonth] = el; }} className="relative animate-fade-in">
                   
                   {showYearMarker && (
-                    <div ref={(el) => { yearRefs.current[eventYear] = el; monthRefs.current[eventYearMonth] = el; }} className="flex justify-center my-10 relative z-30 scroll-mt-24">
+                    <div ref={(el) => { yearRefs.current[eventYear] = el; monthRefs.current[eventYearMonth] = el; }} className="flex justify-center my-10 relative z-30 scroll-mt-24" data-year={eventYear}>
                       <div className="relative flex items-center justify-center">
                         
                         <div className={`absolute right-full top-1/2 -translate-y-1/2 flex items-center transition-all duration-300 ease-in-out origin-right overflow-hidden mr-2 ${openYearMarker === eventYear ? 'max-w-[500px] opacity-100' : 'max-w-0 opacity-0 pointer-events-none'}`}>
@@ -830,31 +875,10 @@ export default function FuturePage() {
                     isEventMatched={isEventMatched}
                     matchedCardIds={matchedCardIds}
                     monthMarker={showMonthMarker ? eventMonth : undefined}
+                    daysLeft={daysLeft}
+                    isOngoing={isOngoing}
+                    isEnded={isEnded}
                   />
-
-                  {/* 🌟 [완성됨] 진행(에메랄드)과 종료(숯검댕이) 완벽 분리! */}
-                  {hideUnmatchedEvents && !isNaN(daysLeft) && (
-                    <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 z-[60] flex flex-col items-center">
-                      {isEnded ? (
-                        <span className="bg-zinc-100 dark:bg-zinc-900 text-zinc-500 dark:text-zinc-600 text-[11px] px-3 py-1 rounded-full border border-zinc-300 dark:border-zinc-800 font-bold whitespace-nowrap shadow-inner transition-colors">
-                          ⬛ 종료됨
-                        </span>
-                      ) : isOngoing ? (
-                        <span className="bg-emerald-50 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 text-[11px] px-3 py-1 rounded-full border border-emerald-300 dark:border-emerald-400/50 font-bold whitespace-nowrap shadow-sm dark:shadow-[0_0_10px_rgba(52,211,153,0.2)] transition-colors">
-                          ✨ 진행 중
-                        </span>
-                      ) : daysLeft === 0 ? (
-                        <span className="bg-red-50 dark:bg-red-500/20 text-red-600 dark:text-red-400 text-[11px] px-3 py-1 rounded-full border border-red-300 dark:border-red-500/30 font-bold whitespace-nowrap shadow-sm dark:shadow-[0_0_10px_rgba(239,68,68,0.2)] animate-pulse transition-colors">
-                          🔥 D-Day (오늘 시작!)
-                        </span>
-                      ) : (
-                        <span className="bg-sky-50 dark:bg-sky-500/20 text-sky-600 dark:text-sky-400 text-[11px] px-3 py-1 rounded-full border border-sky-300 dark:border-sky-500/30 font-bold whitespace-nowrap shadow-md transition-colors">
-                          ⏳ D-{daysLeft}
-                        </span>
-                      )}
-                    </div>
-                  )}
-
                 </div>
               );
             })}
