@@ -63,7 +63,8 @@ export default function CardDetailModal({
   const [characterRank, setCharacterRank] = useState(1);
   const [mounted, setMounted] = useState(false);
   const [activeMobileTab, setActiveMobileTab] = useState("status");
-  const [activeTooltip, setActiveTooltip] = useState<string | null>(null); // 🌟 모바일 툴팁 터치 토글용 상태!
+  const [activeTooltip, setActiveTooltip] = useState<string | null>(null);
+  const [activeImage, setActiveImage] = useState<'pre' | 'post' | null>(null); // 🌟 일러스트 터치 토글용 상태 추가!
 
   useEffect(() => {
     setMounted(true); 
@@ -300,12 +301,24 @@ export default function CardDetailModal({
         <div className={`relative -mx-4 -mt-4 md:-mx-6 md:-mt-6 ${isExpandMode ? 'h-auto' : 'h-48 sm:h-64 md:h-[360px] border-b border-zinc-300 dark:border-zinc-700'} shrink-0 flex overflow-hidden bg-zinc-100 dark:bg-zinc-900 transition-all duration-300 ease-in-out`}>
           {card.hasAwakening ? (
             <>
-              <div className="relative h-full flex-1 hover:flex-[3] max-w-[455px] md:max-w-[604px] transition-all duration-700 ease-in-out overflow-hidden group/pre z-10 hover:z-20">
-                <img src={preIllustration} alt="특훈 전 일러스트" className="absolute left-0 top-0 h-full aspect-[16/9] max-w-none object-cover object-center" />
+              <div 
+                onClick={() => setActiveImage(prev => prev === 'pre' ? null : 'pre')}
+                onMouseLeave={() => setActiveImage(null)}
+                className={`relative h-full transition-all duration-700 ease-in-out overflow-hidden z-10 
+                  ${activeImage === 'pre' ? 'flex-[3] z-20' : activeImage === 'post' ? 'flex-1' : 'flex-1 lg:hover:flex-[3] lg:hover:z-20'}
+                `}
+              >
+                <img src={preIllustration} alt="특훈 전 일러스트" className="absolute left-0 top-0 h-full w-full object-cover object-center max-w-none" />
                 <div className="absolute bottom-2 left-2 md:bottom-4 md:left-5 inline-flex items-center rounded-full border border-white/40 dark:border-white/20 bg-black/40 dark:bg-black/60 px-2 py-0.5 md:px-2.5 md:py-1 text-[9px] md:text-[10px] font-semibold text-white dark:text-zinc-100 backdrop-blur-md pointer-events-none tracking-wider shadow-md">특훈 전</div>
               </div>
-              <div className="relative h-full flex-1 hover:flex-[3] max-w-[455px] md:max-w-[604px] transition-all duration-700 ease-in-out overflow-hidden group/post z-10 hover:z-20 border-l border-white/30 dark:border-white/10">
-                <img src={postIllustration} alt="특훈 후 일러스트" className="absolute right-0 top-0 h-full aspect-[16/9] max-w-none object-cover object-center" />
+              <div 
+                onClick={() => setActiveImage(prev => prev === 'post' ? null : 'post')}
+                onMouseLeave={() => setActiveImage(null)}
+                className={`relative h-full transition-all duration-700 ease-in-out overflow-hidden z-10 border-l border-white/30 dark:border-white/10
+                  ${activeImage === 'post' ? 'flex-[3] z-20' : activeImage === 'pre' ? 'flex-1' : 'flex-1 lg:hover:flex-[3] lg:hover:z-20'}
+                `}
+              >
+                <img src={postIllustration} alt="특훈 후 일러스트" className="absolute right-0 top-0 h-full w-full object-cover object-center max-w-none" />
                 <div className="absolute bottom-2 right-2 md:bottom-4 md:right-5 inline-flex items-center rounded-full border border-cyan-300/40 dark:border-cyan-400/20 bg-black/40 dark:bg-black/60 px-2 py-0.5 md:px-2.5 md:py-1 text-[9px] md:text-[10px] font-semibold text-cyan-200 dark:text-cyan-300 backdrop-blur-md pointer-events-none tracking-wider shadow-md">특훈 후</div>
               </div>
             </>
