@@ -30,16 +30,19 @@ const matchAttribute = (cardAttr: string, targetAttr: string) => {
   return false;
 };
 
-// 유닛 매칭 헬퍼
+// 유닛 매칭 헬퍼 (🌟 최신형 철벽 방어 판독기 적용 완료)
 const matchUnit = (cardUnit: string, targetUnit: string) => {
   const c = (cardUnit || "").toLowerCase().replace(/[^a-z0-9가-힣]/g, "");
   const t = (targetUnit || "").toLowerCase().replace(/[^a-z0-9가-힣]/g, "");
   if (!c || !t) return false;
+  
   if (t.includes("leo") && (c.includes("leo") || c.includes("레오니") || c.includes("ln"))) return true;
-  if (t.includes("more") && (c.includes("more") || c.includes("모모점") || c.includes("mmj"))) return true;
-  if (t.includes("vivid") && (c.includes("vivid") || c.includes("비배스") || c.includes("vbs"))) return true;
-  if (t.includes("wonder") && (c.includes("wonder") || c.includes("원더쇼") || c.includes("wxs"))) return true;
-  if (t.includes("25") && (c.includes("25") || c.includes("니고") || c.includes("niigo") || c.includes("n25"))) return true;
+  if (t.includes("mmj") && (c.includes("more") || c.includes("모모점") || c.includes("mmj"))) return true;
+  if (t.includes("vbs") && (c.includes("vivid") || c.includes("비배스") || c.includes("vbs"))) return true;
+  if (t.includes("wds") && (c.includes("wonder") || c.includes("원더쇼") || c.includes("wxs"))) return true;
+  if (t.includes("niigo") && (c.includes("25") || c.includes("니고") || c.includes("niigo") || c.includes("n25"))) return true;
+  if (t.includes("vs") && (c.includes("vs") || c.includes("virtual") || c.includes("버싱"))) return true;
+  
   return c.includes(t) || t.includes(c);
 };
 
@@ -56,10 +59,20 @@ export const calculateCardEventBonus = (
   const mr = isOwned ? (userState?.masterRank || 0) : 0;
   const skillLv = isOwned ? (userState?.skillLevel || 1) : 1;
 
-  // 카드 기본 매칭 정보 파악
-  const isCharMatch = 
-    (event.bonus.characters && event.bonus.characters.includes(card.character)) ||
-    (event.bonus.unit && matchUnit(card.unit || "", event.bonus.unit));
+  // 카드 기본 매칭 정보 파악 (🌟 영어/한글/ID 철벽 방어 적용)
+  let isCharMatch = false;
+  if (event.bonus.characters) {
+    isCharMatch = event.bonus.characters.some(targetChar => {
+      const t = String(targetChar).toLowerCase();
+      const cName = (card.character || "").toLowerCase();
+      const cId = (card.id || "").toLowerCase(); // 영문 이름 매칭용 ID (ex: ng_Kanade_001)
+      return cName.includes(t) || t.includes(cName) || cId.includes(t);
+    });
+  }
+  
+  if (!isCharMatch && event.bonus.unit) {
+    isCharMatch = matchUnit(card.unit || "", event.bonus.unit);
+  }
   
   const isAttrMatch = matchAttribute(card.attribute || "", event.bonus.attribute);
   const isPickup = event.gacha.featuredCardIds.includes(card.id);

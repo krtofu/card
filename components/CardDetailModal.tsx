@@ -62,10 +62,16 @@ export default function CardDetailModal({
   const [simMasterRank, setSimMasterRank] = useState(0);
   const [characterRank, setCharacterRank] = useState(1);
   const [mounted, setMounted] = useState(false);
+  const [activeMobileTab, setActiveMobileTab] = useState("status");
+  const [activeTooltip, setActiveTooltip] = useState<string | null>(null); // 🌟 모바일 툴팁 터치 토글용 상태!
 
   useEffect(() => {
     setMounted(true); 
     if (card) {
+      // 🌟 사이트의 근본은 체크리스트! 모달창이 열릴 때마다 무조건 '상태 탭'으로 리셋합니다.
+      setActiveMobileTab("status");
+      setIsExpandMode(false); // (덤) 일러스트 넓게 보기도 원래대로 접어줍니다.
+
       const saved = localStorage.getItem("sekard_character_ranks");
       if (saved) {
         try {
@@ -199,6 +205,67 @@ export default function CardDetailModal({
   const skillInfo = getSkillInfo(card.skillType || ""); 
   const characterIconPath = getCharacterIcon(card.character || "", card.unit || ""); 
 
+  // 🌟 [추가] 모바일/PC에서 위치가 달라질 '카드 이름 + 뱃지' 헤더를 미리 하나의 덩어리로 묶어둡니다!
+  const ModalHeader = (
+    <>
+      <div className="flex flex-wrap items-center gap-2.5">
+        {getUnitLogo(card.unit || "") && (
+          <img src={getUnitLogo(card.unit || "")} alt={card.unit} className="h-[28px] w-auto object-contain drop-shadow-sm dark:drop-shadow-md" />
+        )}
+        <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5 transition-colors">
+          {isReleased && <span className="text-[16px] drop-shadow-sm" title="한국 서버 출시됨">🇰🇷</span>}
+          {card.cardName}
+        </h2>
+        <span className="text-xl font-bold text-zinc-900 dark:text-zinc-100 transition-colors">{card.character}</span>
+      </div>
+      
+      <div className="flex flex-wrap items-center justify-end gap-1.5 shrink-0">
+        {skillInfo.src ? (
+          <div 
+            className="relative group flex items-center justify-center cursor-help"
+            onClick={() => setActiveTooltip(prev => prev === 'skill' ? null : 'skill')}
+            onMouseLeave={() => setActiveTooltip(null)} // PC에서 마우스를 떼면 초기화
+          >
+            <img src={skillInfo.src} alt={skillInfo.label} className="w-[26px] h-[26px] object-contain drop-shadow-sm dark:drop-shadow-md shrink-0" />
+            {/* 🌟 모바일은 activeTooltip 상태로 켜지고, PC(lg)에서는 호버로 켜집니다! */}
+            <div className={`pointer-events-none absolute bottom-full mb-3 left-1/2 -translate-x-1/2 transition-all duration-200 z-50 ${activeTooltip === 'skill' ? 'opacity-100' : 'opacity-0 lg:group-hover:opacity-100'}`}>
+              <div className="relative flex flex-col items-center">
+                <div className="relative z-10 whitespace-nowrap rounded-md border border-zinc-200 dark:border-zinc-600 bg-white dark:bg-zinc-950 px-2.5 py-1.5 text-[11px] font-bold text-zinc-800 dark:text-zinc-200 shadow-xl transition-colors">{skillInfo.label}</div>
+                <div className="absolute -bottom-[4px] z-20 h-2 w-2 rotate-45 border-b border-r border-zinc-200 dark:border-zinc-600 bg-white dark:bg-zinc-950 transition-colors"></div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          skillInfo.label && (
+            <span className="shrink-0 inline-flex items-center px-2.5 py-1 text-[11px] font-bold rounded-full border border-purple-300 dark:border-purple-500/20 bg-purple-100 dark:bg-purple-500/10 text-purple-600 dark:text-purple-300 tracking-wide transition-colors">
+              {skillInfo.label}
+            </span>
+          )
+        )}
+        {attrInfo.src ? (
+          <div 
+            className="relative group flex items-center justify-center cursor-help ml-0.5"
+            onClick={() => setActiveTooltip(prev => prev === 'attr' ? null : 'attr')}
+            onMouseLeave={() => setActiveTooltip(null)}
+          >
+            <img src={attrInfo.src} alt={attrInfo.label} className="w-[26px] h-[26px] object-contain drop-shadow-sm dark:drop-shadow-md shrink-0" />
+            <div className={`pointer-events-none absolute bottom-full mb-3 left-1/2 -translate-x-1/2 transition-all duration-200 z-50 ${activeTooltip === 'attr' ? 'opacity-100' : 'opacity-0 lg:group-hover:opacity-100'}`}>
+              <div className="relative flex flex-col items-center">
+                <div className="relative z-10 whitespace-nowrap rounded-md border border-zinc-200 dark:border-zinc-600 bg-white dark:bg-zinc-950 px-2.5 py-1.5 text-[11px] font-bold text-zinc-800 dark:text-zinc-200 shadow-xl transition-colors">{attrInfo.label}</div>
+                <div className="absolute -bottom-[4px] z-20 h-2 w-2 rotate-45 border-b border-r border-zinc-200 dark:border-zinc-600 bg-white dark:bg-zinc-950 transition-colors"></div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <span className="shrink-0 inline-flex items-center px-2.5 py-1 text-[11px] font-bold rounded-full border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800/50 text-zinc-600 dark:text-zinc-300 tracking-wide ml-0.5 transition-colors">{attrInfo.label}</span>
+        )}
+        <span className={`shrink-0 inline-flex items-center px-3 py-1 text-xs font-bold rounded-full border tracking-wide transition-all ml-0.5 ${currentGachaStyle}`}>
+          {card.gachaType}
+        </span>
+      </div>
+    </>
+  );
+
   return createPortal(
     <div 
       className="fixed inset-0 flex items-center justify-center p-4 bg-white/70 dark:bg-black/80 backdrop-blur-md transition-colors duration-300"
@@ -209,8 +276,6 @@ export default function CardDetailModal({
       {/* 🌟 2. 최상단 CSS 마스터 컨트롤: 에메랄드 감염 원인 완벽 제거! */}
       <div 
         style={{
-          // 🚨 원인 제거: "--color-primary": ... 이 줄을 흔적도 없이 지웠습니다! 
-          // (전역 providers.tsx에서 이미 내려주고 있으므로 안 써도 100% 작동합니다)
           "--mix-bg": "color-mix(in srgb, var(--color-primary) 15%, transparent)",
           "--mix-border": "var(--color-primary)",
           "--mix-text-light": "color-mix(in srgb, var(--color-primary) 40%, black)",
@@ -220,7 +285,8 @@ export default function CardDetailModal({
           "--themed-modal-bg-light": themeColor === "default" ? "white" : "color-mix(in srgb, var(--color-primary) 12%, white)",
           "--themed-modal-bg-dark": themeColor === "default" ? "#09090b" : "color-mix(in srgb, var(--color-primary) 18%, #09090b)",
         } as React.CSSProperties}
-        className="relative w-full max-w-6xl max-h-[95vh] overflow-y-auto rounded-3xl border border-zinc-300 dark:border-zinc-700 bg-[var(--themed-modal-bg-light)] dark:bg-[var(--themed-modal-bg-dark)] p-6 shadow-2xl transition-colors duration-500 flex flex-col custom-scrollbar"
+        // 🌟 모바일에서 뒷배경 끌림 방지를 위해 max-h-[90dvh] 설정 및 여백 최적화(p-4 md:p-6)
+        className="relative w-full max-w-6xl max-h-[90dvh] overflow-y-auto rounded-2xl md:rounded-3xl border border-zinc-300 dark:border-zinc-700 bg-[var(--themed-modal-bg-light)] dark:bg-[var(--themed-modal-bg-dark)] p-4 md:p-6 shadow-2xl transition-colors duration-500 flex flex-col custom-scrollbar"
       >
 
         <button 
@@ -230,17 +296,17 @@ export default function CardDetailModal({
           ✕
         </button>
 
-        {/* 🌌 상단 배너 구역 */}
-        <div className={`relative -mx-6 -mt-6 ${isExpandMode ? 'h-auto' : 'h-64 md:h-[360px] border-b border-zinc-300 dark:border-zinc-700'} shrink-0 flex overflow-hidden bg-zinc-100 dark:bg-zinc-900 transition-all duration-300 ease-in-out`}>
+        {/* 🌌 상단 일러스트 구역 (모바일에서 높이 h-48로 다이어트) */}
+        <div className={`relative -mx-4 -mt-4 md:-mx-6 md:-mt-6 ${isExpandMode ? 'h-auto' : 'h-48 sm:h-64 md:h-[360px] border-b border-zinc-300 dark:border-zinc-700'} shrink-0 flex overflow-hidden bg-zinc-100 dark:bg-zinc-900 transition-all duration-300 ease-in-out`}>
           {card.hasAwakening ? (
             <>
               <div className="relative h-full flex-1 hover:flex-[3] max-w-[455px] md:max-w-[604px] transition-all duration-700 ease-in-out overflow-hidden group/pre z-10 hover:z-20">
                 <img src={preIllustration} alt="특훈 전 일러스트" className="absolute left-0 top-0 h-full aspect-[16/9] max-w-none object-cover object-center" />
-                <div className="absolute bottom-4 left-5 inline-flex items-center rounded-full border border-white/40 dark:border-white/20 bg-black/40 dark:bg-black/60 px-2.5 py-1 text-[10px] font-semibold text-white dark:text-zinc-100 backdrop-blur-md pointer-events-none tracking-wider shadow-md">특훈 전</div>
+                <div className="absolute bottom-2 left-2 md:bottom-4 md:left-5 inline-flex items-center rounded-full border border-white/40 dark:border-white/20 bg-black/40 dark:bg-black/60 px-2 py-0.5 md:px-2.5 md:py-1 text-[9px] md:text-[10px] font-semibold text-white dark:text-zinc-100 backdrop-blur-md pointer-events-none tracking-wider shadow-md">특훈 전</div>
               </div>
               <div className="relative h-full flex-1 hover:flex-[3] max-w-[455px] md:max-w-[604px] transition-all duration-700 ease-in-out overflow-hidden group/post z-10 hover:z-20 border-l border-white/30 dark:border-white/10">
                 <img src={postIllustration} alt="특훈 후 일러스트" className="absolute right-0 top-0 h-full aspect-[16/9] max-w-none object-cover object-center" />
-                <div className="absolute bottom-4 right-5 inline-flex items-center rounded-full border border-cyan-300/40 dark:border-cyan-400/20 bg-black/40 dark:bg-black/60 px-2.5 py-1 text-[10px] font-semibold text-cyan-200 dark:text-cyan-300 backdrop-blur-md pointer-events-none tracking-wider shadow-md">특훈 후</div>
+                <div className="absolute bottom-2 right-2 md:bottom-4 md:right-5 inline-flex items-center rounded-full border border-cyan-300/40 dark:border-cyan-400/20 bg-black/40 dark:bg-black/60 px-2 py-0.5 md:px-2.5 md:py-1 text-[9px] md:text-[10px] font-semibold text-cyan-200 dark:text-cyan-300 backdrop-blur-md pointer-events-none tracking-wider shadow-md">특훈 후</div>
               </div>
             </>
           ) : (
@@ -263,278 +329,271 @@ export default function CardDetailModal({
           )}
         </div>
 
-        {/* 📝 하단부 상세정보 구역 (말풍선이 일러스트 위로 올라오도록 레이어 격상!) */}
-        <div className="relative z-30 flex flex-col md:flex-row gap-8 pt-2 shrink-0 mt-6">
-          <div className="flex-[3] flex flex-col gap-6">
-            <div className="flex items-start justify-between gap-4 w-full mt-1 border-b border-zinc-300 dark:border-zinc-700 pb-5 transition-colors">
+        {/* 📝 하단부 상세정보 구역 */}
+        <div className="relative z-30 flex flex-col gap-4 lg:gap-6 mt-4 lg:mt-6 shrink-0">
+          
+          {/* 📱 1. 모바일 전용 헤더 (PC 화면에서는 숨겨짐) */}
+          <div className="flex lg:hidden flex-col sm:flex-row sm:items-start justify-between gap-4 w-full border-b border-zinc-300 dark:border-zinc-700 pb-4 transition-colors">
+            {ModalHeader}
+          </div>
+
+          {/* 📱 2. 모바일 전용 책갈피(폴더) 탭 (PC 화면에서는 숨겨짐) */}
+          <div className="flex lg:hidden overflow-x-auto custom-scrollbar pt-3 px-3 border-b border-zinc-300 dark:border-zinc-700 mt-2 gap-1.5">
+            {[
+              { id: "status", label: "☑ 카드 상태" },
+              { id: "costume", label: "⟡ 관련 의상" },
+              { id: "info", label: "+ 관련 뽑기 & 이벤트 & 악곡" },
+            ].map(tab => {
+              const isActive = activeMobileTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveMobileTab(tab.id)}
+                  style={isActive && themeColor !== "default" ? {
+                    "--mix-border": "var(--color-primary)",
+                    "--mix-text-light": "color-mix(in srgb, var(--color-primary) 40%, black)",
+                    "--mix-text-dark": "color-mix(in srgb, var(--color-primary) 40%, white)",
+                  } as React.CSSProperties : {}}
+                  className={`shrink-0 px-4 py-2.5 text-[13px] font-bold rounded-t-xl transition-colors border-t border-l border-r -mb-[1px] ${
+                    isActive
+                      ? themeColor === "default" 
+                        ? "bg-[var(--themed-modal-bg-light)] dark:bg-[var(--themed-modal-bg-dark)] border-zinc-300 dark:border-zinc-700 border-b-transparent text-zinc-900 dark:text-white z-10"
+                        : "bg-[var(--themed-modal-bg-light)] dark:bg-[var(--themed-modal-bg-dark)] border-[var(--mix-border)] border-b-transparent text-[var(--mix-text-light)] dark:text-[var(--mix-text-dark)] z-10"
+                      : "bg-zinc-100/50 dark:bg-zinc-900/30 border-transparent border-b-zinc-300 dark:border-b-zinc-700 text-zinc-400 dark:text-zinc-500 hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50"
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              )
+            })}
+          </div>
+
+          {/* 🌟 3. 본문 2단 분할 영역 (PC에서는 오리지널 삼분할 레이아웃으로 복귀!) */}
+          <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 mt-2 lg:mt-0">
+            
+            {/* 👉 좌측 영역: (PC 헤더) + 뽑기 / 이벤트 / 악곡 (모바일에서는 'info' 탭일 때 3개가 동시에 노출됨!) */}
+            <div className={`flex-[3] flex-col gap-6 md:gap-8 ${activeMobileTab === 'info' ? 'flex' : 'hidden'} lg:flex`}>
               
-              <div className="flex flex-wrap items-center gap-2.5">
-                {getUnitLogo(card.unit || "") && (
-                  <img src={getUnitLogo(card.unit || "")} alt={card.unit} className="h-[28px] w-auto object-contain drop-shadow-sm dark:drop-shadow-md" />
-                )}
-                
-                <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5 transition-colors">
-                  {isReleased && <span className="text-[16px] drop-shadow-sm" title="한국 서버 출시됨">🇰🇷</span>}
-                  {card.cardName}
-                </h2>
-                <span className="text-xl font-bold text-zinc-900 dark:text-zinc-100 transition-colors">{card.character}</span>
+              {/* 💻 PC 전용 헤더 (모바일에서는 숨겨지고 오직 좌측 영역 최상단에만 등장) */}
+              <div className="hidden lg:flex flex-col sm:flex-row sm:items-start justify-between gap-4 w-full border-b border-zinc-300 dark:border-zinc-700 pb-5 transition-colors">
+                {ModalHeader}
               </div>
-              
-              <div className="flex flex-wrap items-center justify-end gap-1.5 shrink-0">
-                {skillInfo.src ? (
-                  <div className="relative group flex items-center justify-center cursor-help">
-                    <img src={skillInfo.src} alt={skillInfo.label} className="w-[26px] h-[26px] object-contain drop-shadow-sm dark:drop-shadow-md shrink-0" />
-                    <div className="pointer-events-none absolute bottom-full mb-3 left-1/2 -translate-x-1/2 opacity-0 transition-all duration-200 group-hover:opacity-100 z-50">
-                      <div className="relative flex flex-col items-center">
-                        <div className="relative z-10 whitespace-nowrap rounded-md border border-zinc-200 dark:border-zinc-600 bg-white dark:bg-zinc-950 px-2.5 py-1.5 text-[11px] font-bold text-zinc-800 dark:text-zinc-200 shadow-xl transition-colors">{skillInfo.label}</div>
-                        <div className="absolute -bottom-[4px] z-20 h-2 w-2 rotate-45 border-b border-r border-zinc-200 dark:border-zinc-600 bg-white dark:bg-zinc-950 transition-colors"></div>
+
+              {/* 🎰 관련 뽑기 */}
+              <div className="flex gap-3.5 pt-2 lg:pt-0">
+                <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 shrink-0 overflow-hidden flex items-center justify-center transition-colors">
+                  <img src={characterIconPath} alt="Character Icon" className="w-full h-full object-contain" />
+                </div>
+                <div className="flex-1 flex flex-col gap-2">
+                  <span className="font-bold text-zinc-800 dark:text-zinc-200 text-sm mt-0.5 transition-colors">관련 뽑기</span>
+                  {hasGacha ? (
+                    <>
+                      <div className="w-full max-w-[480px] bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 rounded-xl overflow-hidden flex items-center justify-center shadow-sm transition-colors">
+                        {card.gachaBannerPath ? (
+                          <img src={card.gachaBannerPath} alt="Gacha Banner" className="w-full h-auto block" />
+                        ) : (
+                          <div className="w-full h-24 sm:h-28 flex items-center justify-center">
+                            <span className="text-zinc-400 dark:text-zinc-600 text-xs transition-colors">No Banner</span>
+                          </div>
+                        )}
                       </div>
+                      <span className="text-xs text-zinc-500 dark:text-zinc-400 font-medium transition-colors">({card.gachaPoolName})</span>
+                    </>
+                  ) : (
+                    <div className="w-full max-w-[480px] h-24 sm:h-28 bg-zinc-50 dark:bg-zinc-900/30 border border-zinc-200 dark:border-white/10 border-dashed rounded-xl flex flex-col items-center justify-center gap-2 transition-colors">
+                      <span className="text-xl opacity-50">🎰</span>
+                      <span className="text-[11px] text-zinc-500 font-medium tracking-wide">관련 뽑기 없음</span>
                     </div>
+                  )}
+                </div>
+              </div>
+
+              {/* 🎪 관련 이벤트 */}
+              <div className="flex gap-3.5">
+                <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 shrink-0 overflow-hidden flex items-center justify-center transition-colors">
+                  <span className="text-zinc-400 dark:text-zinc-500 text-lg">🎪</span>
+                </div>
+                <div className="flex-1 flex flex-col gap-2">
+                  <span className="font-bold text-zinc-800 dark:text-zinc-200 text-sm mt-0.5 transition-colors">관련 이벤트</span>
+                  {hasEvent ? (
+                    <>
+                      <div className="w-full max-w-[480px] bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 rounded-xl overflow-hidden flex items-center justify-center shadow-sm transition-colors">
+                        {card.eventBannerPath ? (
+                          <img src={card.eventBannerPath} alt="Event Banner" className="w-full h-auto block" />
+                        ) : (
+                          <div className="w-full h-24 sm:h-28 flex items-center justify-center">
+                            <span className="text-zinc-400 dark:text-zinc-600 text-xs transition-colors">No Banner</span>
+                          </div>
+                        )}
+                      </div>
+                      <span className="text-xs text-zinc-500 dark:text-zinc-400 font-medium transition-colors">{card.eventName}</span>
+                    </>
+                  ) : (
+                    <div className="w-full max-w-[480px] h-24 sm:h-28 bg-zinc-50 dark:bg-zinc-900/30 border border-zinc-200 dark:border-white/10 border-dashed rounded-xl flex flex-col items-center justify-center gap-2 transition-colors">
+                      <span className="text-xl opacity-50">🛸</span>
+                      <span className="text-[11px] text-zinc-500 font-medium tracking-wide">관련 이벤트 없음</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* 🎵 관련 악곡 */}
+              <div className="flex gap-3.5">
+                <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 shrink-0 overflow-hidden flex items-center justify-center transition-colors">
+                  <span className="text-zinc-400 dark:text-zinc-500 text-lg">🎵</span>
+                </div>
+                <div className="flex-1 flex flex-col gap-2">
+                  <span className="font-bold text-zinc-800 dark:text-zinc-200 text-sm mt-0.5 transition-colors">관련 악곡</span>
+                  {hasSong ? (
+                    <div className="flex flex-wrap gap-4">
+                      {songJackets.map((jacket, idx) => (
+                        <div key={idx} className="flex flex-col gap-2 items-center">
+                          <div className="w-28 md:w-36 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 rounded-xl overflow-hidden shadow-sm shrink-0 transition-colors">
+                            <img src={jacket} alt="Song Jacket" className="w-full h-auto block" />
+                          </div>
+                          <span className="text-[11px] sm:text-xs text-zinc-600 dark:text-zinc-400 font-medium max-w-[112px] sm:max-w-[144px] text-center truncate transition-colors">
+                            {songNames[idx] || ""}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="w-28 md:w-36 h-28 md:h-36 bg-zinc-50 dark:bg-zinc-900/30 border border-zinc-200 dark:border-white/10 border-dashed rounded-xl flex flex-col items-center justify-center gap-2 shrink-0 transition-colors">
+                      <span className="text-2xl opacity-50">💿</span>
+                      <span className="text-[11px] text-zinc-500 font-medium tracking-wide">관련 악곡 없음</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* 중앙 세로 구분선 (PC 전용) */}
+            <div className="hidden lg:block w-px bg-zinc-300 dark:bg-zinc-700 mx-2 self-stretch rounded-full transition-colors" />
+
+            {/* 👉 우측 영역: 카드 상태 / 관련 의상 */}
+            <div className={`flex-[2] w-full lg:min-w-[320px] lg:max-w-[380px] shrink-0 flex-col gap-4 md:gap-6 self-start ${['status', 'costume'].includes(activeMobileTab) ? 'flex' : 'hidden'} lg:flex`}>
+              
+              {/* 📊 카드 상태 */}
+              <div className={`${activeMobileTab === 'status' ? 'flex' : 'hidden'} lg:flex bg-zinc-50 dark:bg-zinc-950/50 border border-zinc-300 dark:border-zinc-700 rounded-2xl p-4 flex-col justify-between gap-4 transition-colors`}>
+                <div className="flex items-start justify-between gap-3 pb-2 border-b border-zinc-300 dark:border-zinc-700 transition-colors">
+                  <div className="min-w-0 flex-1 flex items-baseline">
+                    <p className="text-[15px] font-bold text-zinc-800 dark:text-zinc-100 tracking-wide whitespace-nowrap transition-colors">+ 카드 상태</p>
                   </div>
-                ) : (
-                  skillInfo.label && (
-                    <span className="shrink-0 inline-flex items-center px-2.5 py-1 text-[11px] font-bold rounded-full border border-purple-300 dark:border-purple-500/20 bg-purple-100 dark:bg-purple-500/10 text-purple-600 dark:text-purple-300 tracking-wide transition-colors">
-                      {skillInfo.label}
+                  
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <button
+                      disabled={userState.isOwned}
+                      onClick={() => onUpdateState(card.id, { isTarget: !userState.isTarget })}
+                      className={`shrink-0 inline-flex items-center px-2.5 py-1 rounded-md text-[11px] sm:text-xs font-bold border tracking-tight transition-all shadow-sm ${
+                        userState.isOwned
+                          ? "opacity-50 cursor-not-allowed bg-transparent text-zinc-400 dark:text-zinc-600 border-zinc-200 dark:border-zinc-800"
+                          : userState.isTarget
+                            ? "bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-300 border-amber-300 dark:border-amber-400/50 shadow-[0_0_10px_rgba(245,158,11,0.15)] active:scale-95"
+                            : "bg-transparent text-zinc-500 dark:text-zinc-400 border-zinc-300 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 hover:text-zinc-800 dark:hover:text-zinc-200 active:scale-95"
+                      }`}
+                    >
+                      {userState.isTarget && !userState.isOwned ? "⭐ 목표 중" : "☆ 목표 설정"}
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        const nextOwned = !userState.isOwned;
+                        onUpdateState(card.id, { 
+                          isOwned: nextOwned,
+                          ...(nextOwned ? { isTarget: false } : {}) 
+                        });
+                      }}
+                      style={userState.isOwned ? {
+                        "--own-hex": "#10b981", 
+                        "--mix-bg": "color-mix(in srgb, var(--own-hex) 15%, transparent)",
+                        "--mix-border": "var(--own-hex)",
+                        "--mix-text-light": "color-mix(in srgb, var(--own-hex) 40%, black)",
+                        "--mix-text-dark": "color-mix(in srgb, var(--own-hex) 40%, white)",
+                        "--mix-glow": "color-mix(in srgb, var(--own-hex) 30%, transparent)",
+                      } as React.CSSProperties : {}}
+                      className={`shrink-0 inline-flex items-center px-2.5 py-1 rounded-md text-[11px] sm:text-xs font-bold border tracking-tight transition-all shadow-sm active:scale-95 ${
+                        userState.isOwned
+                          ? "bg-emerald-50 dark:bg-emerald-950 border-emerald-500 dark:border-emerald-400 text-emerald-600 dark:text-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.2)] dark:shadow-[0_0_8px_rgba(52,211,153,0.15)]"
+                          : "bg-transparent text-zinc-500 dark:text-zinc-400 border-zinc-300 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 hover:text-zinc-800 dark:hover:text-zinc-200"
+                      }`}
+                    >
+                      {userState.isOwned ? "✓ 보유 중" : "❌ 미보유"}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-zinc-500 dark:text-zinc-400 font-medium transition-colors">마스터 랭크</span>
+                    <span className="font-bold text-[var(--mix-text-light)] dark:text-[var(--mix-text-dark)] transition-colors">
+                      {userState.isOwned ? `${userState.masterRank || 0} 마랭` : `시뮬레이션: ${simMasterRank} 마랭`}
                     </span>
-                  )
-                )}
-
-                {attrInfo.src ? (
-                  <div className="relative group flex items-center justify-center cursor-help ml-0.5">
-                    <img src={attrInfo.src} alt={attrInfo.label} className="w-[26px] h-[26px] object-contain drop-shadow-sm dark:drop-shadow-md shrink-0" />
-                    <div className="pointer-events-none absolute bottom-full mb-3 left-1/2 -translate-x-1/2 opacity-0 transition-all duration-200 group-hover:opacity-100 z-50">
-                      <div className="relative flex flex-col items-center">
-                        <div className="relative z-10 whitespace-nowrap rounded-md border border-zinc-200 dark:border-zinc-600 bg-white dark:bg-zinc-950 px-2.5 py-1.5 text-[11px] font-bold text-zinc-800 dark:text-zinc-200 shadow-xl transition-colors">{attrInfo.label}</div>
-                        <div className="absolute -bottom-[4px] z-20 h-2 w-2 rotate-45 border-b border-r border-zinc-200 dark:border-zinc-600 bg-white dark:bg-zinc-950 transition-colors"></div>
-                      </div>
-                    </div>
                   </div>
-                ) : (
-                  <span className="shrink-0 inline-flex items-center px-2.5 py-1 text-[11px] font-bold rounded-full border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800/50 text-zinc-600 dark:text-zinc-300 tracking-wide ml-0.5 transition-colors">{attrInfo.label}</span>
-                )}
-
-                <span className={`shrink-0 inline-flex items-center px-3 py-1 text-xs font-bold rounded-full border tracking-wide transition-all ml-0.5 ${currentGachaStyle}`}>
-                  {card.gachaType}
-                </span>
-              </div>
-            </div>
-
-            {/* 🎲 1. 관련 뽑기 */}
-            <div className="flex gap-3.5">
-              <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 shrink-0 overflow-hidden flex items-center justify-center transition-colors">
-                <img src={characterIconPath} alt="Character Icon" className="w-full h-full object-contain" />
-              </div>
-              <div className="flex-1 flex flex-col gap-2">
-                <span className="font-bold text-zinc-800 dark:text-zinc-200 text-sm mt-0.5 transition-colors">관련 뽑기</span>
-                {hasGacha ? (
-                  <>
-                    <div className="w-full max-w-[480px] bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 rounded-xl overflow-hidden flex items-center justify-center shadow-sm transition-colors">
-                      {card.gachaBannerPath ? (
-                        <img src={card.gachaBannerPath} alt="Gacha Banner" className="w-full h-auto block" />
-                      ) : (
-                        <div className="w-full h-24 sm:h-28 flex items-center justify-center">
-                          <span className="text-zinc-400 dark:text-zinc-600 text-xs transition-colors">No Banner</span>
-                        </div>
-                      )}
-                    </div>
-                    <span className="text-xs text-zinc-500 dark:text-zinc-400 font-medium transition-colors">({card.gachaPoolName})</span>
-                  </>
-                ) : (
-                  <div className="w-full max-w-[480px] h-24 sm:h-28 bg-zinc-50 dark:bg-zinc-900/30 border border-zinc-200 dark:border-white/10 border-dashed rounded-xl flex flex-col items-center justify-center gap-2 transition-colors">
-                    <span className="text-xl opacity-50">🎰</span>
-                    <span className="text-[11px] text-zinc-500 font-medium tracking-wide">관련 뽑기 없음</span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* 🎪 2. 관련 이벤트 */}
-            <div className="flex gap-3.5 pt-2">
-              <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 shrink-0 overflow-hidden flex items-center justify-center transition-colors">
-                <span className="text-zinc-400 dark:text-zinc-500 text-lg">🎪</span>
-              </div>
-              <div className="flex-1 flex flex-col gap-2">
-                <span className="font-bold text-zinc-800 dark:text-zinc-200 text-sm mt-0.5 transition-colors">관련 이벤트</span>
-                {hasEvent ? (
-                  <>
-                    <div className="w-full max-w-[480px] bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 rounded-xl overflow-hidden flex items-center justify-center shadow-sm transition-colors">
-                      {card.eventBannerPath ? (
-                        <img src={card.eventBannerPath} alt="Event Banner" className="w-full h-auto block" />
-                      ) : (
-                        <div className="w-full h-24 sm:h-28 flex items-center justify-center">
-                          <span className="text-zinc-400 dark:text-zinc-600 text-xs transition-colors">No Banner</span>
-                        </div>
-                      )}
-                    </div>
-                    <span className="text-xs text-zinc-500 dark:text-zinc-400 font-medium transition-colors">{card.eventName}</span>
-                  </>
-                ) : (
-                  <div className="w-full max-w-[480px] h-24 sm:h-28 bg-zinc-50 dark:bg-zinc-900/30 border border-zinc-200 dark:border-white/10 border-dashed rounded-xl flex flex-col items-center justify-center gap-2 transition-colors">
-                    <span className="text-xl opacity-50">🛸</span>
-                    <span className="text-[11px] text-zinc-500 font-medium tracking-wide">관련 이벤트 없음</span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* 💿 3. 관련 악곡 */}
-            <div className="flex gap-3.5 pt-2">
-              <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 shrink-0 overflow-hidden flex items-center justify-center transition-colors">
-                <span className="text-zinc-400 dark:text-zinc-500 text-lg">🎵</span>
-              </div>
-              <div className="flex-1 flex flex-col gap-2">
-                <span className="font-bold text-zinc-800 dark:text-zinc-200 text-sm mt-0.5 transition-colors">관련 악곡</span>
-                {hasSong ? (
-                  <div className="flex flex-wrap gap-4">
-                    {songJackets.map((jacket, idx) => (
-                      <div key={idx} className="flex flex-col gap-2 items-center">
-                        <div className="w-28 sm:w-36 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 rounded-xl overflow-hidden shadow-sm shrink-0 transition-colors">
-                          <img src={jacket} alt="Song Jacket" className="w-full h-auto block" />
-                        </div>
-                        <span className="text-[11px] sm:text-xs text-zinc-600 dark:text-zinc-400 font-medium max-w-[112px] sm:max-w-[144px] text-center truncate transition-colors">
-                          {songNames[idx] || ""}
-                        </span>
-                      </div>
+                  <div className="flex gap-1">
+                    {[0, 1, 2, 3, 4, 5].map((rank) => (
+                      <button
+                        key={rank}
+                        onClick={() => userState.isOwned ? onUpdateState(card.id, { masterRank: rank }) : setSimMasterRank(rank)}
+                        className={`flex-1 py-1.5 text-[11px] font-mono font-bold rounded-lg transition-all ${
+                          currentMasterRank === rank
+                            ? "bg-[var(--mix-bg)] border border-[var(--mix-border)] text-[var(--mix-text-light)] dark:text-[var(--mix-text-dark)] shadow-[0_0_8px_var(--mix-glow)] scale-105"
+                            : "bg-white dark:bg-zinc-950 text-zinc-500 border border-zinc-200 dark:border-white/5 hover:bg-zinc-50 dark:hover:bg-zinc-900"
+                        }`}
+                      >
+                        {rank}
+                      </button>
                     ))}
                   </div>
+                </div>
+
+                <div className="space-y-1.5 pt-2 border-t border-zinc-300 dark:border-zinc-700 mt-2 transition-colors">
+                  <div className="flex justify-between items-center text-xs mb-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-zinc-500 dark:text-zinc-400 font-medium transition-colors">스킬 레벨 (Lv.)</span>
+                      {calculatedSkillBonus > 0 && (
+                        <span className="bg-[var(--mix-bg)] border border-[var(--mix-border)] text-[var(--mix-text-light)] dark:text-[var(--mix-text-dark)] px-1.5 py-0.5 rounded text-[11px] font-medium tracking-wider animate-fade-in shadow-sm flex items-center gap-0.5 transition-colors">
+                          ⇪ +{calculatedSkillBonus}%
+                        </span>
+                      )}
+                    </div>
+                    <span className="font-bold text-[var(--mix-text-light)] dark:text-[var(--mix-text-dark)] transition-colors">
+                      {userState.isOwned ? `Lv.${userState.skillLevel || 1}` : `시뮬레이션: Lv.${simSkillLevel}`}
+                    </span>
+                  </div>
+                  <div className="flex gap-1">
+                    {[1, 2, 3, 4].map((lvl) => (
+                      <button
+                        key={lvl}
+                        onClick={() => userState.isOwned ? onUpdateState(card.id, { skillLevel: lvl }) : setSimSkillLevel(lvl)}
+                        className={`flex-1 py-1.5 text-[11px] font-mono font-bold rounded-lg transition-all ${
+                          currentSkillLevel === lvl
+                            ? "bg-[var(--mix-bg)] border border-[var(--mix-border)] text-[var(--mix-text-light)] dark:text-[var(--mix-text-dark)] shadow-[0_0_8px_var(--mix-glow)] scale-105"
+                            : "bg-white dark:bg-zinc-950 text-zinc-500 border border-zinc-200 dark:border-white/5 hover:bg-zinc-50 dark:hover:bg-zinc-900"
+                        }`}
+                      >
+                        {lvl}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* 👗 관련 의상 */}
+              <div className={`${activeMobileTab === 'costume' ? 'block' : 'hidden'} lg:block w-full`}>
+                {costumePreviewData ? (
+                  <div className="w-full animate-fade-in shadow-xl rounded-2xl bg-zinc-50 dark:bg-zinc-950/50 border border-zinc-300 dark:border-zinc-700 overflow-hidden transition-colors">
+                    <ModalCostumePreviewCard preview={costumePreviewData as any} userState={userState} />
+                  </div>
                 ) : (
-                  <div className="w-28 sm:w-36 h-28 sm:h-36 bg-zinc-50 dark:bg-zinc-900/30 border border-zinc-200 dark:border-white/10 border-dashed rounded-xl flex flex-col items-center justify-center gap-2 shrink-0 transition-colors">
-                    <span className="text-2xl opacity-50">💿</span>
-                    <span className="text-[11px] text-zinc-500 font-medium tracking-wide">관련 악곡 없음</span>
+                  <div className="w-full h-32 bg-zinc-50 dark:bg-zinc-900/20 border border-zinc-300 dark:border-zinc-700 border-dashed rounded-2xl flex flex-col items-center justify-center gap-2 shadow-inner animate-fade-in transition-colors">
+                    <span className="text-2xl opacity-40">🛍️</span>
+                    <span className="text-xs text-zinc-400 dark:text-zinc-500 font-medium tracking-wide transition-colors">관련 의상 없음</span>
                   </div>
                 )}
               </div>
+
             </div>
           </div>
-
-          {/* 🌟 중앙 세로 구분선 */}
-          <div className="hidden md:block w-px bg-zinc-300 dark:bg-zinc-700 mx-2 self-stretch rounded-full transition-colors" />
-
-          {/* 👉 우측 영역: 카드 상태 및 의상 프리뷰 컨트롤러 */}
-          <div className="flex-[2] min-w-[320px] max-w-[380px] shrink-0 flex flex-col gap-6 self-start">
-            <div className="bg-zinc-50 dark:bg-zinc-950/50 border border-zinc-300 dark:border-zinc-700 rounded-2xl p-4 flex flex-col justify-between gap-4 transition-colors">
-              <div className="flex items-start justify-between gap-3 pb-2 border-b border-zinc-300 dark:border-zinc-700 transition-colors">
-                <div className="min-w-0 flex-1 flex items-baseline">
-                  <p className="text-[15px] font-bold text-zinc-800 dark:text-zinc-100 tracking-wide whitespace-nowrap transition-colors">+ 카드 상태</p>
-                </div>
-                
-                <div className="flex items-center gap-1.5 shrink-0">
-                  <button
-                    disabled={userState.isOwned}
-                    onClick={() => onUpdateState(card.id, { isTarget: !userState.isTarget })}
-                    className={`shrink-0 inline-flex items-center px-2.5 py-1 rounded-md text-[11px] sm:text-xs font-bold border tracking-tight transition-all shadow-sm ${
-                      userState.isOwned
-                        ? "opacity-50 cursor-not-allowed bg-transparent text-zinc-400 dark:text-zinc-600 border-zinc-200 dark:border-zinc-800"
-                        : userState.isTarget
-                          ? "bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-300 border-amber-300 dark:border-amber-400/50 shadow-[0_0_10px_rgba(245,158,11,0.15)] active:scale-95"
-                          : "bg-transparent text-zinc-500 dark:text-zinc-400 border-zinc-300 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 hover:text-zinc-800 dark:hover:text-zinc-200 active:scale-95"
-                    }`}
-                  >
-                    {userState.isTarget && !userState.isOwned ? "⭐ 목표 중" : "☆ 목표 설정"}
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      const nextOwned = !userState.isOwned;
-                      onUpdateState(card.id, { 
-                        isOwned: nextOwned,
-                        ...(nextOwned ? { isTarget: false } : {}) 
-                      });
-                    }}
-                    // 🌟 에메랄드(#10b981) 고정 로직 (유지)
-                    style={userState.isOwned ? {
-                      "--own-hex": "#10b981", 
-                      "--mix-bg": "color-mix(in srgb, var(--own-hex) 15%, transparent)",
-                      "--mix-border": "var(--own-hex)",
-                      "--mix-text-light": "color-mix(in srgb, var(--own-hex) 40%, black)",
-                      "--mix-text-dark": "color-mix(in srgb, var(--own-hex) 40%, white)",
-                      "--mix-glow": "color-mix(in srgb, var(--own-hex) 30%, transparent)",
-                    } as React.CSSProperties : {}}
-                    // 🌟 기획자님의 오리지널 핏(px-2.5, py-1, rounded-md)으로 완벽 복구!
-                    className={`shrink-0 inline-flex items-center px-2.5 py-1 rounded-md text-[11px] sm:text-xs font-bold border tracking-tight transition-all shadow-sm active:scale-95 ${
-                      userState.isOwned
-                        ? "bg-emerald-50 dark:bg-emerald-950 border-emerald-500 dark:border-emerald-400 text-emerald-600 dark:text-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.2)] dark:shadow-[0_0_8px_rgba(52,211,153,0.15)]"
-                        : "bg-transparent text-zinc-500 dark:text-zinc-400 border-zinc-300 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 hover:text-zinc-800 dark:hover:text-zinc-200"
-                    }`}
-                  >
-                    {userState.isOwned ? "✓ 보유 중" : "❌ 미보유"}
-                  </button>
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <div className="flex justify-between items-center text-xs">
-                  <span className="text-zinc-500 dark:text-zinc-400 font-medium transition-colors">마스터 랭크</span>
-                  {/* 🌟 2. 마랭 텍스트 역시 복잡한 style 코드가 증발했습니다. */}
-                  <span className="font-bold text-[var(--mix-text-light)] dark:text-[var(--mix-text-dark)] transition-colors">
-                    {userState.isOwned ? `${userState.masterRank || 0} 마랭` : `시뮬레이션: ${simMasterRank} 마랭`}
-                  </span>
-                </div>
-                <div className="flex gap-1">
-                  {[0, 1, 2, 3, 4, 5].map((rank) => (
-                    <button
-                      key={rank}
-                      onClick={() => userState.isOwned ? onUpdateState(card.id, { masterRank: rank }) : setSimMasterRank(rank)}
-                      // 🌟 3. 마랭 버튼 배열의 지저분한 style 블록도 삭제 완료!
-                      className={`flex-1 py-1.5 text-[11px] font-mono font-bold rounded-lg transition-all ${
-                        currentMasterRank === rank
-                          ? "bg-[var(--mix-bg)] border border-[var(--mix-border)] text-[var(--mix-text-light)] dark:text-[var(--mix-text-dark)] shadow-[0_0_8px_var(--mix-glow)] scale-105"
-                          : "bg-white dark:bg-zinc-950 text-zinc-500 border border-zinc-200 dark:border-white/5 hover:bg-zinc-50 dark:hover:bg-zinc-900"
-                      }`}
-                    >
-                      {rank}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="space-y-1.5 pt-2 border-t border-zinc-300 dark:border-zinc-700 mt-2 transition-colors">
-                <div className="flex justify-between items-center text-xs mb-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-zinc-500 dark:text-zinc-400 font-medium transition-colors">스킬 레벨 (Lv.)</span>
-                    {calculatedSkillBonus > 0 && (
-                      // 🌟 4. 스킬 뱃지도 동일하게 다이어트 완료!
-                      <span className="bg-[var(--mix-bg)] border border-[var(--mix-border)] text-[var(--mix-text-light)] dark:text-[var(--mix-text-dark)] px-1.5 py-0.5 rounded text-[11px] font-medium tracking-wider animate-fade-in shadow-sm flex items-center gap-0.5 transition-colors">
-                        ⇪ +{calculatedSkillBonus}%
-                      </span>
-                    )}
-                  </div>
-                  {/* 🌟 5. 스킬 레벨 텍스트도 깔끔하게 통일 */}
-                  <span className="font-bold text-[var(--mix-text-light)] dark:text-[var(--mix-text-dark)] transition-colors">
-                    {userState.isOwned ? `Lv.${userState.skillLevel || 1}` : `시뮬레이션: Lv.${simSkillLevel}`}
-                  </span>
-                </div>
-                <div className="flex gap-1">
-                  {[1, 2, 3, 4].map((lvl) => (
-                    <button
-                      key={lvl}
-                      onClick={() => userState.isOwned ? onUpdateState(card.id, { skillLevel: lvl }) : setSimSkillLevel(lvl)}
-                      // 🌟 6. 스킬 레벨 버튼도 삭제!
-                      className={`flex-1 py-1.5 text-[11px] font-mono font-bold rounded-lg transition-all ${
-                        currentSkillLevel === lvl
-                          ? "bg-[var(--mix-bg)] border border-[var(--mix-border)] text-[var(--mix-text-light)] dark:text-[var(--mix-text-dark)] shadow-[0_0_8px_var(--mix-glow)] scale-105"
-                          : "bg-white dark:bg-zinc-950 text-zinc-500 border border-zinc-200 dark:border-white/5 hover:bg-zinc-50 dark:hover:bg-zinc-900"
-                      }`}
-                    >
-                      {lvl}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {costumePreviewData ? (
-              <div className="w-full animate-fade-in shadow-xl rounded-2xl bg-zinc-50 dark:bg-zinc-950/50 border border-zinc-300 dark:border-zinc-700 overflow-hidden transition-colors">
-                <ModalCostumePreviewCard preview={costumePreviewData as any} userState={userState} />
-              </div>
-            ) : (
-              <div className="w-full h-32 bg-zinc-50 dark:bg-zinc-900/20 border border-zinc-300 dark:border-zinc-700 border-dashed rounded-2xl flex flex-col items-center justify-center gap-2 shadow-inner animate-fade-in transition-colors">
-                <span className="text-2xl opacity-40">🛍️</span>
-                <span className="text-xs text-zinc-400 dark:text-zinc-500 font-medium tracking-wide transition-colors">관련 의상 없음</span>
-              </div>
-            )}
-          </div>
-
         </div>
       </div>
     </div>,

@@ -389,6 +389,29 @@ const MIKUMmj = defineCharacterCards("모모점", "하츠네 미쿠", "VS", "MIK
         costumeName: "조력의 페더",
       }
     },
+    {
+      info: {
+        id: "VS_MIKU_030",
+        cardName: "[미쿠에게 밀착 취재!]",
+        attribute: "mysterious",
+        gachaType: "한정",
+        gachaPoolName: "너와 보내는 휴가! 뽑기",
+        eventName: "아이돌 • 하나사토 미노리 ~꿈의 최전선~",
+        skillType: "팀스업",
+        releaseDate: "2027-07-04",
+      },
+      media: {
+        gachaBannerPath: "/gachas/27y/jbanner_27_19_m.png",
+        eventBannerPath: "/events/27y/jbanner_27_19_m.png",
+        songName: "Gimme more!",
+        songJacketPath: "/jacket/27y/Gimme_more.png",
+      },
+      costume: {
+        hasCostume: true,
+        costumeName: "SUSTAIN SUMMER",
+        hasHair: true,
+      },
+    },
   ]
 });
 

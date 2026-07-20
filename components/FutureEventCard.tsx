@@ -53,16 +53,16 @@ const matchAttribute = (cardAttr: string, targetAttr: string) => {
 };
 
 const matchUnit = (cardUnit: string, targetUnit: string) => {
-  const c = (cardUnit || "").toLowerCase();
-  const t = (targetUnit || "").toLowerCase();
+  const c = (cardUnit || "").toLowerCase().replace(/[^a-z0-9가-힣]/g, "");
+  const t = (targetUnit || "").toLowerCase().replace(/[^a-z0-9가-힣]/g, "");
   if (!c || !t) return false;
   
-  if (t.includes("leo") && c.includes("leo")) return true;
-  if (t.includes("mmj") && c.includes("mmj")) return true;
-  if (t.includes("vbs") && c.includes("vbs")) return true;
-  if (t.includes("wds") && c.includes("wds")) return true;
-  if (t.includes("niigo") && c.includes("niigo")) return true;
-  if (t.includes("vs") && (c.includes("vs") || c.includes("virtual"))) return true;
+  if (t.includes("leo") && (c.includes("leo") || c.includes("레오니") || c.includes("ln"))) return true;
+  if (t.includes("mmj") && (c.includes("more") || c.includes("모모점") || c.includes("mmj"))) return true;
+  if (t.includes("vbs") && (c.includes("vivid") || c.includes("비배스") || c.includes("vbs"))) return true;
+  if (t.includes("wds") && (c.includes("wonder") || c.includes("원더쇼") || c.includes("wxs"))) return true;
+  if (t.includes("niigo") && (c.includes("25") || c.includes("니고") || c.includes("niigo") || c.includes("n25"))) return true;
+  if (t.includes("vs") && (c.includes("vs") || c.includes("virtual") || c.includes("버싱"))) return true;
   
   return c.includes(t) || t.includes(c);
 };
@@ -143,23 +143,51 @@ export default function FutureEventCard({
     .map(card => {
       const realId = (card as any).info ? (card as any).info.id : (card as any).id;
       const myState = userStates[realId];
-      return { card, myState, bonus: 0, score: 0 };
+      
+      // 🌟 미보유 카드라도 우측 상단의 마랭/스킬렙 시뮬레이터 값을 적용하기 위해 가상 상태 생성
+      const fakeState = myState?.isOwned ? myState : { 
+        isOwned: true, 
+        masterRank: refMasterRank, 
+        skillLevel: refSkillLevel, 
+        isTarget: myState?.isTarget 
+      };
+      
+      // 🌟 0으로 죽어있던 보너스와 스킬 수치에 계산기를 완벽하게 연결!
+      const bonus = calculateCardEventBonus(card as any, fakeState, event);
+      const score = getSkillBonusPercentage((card as any).skillType || "", fakeState.skillLevel, (card as any).unit || "", showPostAwake, 1, fakeState.isOwned);
+
+      return { card, myState, bonus, score };
     });
 
   const getBonusCards = () => {
     if (!event.bonus) return [];
-    
-    const eventStartClean = event.period.start.split(".")[0].trim();
-    const eventStartDate = new Date(eventStartClean);
 
     const matchingCards = ALL_CARDS.filter(card => {
+      // 🌟 [복구 완료] 카드 출시일 비교 기능! (에러 없는 8자리 숫자 비교 방식)
       if (card.releaseDate) {
-        const cardReleaseDate = new Date(card.releaseDate);
-        if (cardReleaseDate > eventStartDate) return false;
+        // 날짜 텍스트에서 숫자만 8자리(YYYYMMDD) 추출 (예: "2022-05-21. 15:00" -> 20220521)
+        const eventDateNum = parseInt(event.period.start.replace(/[^0-9]/g, "").substring(0, 8), 10);
+        const cardDateNum = parseInt(card.releaseDate.replace(/[^0-9]/g, "").substring(0, 8), 10);
+        
+        // 카드의 출시일 숫자가 이벤트 시작일 숫자보다 크다면 (아직 출시되지 않은 미래의 카드라면) 제외!
+        if (cardDateNum > eventDateNum) return false;
       }
+
+      // 1. 속성 매칭 (필수 조건)
       if (!matchAttribute(card.attribute || "", event.bonus!.attribute)) return false;
-      const matchesUnit = event.bonus!.unit && matchUnit(card.unit || "", event.bonus!.unit);
-      const matchesChar = event.bonus!.characters && event.bonus!.characters.includes(card.character || "");
+
+      // 2. 유닛 매칭
+      const matchesUnit = event.bonus!.unit ? matchUnit(card.unit || "", event.bonus!.unit) : false;
+      
+      // 3. 캐릭터 매칭 (영문/한글 혼용 대응을 위해 ID까지 검색!)
+      const matchesChar = event.bonus!.characters ? event.bonus!.characters.some(targetChar => {
+        const t = String(targetChar).toLowerCase();
+        const cName = (card.character || "").toLowerCase();
+        const cId = (card.id || "").toLowerCase(); // 영어 이름은 보통 ID(ln_Ichika_001)에 들어있음!
+        return cName.includes(t) || t.includes(cName) || cId.includes(t);
+      }) : false;
+
+      // 유닛이 일치하거나, 캐릭터가 일치하면 보너스 멤버로 인정!
       return matchesUnit || matchesChar;
     });
 
