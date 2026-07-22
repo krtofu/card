@@ -325,7 +325,10 @@ export default function MyCardsPage() {
   const isAllCondSelected = condIds.length > 0 && condIds.every(id => selectedSkills.includes(id));
   
   return (
-    <div className="flex flex-col md:flex-row gap-6 px-4 md:px-8 py-6 min-h-screen text-zinc-900 dark:text-zinc-100 max-w-[1920px] mx-auto w-full transition-colors duration-300 relative overflow-x-clip">
+    <div 
+      onClick={() => setActiveFilterTooltip(null)} // 🌟 허공을 누르면 툴팁 닫기
+      className="flex flex-col md:flex-row gap-6 px-4 md:px-8 py-6 min-h-screen text-zinc-900 dark:text-zinc-100 max-w-[1920px] mx-auto w-full transition-colors duration-300 relative overflow-x-clip"
+    >
 
       {/* 🌟 모바일 필터 배경 방어막 (Dim Overlay): z-index를 최상위로 올려서 두 겹 현상 완전 차단! */}
       <div 
@@ -763,7 +766,7 @@ export default function MyCardsPage() {
 
             {/* 🔒 미출시 토글 모바일 버튼 */}
             <button 
-              onClick={() => { setHideUnreleased(!hideUnreleased); setActiveFilterTooltip(prev => prev === 'unreleased' ? null : 'unreleased'); }} 
+              onClick={(e) => { e.stopPropagation(); setHideUnreleased(!hideUnreleased); setActiveFilterTooltip('unreleased'); }} 
               onMouseLeave={() => setActiveFilterTooltip(null)}
               className={`relative group sm:hidden shrink-0 flex items-center justify-center w-[34px] h-[34px] rounded-full text-[14px] transition-all shadow-sm border ${hideUnreleased ? 'bg-primary/10 text-primary border-primary/30' : 'bg-white dark:bg-zinc-800/80 border-zinc-200 dark:border-white/10 text-zinc-500 dark:text-zinc-400'}`}
             >
@@ -773,7 +776,7 @@ export default function MyCardsPage() {
 
             {/* 🚫 콜라보 토글 모바일 버튼 */}
             <button 
-              onClick={() => { setExcludeCollab(!excludeCollab); setActiveFilterTooltip(prev => prev === 'collab' ? null : 'collab'); }} 
+              onClick={(e) => { e.stopPropagation(); setExcludeCollab(!excludeCollab); setActiveFilterTooltip('collab'); }} 
               onMouseLeave={() => setActiveFilterTooltip(null)}
               className={`relative group sm:hidden shrink-0 flex items-center justify-center w-[34px] h-[34px] rounded-full text-[14px] transition-all shadow-sm border ${excludeCollab ? 'bg-red-50 dark:bg-red-500/20 text-red-600 dark:text-red-300 border-red-200 dark:border-red-400/50' : 'bg-white dark:bg-zinc-800/80 border-zinc-200 dark:border-white/10 text-zinc-500 dark:text-zinc-400'}`}
             >
@@ -783,7 +786,7 @@ export default function MyCardsPage() {
 
             {/* ⭐ 각전/각후 전환 버튼 (공통) */}
             <button 
-              onClick={() => { setShowPostAwake(!showPostAwake); setActiveFilterTooltip(prev => prev === 'awake' ? null : 'awake'); }} 
+              onClick={(e) => { e.stopPropagation(); setShowPostAwake(!showPostAwake); setActiveFilterTooltip('awake'); }} 
               onMouseLeave={() => setActiveFilterTooltip(null)}
               className="relative group p-1 rounded-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 shrink-0 shadow-sm transition-colors"
             >
