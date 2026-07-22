@@ -761,15 +761,34 @@ export default function MyCardsPage() {
               {excludeCollab ? '🚫 콜라보 제외' : '🤝 콜라보 포함'}
             </button>
 
-            <button onClick={() => setHideUnreleased(!hideUnreleased)} className={`sm:hidden shrink-0 flex items-center justify-center w-[34px] h-[34px] rounded-full text-[14px] transition-all shadow-sm border ${hideUnreleased ? 'bg-primary/10 text-primary border-primary/30' : 'bg-white dark:bg-zinc-800/80 border-zinc-200 dark:border-white/10 text-zinc-500 dark:text-zinc-400'}`} title="미출시 숨기기">
+            {/* 🔒 미출시 토글 모바일 버튼 */}
+            <button 
+              onClick={() => { setHideUnreleased(!hideUnreleased); setActiveFilterTooltip(prev => prev === 'unreleased' ? null : 'unreleased'); }} 
+              onMouseLeave={() => setActiveFilterTooltip(null)}
+              className={`relative group sm:hidden shrink-0 flex items-center justify-center w-[34px] h-[34px] rounded-full text-[14px] transition-all shadow-sm border ${hideUnreleased ? 'bg-primary/10 text-primary border-primary/30' : 'bg-white dark:bg-zinc-800/80 border-zinc-200 dark:border-white/10 text-zinc-500 dark:text-zinc-400'}`}
+            >
               {hideUnreleased ? '🔒' : '🔓'}
-            </button>
-            <button onClick={() => setExcludeCollab(!excludeCollab)} className={`sm:hidden shrink-0 flex items-center justify-center w-[34px] h-[34px] rounded-full text-[14px] transition-all shadow-sm border ${excludeCollab ? 'bg-red-50 dark:bg-red-500/20 text-red-600 dark:text-red-300 border-red-200 dark:border-red-400/50' : 'bg-white dark:bg-zinc-800/80 border-zinc-200 dark:border-white/10 text-zinc-500 dark:text-zinc-400'}`} title="콜라보 제외">
-              {excludeCollab ? '🚫' : '🤝'}
+              <span className={getTooltipClass(activeFilterTooltip === 'unreleased')}>{hideUnreleased ? '미출시 숨김' : '미출시 포함'}</span>
             </button>
 
-            <button onClick={() => setShowPostAwake(!showPostAwake)} className="p-1 rounded-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 shrink-0 shadow-sm transition-colors" aria-label="썸네일 전환">
+            {/* 🚫 콜라보 토글 모바일 버튼 */}
+            <button 
+              onClick={() => { setExcludeCollab(!excludeCollab); setActiveFilterTooltip(prev => prev === 'collab' ? null : 'collab'); }} 
+              onMouseLeave={() => setActiveFilterTooltip(null)}
+              className={`relative group sm:hidden shrink-0 flex items-center justify-center w-[34px] h-[34px] rounded-full text-[14px] transition-all shadow-sm border ${excludeCollab ? 'bg-red-50 dark:bg-red-500/20 text-red-600 dark:text-red-300 border-red-200 dark:border-red-400/50' : 'bg-white dark:bg-zinc-800/80 border-zinc-200 dark:border-white/10 text-zinc-500 dark:text-zinc-400'}`}
+            >
+              {excludeCollab ? '🚫' : '🤝'}
+              <span className={getTooltipClass(activeFilterTooltip === 'collab')}>{excludeCollab ? '콜라보 제외' : '콜라보 포함'}</span>
+            </button>
+
+            {/* ⭐ 각전/각후 전환 버튼 (공통) */}
+            <button 
+              onClick={() => { setShowPostAwake(!showPostAwake); setActiveFilterTooltip(prev => prev === 'awake' ? null : 'awake'); }} 
+              onMouseLeave={() => setActiveFilterTooltip(null)}
+              className="relative group p-1 rounded-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 shrink-0 shadow-sm transition-colors"
+            >
               <img src={showPostAwake ? "/icons/post_star.png" : "/icons/pre_star.png"} alt="스위치" className="h-8 w-auto object-contain block drop-shadow-sm" />
+              <span className={getTooltipClass(activeFilterTooltip === 'awake')}>{showPostAwake ? '특훈 후' : '특훈 전'}</span>
             </button>
 
           </div>
