@@ -396,27 +396,27 @@ export default function MyCardsPage() {
                     })}
                   </div>
                   <div className="grid grid-cols-4 gap-1.5">
-                  <button onClick={() => { toggleFilter(selectedTypes, setSelectedTypes, "normal"); setActiveFilterTooltip(prev => prev === 'normal' ? null : 'normal'); }} onMouseLeave={() => setActiveFilterTooltip(null)}
-                    className={`relative group aspect-square rounded-full p-1 transition-all duration-300 w-full h-full border ${selectedTypes.includes("normal") ? "bg-primary/10 dark:bg-primary/20 scale-105 border-transparent" : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-transparent scale-[0.85] hover:scale-95"} ${!isAnyTypeSelected || selectedTypes.includes("normal") ? "opacity-100" : "opacity-40 hover:opacity-100"}`}>
-                    <img src="/icons/status/normal.png" alt="통상" className="w-full h-full object-contain drop-shadow-sm" />
-                    <span className={getTooltipClass(activeFilterTooltip === 'normal')}>통상 씰</span>
-                  </button>
-                  <button onClick={() => { toggleFilter(selectedTypes, setSelectedTypes, "limited"); setActiveFilterTooltip(prev => prev === 'limited' ? null : 'limited'); }} onMouseLeave={() => setActiveFilterTooltip(null)}
-                    className={`relative group aspect-square rounded-full p-1 transition-all duration-300 w-full h-full border ${selectedTypes.includes("limited") ? "bg-primary/10 dark:bg-primary/20 scale-105 border-transparent" : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-transparent scale-[0.85] hover:scale-95"} ${!isAnyTypeSelected || selectedTypes.includes("limited") ? "opacity-100" : "opacity-40 hover:opacity-100"}`}>
-                    <img src="/icons/status/limited.png" alt="한정" className="w-full h-full object-contain drop-shadow-sm" />
-                    <span className={getTooltipClass(activeFilterTooltip === 'limited')}>한정 씰</span>
-                  </button>
-                  <button onClick={() => { toggleFilter(selectedHairs, setSelectedHairs, "hair_o"); setActiveFilterTooltip(prev => prev === 'hair_o' ? null : 'hair_o'); }} onMouseLeave={() => setActiveFilterTooltip(null)}
-                    className={`relative group aspect-square rounded-full p-1 transition-all duration-300 w-full h-full border ${selectedHairs.includes("hair_o") ? "bg-primary/10 dark:bg-primary/20 scale-105 border-transparent" : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-transparent scale-[0.85] hover:scale-95"} ${!isAnyHairSelected || selectedHairs.includes("hair_o") ? "opacity-100" : "opacity-40 hover:opacity-100"}`}>
-                    <img src="/icons/status/hair_o.png" alt="헤어 O" className="w-full h-full object-contain drop-shadow-sm" />
-                    <span className={getTooltipClass(activeFilterTooltip === 'hair_o')}>헤어 O</span>
-                  </button>
-                  <button onClick={() => { toggleFilter(selectedHairs, setSelectedHairs, "hair_x"); setActiveFilterTooltip(prev => prev === 'hair_x' ? null : 'hair_x'); }} onMouseLeave={() => setActiveFilterTooltip(null)}
-                    className={`relative group aspect-square rounded-full p-1 transition-all duration-300 w-full h-full border ${selectedHairs.includes("hair_x") ? "bg-primary/10 dark:bg-primary/20 scale-105 border-transparent" : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-transparent scale-[0.85] hover:scale-95"} ${!isAnyHairSelected || selectedHairs.includes("hair_x") ? "opacity-100" : "opacity-40 hover:opacity-100"}`}>
-                    <img src="/icons/status/hair_x.png" alt="헤어 X" className="w-full h-full object-contain drop-shadow-sm" />
-                    <span className={getTooltipClass(activeFilterTooltip === 'hair_x')}>헤어 X</span>
-                  </button>
-                </div>
+                    <button onClick={(e) => { e.stopPropagation(); toggleFilter(selectedTypes, setSelectedTypes, "normal"); setActiveFilterTooltip('normal'); }} onMouseLeave={() => setActiveFilterTooltip(null)}
+                      className={`relative group aspect-square rounded-full p-1 transition-all duration-300 w-full h-full border ${selectedTypes.includes("normal") ? "bg-primary/10 dark:bg-primary/20 scale-105 border-transparent" : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-transparent scale-[0.85] hover:scale-95"} ${!isAnyTypeSelected || selectedTypes.includes("normal") ? "opacity-100" : "opacity-40 hover:opacity-100"}`}>
+                      <img src="/icons/status/normal.png" alt="통상" className="w-full h-full object-contain drop-shadow-sm" />
+                      <span className={getTooltipClass(activeFilterTooltip === 'normal')}>통상 씰</span>
+                    </button>
+                    <button onClick={(e) => { e.stopPropagation(); toggleFilter(selectedTypes, setSelectedTypes, "limited"); setActiveFilterTooltip('limited'); }} onMouseLeave={() => setActiveFilterTooltip(null)}
+                      className={`relative group aspect-square rounded-full p-1 transition-all duration-300 w-full h-full border ${selectedTypes.includes("limited") ? "bg-primary/10 dark:bg-primary/20 scale-105 border-transparent" : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-transparent scale-[0.85] hover:scale-95"} ${!isAnyTypeSelected || selectedTypes.includes("limited") ? "opacity-100" : "opacity-40 hover:opacity-100"}`}>
+                      <img src="/icons/status/limited.png" alt="한정" className="w-full h-full object-contain drop-shadow-sm" />
+                      <span className={getTooltipClass(activeFilterTooltip === 'limited')}>한정 씰</span>
+                    </button>
+                    <button onClick={(e) => { e.stopPropagation(); toggleFilter(selectedHairs, setSelectedHairs, "hair_o"); setActiveFilterTooltip('hair_o'); }} onMouseLeave={() => setActiveFilterTooltip(null)}
+                      className={`relative group aspect-square rounded-full p-1 transition-all duration-300 w-full h-full border ${selectedHairs.includes("hair_o") ? "bg-primary/10 dark:bg-primary/20 scale-105 border-transparent" : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-transparent scale-[0.85] hover:scale-95"} ${!isAnyHairSelected || selectedHairs.includes("hair_o") ? "opacity-100" : "opacity-40 hover:opacity-100"}`}>
+                      <img src="/icons/status/hair_o.png" alt="헤어 O" className="w-full h-full object-contain drop-shadow-sm" />
+                      <span className={getTooltipClass(activeFilterTooltip === 'hair_o')}>헤어 O</span>
+                    </button>
+                    <button onClick={(e) => { e.stopPropagation(); toggleFilter(selectedHairs, setSelectedHairs, "hair_x"); setActiveFilterTooltip('hair_x'); }} onMouseLeave={() => setActiveFilterTooltip(null)}
+                      className={`relative group aspect-square rounded-full p-1 transition-all duration-300 w-full h-full border ${selectedHairs.includes("hair_x") ? "bg-primary/10 dark:bg-primary/20 scale-105 border-transparent" : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-transparent scale-[0.85] hover:scale-95"} ${!isAnyHairSelected || selectedHairs.includes("hair_x") ? "opacity-100" : "opacity-40 hover:opacity-100"}`}>
+                      <img src="/icons/status/hair_x.png" alt="헤어 X" className="w-full h-full object-contain drop-shadow-sm" />
+                      <span className={getTooltipClass(activeFilterTooltip === 'hair_x')}>헤어 X</span>
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
@@ -497,11 +497,11 @@ export default function MyCardsPage() {
                     const isSelected = selectedAttrs.includes(attr.id);
                     const opacityClass = !isAnyAttrSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100";
                     return (
-                    <button key={attr.id} onClick={() => { toggleFilter(selectedAttrs, setSelectedAttrs, attr.id); setActiveFilterTooltip(prev => prev === attr.id ? null : attr.id); }} onMouseLeave={() => setActiveFilterTooltip(null)}
-                  className={`relative group aspect-square rounded-full transition-all duration-300 ${isSelected ? "scale-105 drop-shadow-md bg-primary/10 dark:bg-primary/20" : "scale-[0.85] hover:scale-95 bg-zinc-100 dark:bg-transparent"} ${opacityClass}`}>
-                  <img src={attr.img} alt={attr.name} className="w-full h-full object-contain" />
-                  <span className={getTooltipClass(activeFilterTooltip === attr.id)}>{attr.name}</span>
-                </button>
+                    <button key={attr.id} onClick={(e) => { e.stopPropagation(); toggleFilter(selectedAttrs, setSelectedAttrs, attr.id); setActiveFilterTooltip(attr.id); }} onMouseLeave={() => setActiveFilterTooltip(null)}
+                      className={`relative group aspect-square rounded-full transition-all duration-300 ${isSelected ? "scale-105 drop-shadow-md bg-primary/10 dark:bg-primary/20" : "scale-[0.85] hover:scale-95 bg-zinc-100 dark:bg-transparent"} ${opacityClass}`}>
+                      <img src={attr.img} alt={attr.name} className="w-full h-full object-contain" />
+                      <span className={getTooltipClass(activeFilterTooltip === attr.id)}>{attr.name}</span>
+                    </button>
                   )})}
                 </div>
               )}
@@ -520,7 +520,7 @@ export default function MyCardsPage() {
                       const isSelected = isCondGroup ? isAllCondSelected : selectedSkills.includes(skill.id);
                       const opacityClass = !isAnySkillSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100";
                       return (
-                        <button key={skill.id} onClick={() => { (isCondGroup ? toggleCondSkillGroup() : toggleFilter(selectedSkills, setSelectedSkills, skill.id)); setActiveFilterTooltip(prev => prev === skill.id ? null : skill.id); }} onMouseLeave={() => setActiveFilterTooltip(null)}
+                        <button key={skill.id} onClick={(e) => { e.stopPropagation(); (isCondGroup ? toggleCondSkillGroup() : toggleFilter(selectedSkills, setSelectedSkills, skill.id)); setActiveFilterTooltip(skill.id); }} onMouseLeave={() => setActiveFilterTooltip(null)}
                           className={`relative group aspect-square rounded-full p-1 transition-all duration-300 border ${isSelected ? "bg-primary/10 dark:bg-primary/20 scale-105 border-transparent" : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-transparent scale-[0.85] hover:scale-95"} ${opacityClass}`}>
                           <img src={skill.img} alt={skill.name} className="w-full h-full object-contain drop-shadow-sm" />
                           <span className={getTooltipClass(activeFilterTooltip === skill.id)}>{skill.name}</span>
@@ -649,20 +649,20 @@ export default function MyCardsPage() {
                           const isSelected = selectedChars.includes(char.id);
                           const charOpacityClass = !isAnyCharSelected || isSelected ? "opacity-100" : "opacity-40 hover:opacity-100";
                           return (
-                          <button key={char.id} onClick={() => { toggleFilter(selectedChars, setSelectedChars, char.id); setActiveFilterTooltip(prev => prev === char.id ? null : char.id); }} onMouseLeave={() => setActiveFilterTooltip(null)}
-                          style={(isSelected && themeColor !== "default") ? {
-                            "--mix-ring": "var(--color-primary)",
-                          } as React.CSSProperties : {}}
-                          className={`relative group aspect-square rounded-full transition-all duration-300 bg-white dark:bg-zinc-950 border ${
-                            isSelected 
-                              ? themeColor === "default"
-                                ? "scale-105 ring-2 ring-primary shadow-sm opacity-100 border-primary dark:border-white" 
-                                : "scale-105 border-4 border-[var(--mix-ring)] shadow-sm opacity-100" 
-                              : "scale-[0.80] hover:scale-[0.85] border-zinc-200 dark:border-transparent"
-                          } ${charOpacityClass}`}>
-                          <img src={char.img} alt={char.name} className="w-full h-full object-contain" />
-                          <span className={getTooltipClass(activeFilterTooltip === char.id)}>{char.name}</span>
-                        </button>
+                          <button key={char.id} onClick={(e) => { e.stopPropagation(); toggleFilter(selectedChars, setSelectedChars, char.id); setActiveFilterTooltip(char.id); }} onMouseLeave={() => setActiveFilterTooltip(null)}
+                            style={(isSelected && themeColor !== "default") ? {
+                              "--mix-ring": "var(--color-primary)",
+                            } as React.CSSProperties : {}}
+                            className={`relative group aspect-square rounded-full transition-all duration-300 bg-white dark:bg-zinc-950 border ${
+                              isSelected 
+                                ? themeColor === "default"
+                                  ? "scale-105 ring-2 ring-primary shadow-sm opacity-100 border-primary dark:border-white" 
+                                  : "scale-105 border-4 border-[var(--mix-ring)] shadow-sm opacity-100" 
+                                : "scale-[0.80] hover:scale-[0.85] border-zinc-200 dark:border-transparent"
+                            } ${charOpacityClass}`}>
+                            <img src={char.img} alt={char.name} className="w-full h-full object-contain" />
+                            <span className={getTooltipClass(activeFilterTooltip === char.id)}>{char.name}</span>
+                          </button>
                         )})}
                       </div>
                     </div>
