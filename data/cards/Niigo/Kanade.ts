@@ -26,7 +26,43 @@ const KanadeNiigo = defineCharacterCards("니고", "요이사키 카나데", "Ni
             costumeName: "마스크 오브 티어",
           },
         },
-    
+        {
+          info: {
+            id: "ng_Kanade_002",
+            cardName: "[마음을 멜로디로······]",
+            attribute: "happy",
+            gachaType: "통상",
+            gachaPoolName: "빛이 내리쬐는 캔버스 뽑기",
+            eventName: "채워지지 않는 페일 컬러",
+            skillType: "퍼스업",
+            releaseDate: "2022-08-25",
+          },
+          media: {
+            gachaBannerPath: "/gachas/22y/banner_22_14_n.png",
+            eventBannerPath: "/events/22y/banner_22_13_n.png",
+            songName: "끝없이 잿빛으로",
+            songJacketPath: "/jacket/22y/Close_to_Gray.png",
+          },
+        },
+        {
+          info: {
+            id: "ng_Kanade_003",
+            cardName: "[언젠가 꿨던 꿈을]",
+            attribute: "mysterious",
+            gachaType: "페스",
+            gachaPoolName: "[200만 명 돌파 기념] 컬러풀 페스티벌 뽑기",
+            skillType: "체스업",
+            releaseDate: "2022-09-30",
+          },
+          media: {
+            gachaBannerPath: "/gachas/22y/banner_22_f01.png",
+          },
+          costume: {
+            hasCostume: true,
+            costumeName: "레퀴엠 나이트",
+            hasHair: true,
+          },
+        },
   ]
 });
 

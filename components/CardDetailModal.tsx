@@ -297,28 +297,41 @@ export default function CardDetailModal({
           ✕
         </button>
 
-        {/* 🌌 상단 일러스트 구역 (모바일에서 높이 h-48로 다이어트) */}
+        {/* 🌌 상단 배너 구역 */}
         <div className={`relative -mx-4 -mt-4 md:-mx-6 md:-mt-6 ${isExpandMode ? 'h-auto' : 'h-48 sm:h-64 md:h-[360px] border-b border-zinc-300 dark:border-zinc-700'} shrink-0 flex overflow-hidden bg-zinc-100 dark:bg-zinc-900 transition-all duration-300 ease-in-out`}>
           {card.hasAwakening ? (
             <>
+              {/* 특훈 전 */}
               <div 
                 onClick={() => setActiveImage(prev => prev === 'pre' ? null : 'pre')}
                 onMouseLeave={() => setActiveImage(null)}
-                className={`relative h-full transition-all duration-700 ease-in-out overflow-hidden z-10 
-                  ${activeImage === 'pre' ? 'flex-[3] z-20' : activeImage === 'post' ? 'flex-1' : 'flex-1 lg:hover:flex-[3] lg:hover:z-20'}
+                // 🌟 범인 검거: h-48(192px)의 16:9 비율에 맞춘 모바일 전용 안전장치(max-w-[341px]) 추가!
+                className={`relative h-full transition-all duration-700 ease-in-out overflow-hidden z-10 cursor-pointer max-w-[341px] sm:max-w-[455px] md:max-w-[604px]
+                  ${activeImage === 'pre' 
+                    ? 'flex-[3] z-20' 
+                    : activeImage === 'post' 
+                      ? 'flex-1' 
+                      : 'flex-1 lg:hover:flex-[3] lg:hover:z-20'}
                 `}
               >
-                <img src={preIllustration} alt="특훈 전 일러스트" className="absolute left-0 top-0 h-full w-full object-cover object-center max-w-none" />
+                <img src={preIllustration} alt="특훈 전 일러스트" className="absolute left-0 top-0 h-full aspect-[16/9] max-w-none object-cover object-center" />
                 <div className="absolute bottom-2 left-2 md:bottom-4 md:left-5 inline-flex items-center rounded-full border border-white/40 dark:border-white/20 bg-black/40 dark:bg-black/60 px-2 py-0.5 md:px-2.5 md:py-1 text-[9px] md:text-[10px] font-semibold text-white dark:text-zinc-100 backdrop-blur-md pointer-events-none tracking-wider shadow-md">특훈 전</div>
               </div>
+
+              {/* 특훈 후 */}
               <div 
                 onClick={() => setActiveImage(prev => prev === 'post' ? null : 'post')}
                 onMouseLeave={() => setActiveImage(null)}
-                className={`relative h-full transition-all duration-700 ease-in-out overflow-hidden z-10 border-l border-white/30 dark:border-white/10
-                  ${activeImage === 'post' ? 'flex-[3] z-20' : activeImage === 'pre' ? 'flex-1' : 'flex-1 lg:hover:flex-[3] lg:hover:z-20'}
+                // 🌟 여기도 동일하게 max-w-[341px] 추가!
+                className={`relative h-full transition-all duration-700 ease-in-out overflow-hidden z-10 border-l border-white/30 dark:border-white/10 cursor-pointer max-w-[341px] sm:max-w-[455px] md:max-w-[604px]
+                  ${activeImage === 'post' 
+                    ? 'flex-[3] z-20' 
+                    : activeImage === 'pre' 
+                      ? 'flex-1' 
+                      : 'flex-1 lg:hover:flex-[3] lg:hover:z-20'}
                 `}
               >
-                <img src={postIllustration} alt="특훈 후 일러스트" className="absolute right-0 top-0 h-full w-full object-cover object-center max-w-none" />
+                <img src={postIllustration} alt="특훈 후 일러스트" className="absolute right-0 top-0 h-full aspect-[16/9] max-w-none object-cover object-center" />
                 <div className="absolute bottom-2 right-2 md:bottom-4 md:right-5 inline-flex items-center rounded-full border border-cyan-300/40 dark:border-cyan-400/20 bg-black/40 dark:bg-black/60 px-2 py-0.5 md:px-2.5 md:py-1 text-[9px] md:text-[10px] font-semibold text-cyan-200 dark:text-cyan-300 backdrop-blur-md pointer-events-none tracking-wider shadow-md">특훈 후</div>
               </div>
             </>
@@ -327,7 +340,7 @@ export default function CardDetailModal({
               <img 
                 src={preIllustration} 
                 alt="일러스트" 
-                className={`w-full ${isExpandMode ? 'h-auto aspect-[16/9] object-contain' : 'h-64 md:h-[360px] object-cover'} object-center transition-all duration-300`} 
+                className={`w-full ${isExpandMode ? 'h-auto aspect-[16/9] object-contain' : 'h-48 sm:h-64 md:h-[360px] object-cover'} object-center transition-all duration-300`} 
               />
               <div className="absolute bottom-4 left-5 inline-flex items-center rounded-full border border-white/40 dark:border-white/20 bg-black/40 dark:bg-black/60 px-3 py-1.5 text-xs font-semibold text-white dark:text-zinc-100 backdrop-blur-md pointer-events-none tracking-wider shadow-md">일러스트</div>
               
@@ -351,7 +364,8 @@ export default function CardDetailModal({
           </div>
 
           {/* 📱 2. 모바일 전용 책갈피(폴더) 탭 (PC 화면에서는 숨겨짐) */}
-          <div className="flex lg:hidden overflow-x-auto custom-scrollbar pt-3 px-3 border-b border-zinc-300 dark:border-zinc-700 mt-2 gap-1.5">
+          {/* 🌟 overflow-x-auto와 custom-scrollbar를 과감하게 삭제하고 flex-wrap을 넣습니다! */}
+          <div className="flex flex-wrap lg:hidden pt-3 px-2 sm:px-3 border-b border-zinc-300 dark:border-zinc-700 mt-2 gap-1.5 justify-center sm:justify-start">
             {[
               { id: "status", label: "☑ 카드 상태" },
               { id: "costume", label: "⟡ 관련 의상" },
