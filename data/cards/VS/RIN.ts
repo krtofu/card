@@ -229,7 +229,7 @@ const RINLeoneed = defineCharacterCards("레오니", "카가미네 린", "VS", "
         {
           info: {
             id: "VS_RIN_022",
-            cardName: "[기대 위원의 진가 발휘♪]",
+            cardName: "[재미 위원이 나설 차례♪]",
             attribute: "cute",
             gachaType: "통상",
             gachaPoolName: "Seeking my way 뽑기",
@@ -238,8 +238,8 @@ const RINLeoneed = defineCharacterCards("레오니", "카가미네 린", "VS", "
             releaseDate: "2026-07-15",
           },
           media: {
-            gachaBannerPath: "/gachas/26y/jbanner_26_20_l.png",
-            eventBannerPath: "/events/26y/jbanner_26_20_l.png",
+            gachaBannerPath: "/gachas/26y/banner_26_20_l.png",
+            eventBannerPath: "/events/26y/banner_26_20_l.png",
             songName: "투명한 팔레트",
             songJacketPath: "/jacket/26y/Transparent_Palette.png",
           },

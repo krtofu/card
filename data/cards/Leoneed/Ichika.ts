@@ -470,8 +470,8 @@ export const IchikaCards = defineCharacterCards(
           releaseDate: "2026-06-23",
         },
         media: {
-          gachaBannerPath: "/gachas/26y/jbanner_26_18_l.png",
-          eventBannerPath: "/events/26y/jbanner_26_18_l.png",
+          gachaBannerPath: "/gachas/26y/banner_26_18_l.png",
+          eventBannerPath: "/events/26y/banner_26_18_l.png",
           songName: "the WALL",
           songJacketPath: "/jacket/23y/the_WALL.png",
         },
@@ -484,7 +484,7 @@ export const IchikaCards = defineCharacterCards(
       {
         info: {
           id: "ln_Ichika_023",
-          cardName: "[비 위드 유]",
+          cardName: "[너의 곁에]",
           attribute: "cute",
           gachaType: "통상",
           gachaPoolName: "Seeking my way 뽑기",
@@ -493,8 +493,8 @@ export const IchikaCards = defineCharacterCards(
           releaseDate: "2026-07-15",
         },
         media: {
-          gachaBannerPath: "/gachas/26y/jbanner_26_20_l.png",
-          eventBannerPath: "/events/26y/jbanner_26_20_l.png",
+          gachaBannerPath: "/gachas/26y/banner_26_20_l.png",
+          eventBannerPath: "/events/26y/banner_26_20_l.png",
           songName: "투명한 팔레트",
           songJacketPath: "/jacket/26y/Transparent_Palette.png",
         },
