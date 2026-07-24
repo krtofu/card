@@ -84,13 +84,13 @@ const Wds_CARDS = [
 // ==========================================
 import { KanadeCards } from "./Niigo/Kanade"; // 👈 폴더 경로도 완벽하게 Niigo로 동기화!
 import { MafuyuCards } from "./Niigo/Mafuyu";
-// import { EnaCards } from "./Niigo/Ena";
+import { EnaCards } from "./Niigo/Ena";
 // import { MizukiCards } from "./Niigo/Mizuki";
 
 const Niigo_CARDS = [
   ...KanadeCards,
   ...MafuyuCards,
-  // ...EnaCards,
+  ...EnaCards,
   // ...MizukiCards,
 ];
 
