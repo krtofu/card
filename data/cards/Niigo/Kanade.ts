@@ -502,8 +502,8 @@ const KanadeNiigo = defineCharacterCards("니고", "요이사키 카나데", "Ni
             releaseDate: "2026-06-09",
           },
           media: {
-            gachaBannerPath: "/gachas/26y/banner_nn_n_n.png",
-            eventBannerPath: "/events/26y/banner_nn_n_n.png",
+            gachaBannerPath: "/gachas/26y/banner_26_17_n.png",
+            eventBannerPath: "/events/26y/banner_26_17_n.png",
             songName: "25시의 정열",
             songJacketPath: "/jacket/24y/25-ji_no_Jounetsu.png",
           },
