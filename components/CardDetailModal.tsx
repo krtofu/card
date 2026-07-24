@@ -9,7 +9,7 @@ import { useState, useEffect } from "react";
 import { useThemeColor } from "@/app/providers"; 
 
 // =========================================================================
-// 🌟 1. 스킬 보너스 계산 엔진 (컴포넌트 바깥에 배치!)
+// 🌟 1. 스킬 보너스 계산 엔진
 // =========================================================================
 const getSkillBonusPercentage = (skillType: string, level: number, unit: string, isAwakened: boolean, charRank: number = 1, isOwned: boolean = false) => {
   const safeLevel = Math.max(1, Math.min(4, level)); 
@@ -82,7 +82,7 @@ interface CardDetailModalProps {
   userState: UserCardState;
   onUpdateState: (id: string, newState: Partial<UserCardState>) => void;
   onClose: () => void;
-  globalSettings?: any; // 전역 설정 프롭스 추가
+  globalSettings?: any; 
 }
 
 export default function CardDetailModal({
@@ -103,9 +103,8 @@ export default function CardDetailModal({
   const [activeTooltip, setActiveTooltip] = useState<string | null>(null);
   const [activeImage, setActiveImage] = useState<'pre' | 'post' | null>(null); 
   
-  // 🌟 시뮬레이터 전용 상태들
   const [isSimAwakened, setIsSimAwakened] = useState(card?.hasAwakening ? true : false);
-  const [simMode, setSimMode] = useState<'skill' | 'bonus'>('skill'); // 👈 [추가] 배수 모드 전환용 상태
+  const [simMode, setSimMode] = useState<'skill' | 'bonus'>('skill'); 
 
   useEffect(() => {
     setMounted(true); 
@@ -113,7 +112,7 @@ export default function CardDetailModal({
       setActiveMobileTab("status");
       setIsExpandMode(false); 
       setIsSimAwakened(card.hasAwakening ? true : false);
-      setSimMode('skill'); // 👈 [추가] 카드 열릴 때 스킬 모드로 리셋
+      setSimMode('skill'); 
 
       const saved = localStorage.getItem("sekard_character_ranks");
       if (saved) {
@@ -147,13 +146,10 @@ export default function CardDetailModal({
   const currentSkillLevel = userState.isOwned ? (userState.skillLevel || 1) : simSkillLevel;
   const currentMasterRank = userState.isOwned ? (userState.masterRank || 0) : simMasterRank;
 
-  // 🌟 설정창 캐랭 우선 가져오기 (없으면 로컬 characterRank)
   const actualCharRank = globalSettings?.charRanks?.[card.character] || characterRank;
 
-  // 🌟 블페 확인용 변수 (기획자님 2번 아이디어 반영)
   const isBloomFes = (card.skillType || "").replace(/\s+/g, "").toLowerCase().includes("블페") || (card.skillType || "").replace(/\s+/g, "").toLowerCase().includes("블룸");
 
-  // 🌟 엔진 가동! 배수와 툴팁 텍스트 계산
   const calculatedSkillBonus = getSkillBonusPercentage(card.skillType || "", currentSkillLevel, card.unit || "", isSimAwakened, actualCharRank, userState.isOwned);
   const tooltipText = getSkillTooltipText(card.skillType || "", currentSkillLevel, card.unit || "", isSimAwakened, actualCharRank, userState.isOwned);
 
@@ -242,14 +238,14 @@ export default function CardDetailModal({
     return "";
   };
 
-  // 🎨 스킬명 오마카세 컬러 뱃지 (블페 버튼처럼 꽉 차고 선명한 프리미엄 테마!)
+  // 🎨 스킬명 오마카세 컬러 뱃지
   const getSkillBadgeStyle = (skill: string) => {
     if (!skill) return "bg-zinc-500 dark:bg-zinc-600 text-white shadow-sm";
     const s = skill.replace(/\s+/g, "").toLowerCase();
     
     if (s.includes("퍼스업")) return "bg-fuchsia-500 dark:bg-fuchsia-600 text-white shadow-sm";
     if (s.includes("굿스업")) return "bg-teal-500 dark:bg-teal-600 text-white shadow-sm";
-    if (s.includes("체스업") || s.includes("힐") || s.includes("회복")) return "bg-green-500 dark:bg-green-600 text-white shadow-sm"; // 🌿 체력바 초록색
+    if (s.includes("체스업") || s.includes("힐") || s.includes("회복")) return "bg-green-500 dark:bg-green-600 text-white shadow-sm"; 
     if (s.includes("팀스업")) return "bg-orange-500 dark:bg-orange-600 text-white shadow-sm";
     if (s.includes("스업")) return "bg-blue-500 dark:bg-blue-600 text-white shadow-sm";
     if (s.includes("판강") || s.includes("판정")) return "bg-violet-500 dark:bg-violet-600 text-white shadow-sm";
@@ -621,7 +617,6 @@ export default function CardDetailModal({
 
                 <div className="space-y-1.5 pt-2 border-t border-zinc-300 dark:border-zinc-700 mt-2 transition-colors">
                   <div className="flex justify-between items-center text-xs mb-1">
-                    {/* 🌟 중복 뱃지 삭제됨! 깔끔해진 라벨 */}
                     <span className="text-zinc-500 dark:text-zinc-400 font-medium transition-colors">스킬 레벨 (Lv.)</span>
                     <span className="font-bold text-[var(--mix-text-light)] dark:text-[var(--mix-text-dark)] transition-colors">
                       {userState.isOwned ? `Lv.${userState.skillLevel || 1}` : `시뮬레이션: Lv.${simSkillLevel}`}
@@ -651,7 +646,7 @@ export default function CardDetailModal({
                       {simMode === 'skill' ? '✨ 스킬 최대 효율 시뮬레이터' : '🌟 이벤트 배수 시뮬레이터'}
                     </h3>
                     
-                    {/* 🌟 블페 확인 분기: 블페면 토글, 아니면 스킬명 뱃지 표시! */}
+                    {/* 🌟 블페 확인 분기 */}
                     {isBloomFes ? (
                       <div className="flex bg-zinc-200 dark:bg-zinc-900 rounded-full p-0.5 border border-zinc-300 dark:border-zinc-700">
                         <button
@@ -692,7 +687,6 @@ export default function CardDetailModal({
                           SCORE UP
                         </div>
 
-                        {/* 💬 (i) 아이콘 및 말풍선 툴팁 */}
                         <div className="relative group flex items-center justify-center cursor-help ml-1 mb-1.5">
                           <div className="w-5 h-5 rounded-full bg-zinc-300 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300 flex items-center justify-center text-[10px] font-bold border border-zinc-400 dark:border-zinc-600 transition-colors group-hover:bg-cyan-500 group-hover:text-white group-hover:border-cyan-500">
                             i
@@ -718,22 +712,21 @@ export default function CardDetailModal({
                       </div>
                     )}
 
-                    {/* 🔄 모드 전환 버튼 (✦ / ⇪ 아이콘 토글 버튼) */}
+                    {/* 🔄 모드 전환 버튼 (아이콘 토글) */}
                     <div 
                       className="relative group flex items-center justify-center ml-2"
-                      onMouseLeave={() => setActiveTooltip(null)} // 마우스 떼면 툴팁 닫기
+                      onMouseLeave={() => setActiveTooltip(null)} 
                     >
                       <button
                         onClick={() => {
                           setSimMode(prev => prev === 'skill' ? 'bonus' : 'skill');
-                          setActiveTooltip('simModeBtn'); // 📱 모바일 터치 시 툴팁 강제 노출!
+                          setActiveTooltip('simModeBtn'); 
                         }}
                         className="w-8 h-8 rounded-full border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 shadow-sm hover:border-cyan-400 dark:hover:border-cyan-500 hover:text-cyan-600 dark:hover:text-cyan-400 active:scale-95 transition-all flex items-center justify-center text-[15px]"
                       >
                         {simMode === 'skill' ? '✦' : '⇪'}
                       </button>
                       
-                      {/* 💬 토글 주석 말풍선 툴팁 */}
                       <div className={`pointer-events-none absolute bottom-full right-0 mb-2 whitespace-nowrap transition-all duration-200 z-50 ${activeTooltip === 'simModeBtn' ? 'opacity-100' : 'opacity-0 lg:group-hover:opacity-100'}`}>
                         <div className="bg-zinc-800 dark:bg-zinc-900 text-white text-[11px] font-bold px-2.5 py-1.5 rounded-lg shadow-xl border border-zinc-700">
                           {simMode === 'skill' ? '배수 모드로 전환' : '스킬 모드로 전환'}
@@ -741,6 +734,8 @@ export default function CardDetailModal({
                         <div className="absolute top-full right-3 border-[5px] border-transparent border-t-zinc-800 dark:border-t-zinc-900"></div>
                       </div>
                     </div>
+                  </div>
+                </div>
                 {/* 🎯 시뮬레이터 구역 끝 */}
 
               </div>
