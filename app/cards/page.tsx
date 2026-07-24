@@ -43,11 +43,6 @@ const getSkillBonusPercentage = (skillType: string, level: number, unit: string,
   if (skill.includes("판강") || skill.includes("판정")) return [80, 85, 90, 100][idx];
   if (skill.includes("힐") || skill.includes("회복")) return [80, 85, 90, 100][idx];
 
-  if (skill.includes("블랑") || skill.includes("초기페스")) {
-    const isVS = unit === "무소속 / VIRTUAL SINGER" || unit.includes("버싱") || unit.includes("VS") || unit.toLowerCase().includes("virtual");
-    return isVS ? [130, 135, 140, 150][idx] : [120, 130, 140, 150][idx];
-  }
-
   return 0;
 };
 

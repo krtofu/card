@@ -8,7 +8,9 @@ import { createPortal } from "react-dom";
 import { useState, useEffect } from "react";
 import { useThemeColor } from "@/app/providers"; 
 
-// 🌟 스킬 보너스 계산 엔진 (모달 전용)
+// =========================================================================
+// 🌟 1. 스킬 보너스 계산 엔진 (컴포넌트 바깥에 배치!)
+// =========================================================================
 const getSkillBonusPercentage = (skillType: string, level: number, unit: string, isAwakened: boolean, charRank: number = 1, isOwned: boolean = false) => {
   const safeLevel = Math.max(1, Math.min(4, level)); 
   const idx = safeLevel - 1;
@@ -34,18 +36,53 @@ const getSkillBonusPercentage = (skillType: string, level: number, unit: string,
   if (skill.includes("판강") || skill.includes("판정")) return [80, 85, 90, 100][idx];
   if (skill.includes("힐") || skill.includes("회복")) return [80, 85, 90, 100][idx];
 
-  if (skill.includes("블랑") || skill.includes("초기페스")) {
-    const isVS = unit === "무소속 / VIRTUAL SINGER" || unit.includes("버싱") || unit.includes("VS") || unit.toLowerCase().includes("virtual");
-    return isVS ? [130, 135, 140, 150][idx] : [120, 130, 140, 150][idx];
-  }
   return 0;
 };
+
+// =========================================================================
+// 🌟 2. 스킬 툴팁(말풍선) 텍스트 생성기
+// =========================================================================
+export const getSkillTooltipText = (skillType: string, level: number, unit: string, isAwakened: boolean, charRank: number = 1, isOwned: boolean = false) => {
+  const safeLevel = Math.max(1, Math.min(4, level));
+  const idx = safeLevel - 1;
+  const skill = (skillType || "").replace(/\s+/g, "").toLowerCase();
+
+  if (skill.includes("블페") || skill.includes("블룸")) {
+    const isVS = unit === "무소속 / VIRTUAL SINGER" || unit.includes("버싱") || unit.includes("VS") || unit.toLowerCase().includes("virtual");
+    if (isAwakened) {
+      const maxLimits = [140, 145, 150, 160];
+      const bases = [90, 95, 100, 110];
+      if (!isOwned) return `기본 ${bases[idx]}% + 캐랭 보너스 = 최대 ${maxLimits[idx]}% (미보유 시 최대치)`;
+      const bloomBonus = Math.floor(charRank / 2);
+      const finalScore = Math.min(maxLimits[idx], bases[idx] + bloomBonus);
+      return `기본 ${bases[idx]}% + 캐랭 보너스 ${bloomBonus}% (랭크 ${charRank}) = 최종 ${finalScore}% (최대 ${maxLimits[idx]}% 제한)`;
+    } else {
+      return isVS 
+        ? `기본 ${[70, 75, 80, 90][idx]}% + 타 유닛 편성 보너스 최대 = ${[130, 135, 140, 150][idx]}% (특훈 전)`
+        : `기본 ${[60, 65, 70, 80][idx]}% + 파티원 비례 추가 보너스 = 최대 ${[120, 130, 140, 150][idx]}% (특훈 전)`;
+    }
+  }
+
+  if (skill.includes("스업") && !skill.includes("퍼스업") && !skill.includes("굿스업") && !skill.includes("체스업") && !skill.includes("팀스업") && !skill.includes("조건부")) {
+    return `5초 동안 스코어 ${[100, 105, 110, 120][idx]}% 상승 (조건 없음)`;
+  }
+  if (skill.includes("퍼스업")) return `5초 동안 PERFECT 판정 시에만 스코어 ${[110, 115, 120, 130][idx]}% 상승`;
+  if (skill.includes("굿스업")) return `기본 ${[70, 75, 80, 90][idx]}% 상승 / GOOD 이하 판정 전까지 최대 ${[120, 125, 130, 140][idx]}% 상승`;
+  if (skill.includes("체스업")) return `라이프 800 미만 ${[70, 75, 80, 90][idx]}%, 이상 ${[100, 105, 110, 120][idx]}% / 라이프 비례 최대 ${[120, 125, 130, 140][idx]}% 상승`;
+  if (skill.includes("팀스업")) return `기본 ${[80, 85, 90, 100][idx]}% 상승 / 소속 일치 인원 비례 최대 ${[130, 135, 140, 150][idx]}% 상승`;
+  if (skill.includes("판강") || skill.includes("판정")) return `${[5.5, 6, 6.5, 7][idx]}초간 BAD 이상을 PERFECT로 강화 / 스코어 ${[80, 85, 90, 100][idx]}% 상승`;
+  if (skill.includes("힐") || skill.includes("회복")) return `라이프 ${[350, 400, 450, 500][idx]} 회복 / 5초 동안 스코어 ${[80, 85, 90, 100][idx]}% 상승`;
+
+  return "스킬 상세 정보가 없습니다.";
+};
+
 
 interface CardDetailModalProps {
   card: FinalCardInfo | null;
   userState: UserCardState;
   onUpdateState: (id: string, newState: Partial<UserCardState>) => void;
   onClose: () => void;
+  globalSettings?: any; // 전역 설정 프롭스 추가
 }
 
 export default function CardDetailModal({
@@ -53,8 +90,8 @@ export default function CardDetailModal({
   userState,
   onUpdateState,
   onClose,
+  globalSettings,
 }: CardDetailModalProps) {
-  // 🌟 1. 더러운 추적기(safePrimary 등) 모두 삭제! 직통 전화기로 현재 테마 가져오기
   const { themeColor } = useThemeColor();
 
   const [isExpandMode, setIsExpandMode] = useState(false);
@@ -64,14 +101,19 @@ export default function CardDetailModal({
   const [mounted, setMounted] = useState(false);
   const [activeMobileTab, setActiveMobileTab] = useState("status");
   const [activeTooltip, setActiveTooltip] = useState<string | null>(null);
-  const [activeImage, setActiveImage] = useState<'pre' | 'post' | null>(null); // 🌟 일러스트 터치 토글용 상태 추가!
+  const [activeImage, setActiveImage] = useState<'pre' | 'post' | null>(null); 
+  
+  // 🌟 시뮬레이터 전용 상태들
+  const [isSimAwakened, setIsSimAwakened] = useState(card?.hasAwakening ? true : false);
+  const [simMode, setSimMode] = useState<'skill' | 'bonus'>('skill'); // 👈 [추가] 배수 모드 전환용 상태
 
   useEffect(() => {
     setMounted(true); 
     if (card) {
-      // 🌟 사이트의 근본은 체크리스트! 모달창이 열릴 때마다 무조건 '상태 탭'으로 리셋합니다.
       setActiveMobileTab("status");
-      setIsExpandMode(false); // (덤) 일러스트 넓게 보기도 원래대로 접어줍니다.
+      setIsExpandMode(false); 
+      setIsSimAwakened(card.hasAwakening ? true : false);
+      setSimMode('skill'); // 👈 [추가] 카드 열릴 때 스킬 모드로 리셋
 
       const saved = localStorage.getItem("sekard_character_ranks");
       if (saved) {
@@ -105,15 +147,15 @@ export default function CardDetailModal({
   const currentSkillLevel = userState.isOwned ? (userState.skillLevel || 1) : simSkillLevel;
   const currentMasterRank = userState.isOwned ? (userState.masterRank || 0) : simMasterRank;
 
-  // 💡 기존의 getSkillBonusPercentage 함수 등은 파일 바깥(상단)에 있거나 다른 곳에서 import 해온다고 가정하고 그대로 유지합니다.
-  const calculatedSkillBonus = typeof getSkillBonusPercentage === 'function' ? getSkillBonusPercentage(
-    card.skillType || "",
-    currentSkillLevel,
-    card.unit || "",
-    true, 
-    characterRank,
-    userState.isOwned
-  ) : 0;
+  // 🌟 설정창 캐랭 우선 가져오기 (없으면 로컬 characterRank)
+  const actualCharRank = globalSettings?.charRanks?.[card.character] || characterRank;
+
+  // 🌟 블페 확인용 변수 (기획자님 2번 아이디어 반영)
+  const isBloomFes = (card.skillType || "").replace(/\s+/g, "").toLowerCase().includes("블페") || (card.skillType || "").replace(/\s+/g, "").toLowerCase().includes("블룸");
+
+  // 🌟 엔진 가동! 배수와 툴팁 텍스트 계산
+  const calculatedSkillBonus = getSkillBonusPercentage(card.skillType || "", currentSkillLevel, card.unit || "", isSimAwakened, actualCharRank, userState.isOwned);
+  const tooltipText = getSkillTooltipText(card.skillType || "", currentSkillLevel, card.unit || "", isSimAwakened, actualCharRank, userState.isOwned);
 
   const costumePreviewData = hasCostume && card.costume ? {
     title: card.cardName,
@@ -166,7 +208,6 @@ export default function CardDetailModal({
       "텐마 츠카사": "Tsukasa", "오토리 에무": "Emu", "쿠사나기 네네": "Nene", "카미시로 루이": "Rui",
       "요이사키 카나데": "Kanade", "아사히나 마후유": "Mafuyu", "시노노메 에나": "Ena", "아키야마 미즈키": "Mizuki"
     };
-
     if (originalMap[charName]) return `/icons/characters/${originalMap[charName]}.png`;
 
     const vsMap: Record<string, string> = {
@@ -201,12 +242,26 @@ export default function CardDetailModal({
     return "";
   };
 
+  // 🎨 스킬명 오마카세 컬러 뱃지 (블페 버튼처럼 꽉 차고 선명한 프리미엄 테마!)
+  const getSkillBadgeStyle = (skill: string) => {
+    if (!skill) return "bg-zinc-500 dark:bg-zinc-600 text-white shadow-sm";
+    const s = skill.replace(/\s+/g, "").toLowerCase();
+    
+    if (s.includes("퍼스업")) return "bg-fuchsia-500 dark:bg-fuchsia-600 text-white shadow-sm";
+    if (s.includes("굿스업")) return "bg-teal-500 dark:bg-teal-600 text-white shadow-sm";
+    if (s.includes("체스업") || s.includes("힐") || s.includes("회복")) return "bg-green-500 dark:bg-green-600 text-white shadow-sm"; // 🌿 체력바 초록색
+    if (s.includes("팀스업")) return "bg-orange-500 dark:bg-orange-600 text-white shadow-sm";
+    if (s.includes("스업")) return "bg-blue-500 dark:bg-blue-600 text-white shadow-sm";
+    if (s.includes("판강") || s.includes("판정")) return "bg-violet-500 dark:bg-violet-600 text-white shadow-sm";
+    
+    return "bg-zinc-500 dark:bg-zinc-600 text-white shadow-sm";
+  };
+
   const currentGachaStyle = getGachaBadgeStyle(card.gachaType);
   const attrInfo = getAttrInfo(attribute);
   const skillInfo = getSkillInfo(card.skillType || ""); 
   const characterIconPath = getCharacterIcon(card.character || "", card.unit || ""); 
 
-  // 🌟 [추가] 모바일/PC에서 위치가 달라질 '카드 이름 + 뱃지' 헤더를 미리 하나의 덩어리로 묶어둡니다!
   const ModalHeader = (
     <>
       <div className="flex flex-wrap items-center gap-2.5">
@@ -225,10 +280,9 @@ export default function CardDetailModal({
           <div 
             className="relative group flex items-center justify-center cursor-help"
             onClick={() => setActiveTooltip(prev => prev === 'skill' ? null : 'skill')}
-            onMouseLeave={() => setActiveTooltip(null)} // PC에서 마우스를 떼면 초기화
+            onMouseLeave={() => setActiveTooltip(null)} 
           >
             <img src={skillInfo.src} alt={skillInfo.label} className="w-[26px] h-[26px] object-contain drop-shadow-sm dark:drop-shadow-md shrink-0" />
-            {/* 🌟 모바일은 activeTooltip 상태로 켜지고, PC(lg)에서는 호버로 켜집니다! */}
             <div className={`pointer-events-none absolute bottom-full mb-3 left-1/2 -translate-x-1/2 transition-all duration-200 z-50 ${activeTooltip === 'skill' ? 'opacity-100' : 'opacity-0 lg:group-hover:opacity-100'}`}>
               <div className="relative flex flex-col items-center">
                 <div className="relative z-10 whitespace-nowrap rounded-md border border-zinc-200 dark:border-zinc-600 bg-white dark:bg-zinc-950 px-2.5 py-1.5 text-[11px] font-bold text-zinc-800 dark:text-zinc-200 shadow-xl transition-colors">{skillInfo.label}</div>
@@ -274,7 +328,6 @@ export default function CardDetailModal({
     >
       <div className="absolute inset-0" onClick={onClose} />
       
-      {/* 🌟 2. 최상단 CSS 마스터 컨트롤: 에메랄드 감염 원인 완벽 제거! */}
       <div 
         style={{
           "--mix-bg": "color-mix(in srgb, var(--color-primary) 15%, transparent)",
@@ -286,8 +339,7 @@ export default function CardDetailModal({
           "--themed-modal-bg-light": themeColor === "default" ? "white" : "color-mix(in srgb, var(--color-primary) 12%, white)",
           "--themed-modal-bg-dark": themeColor === "default" ? "#09090b" : "color-mix(in srgb, var(--color-primary) 18%, #09090b)",
         } as React.CSSProperties}
-        // 🌟 모바일에서 뒷배경 끌림 방지를 위해 max-h-[90dvh] 설정 및 여백 최적화(p-4 md:p-6)
-        className="relative w-full max-w-6xl max-h-[90dvh] overflow-y-auto rounded-2xl md:rounded-3xl border border-zinc-300 dark:border-zinc-700 bg-[var(--themed-modal-bg-light)] dark:bg-[var(--themed-modal-bg-dark)] p-4 md:p-6 shadow-2xl transition-colors duration-500 flex flex-col custom-scrollbar"
+        className="relative w-full max-w-6xl max-h-[90dvh] overflow-y-auto rounded-2xl md:rounded-3xl border border-zinc-300 dark:border-zinc-700 bg-[var(--themed-modal-bg-light)] dark:bg-[var(--themed-modal-bg-dark)] p-4 md:p-6 shadow-2xl transition-colors duration-500 flex flex-col"
       >
 
         <button 
@@ -297,7 +349,7 @@ export default function CardDetailModal({
           ✕
         </button>
 
-        {/* 🌌 상단 배너 구역 */}
+        {/* 🌌 상단 일러스트 배너 구역 */}
         <div className={`relative -mx-4 -mt-4 md:-mx-6 md:-mt-6 ${isExpandMode ? 'h-auto' : 'h-48 sm:h-64 md:h-[360px] border-b border-zinc-300 dark:border-zinc-700'} shrink-0 flex overflow-hidden bg-zinc-100 dark:bg-zinc-900 transition-all duration-300 ease-in-out`}>
           {card.hasAwakening ? (
             <>
@@ -305,7 +357,6 @@ export default function CardDetailModal({
               <div 
                 onClick={() => setActiveImage(prev => prev === 'pre' ? null : 'pre')}
                 onMouseLeave={() => setActiveImage(null)}
-                // 🌟 범인 검거: h-48(192px)의 16:9 비율에 맞춘 모바일 전용 안전장치(max-w-[341px]) 추가!
                 className={`relative h-full transition-all duration-700 ease-in-out overflow-hidden z-10 cursor-pointer max-w-[341px] sm:max-w-[455px] md:max-w-[604px]
                   ${activeImage === 'pre' 
                     ? 'flex-[3] z-20' 
@@ -322,7 +373,6 @@ export default function CardDetailModal({
               <div 
                 onClick={() => setActiveImage(prev => prev === 'post' ? null : 'post')}
                 onMouseLeave={() => setActiveImage(null)}
-                // 🌟 여기도 동일하게 max-w-[341px] 추가!
                 className={`relative h-full transition-all duration-700 ease-in-out overflow-hidden z-10 border-l border-white/30 dark:border-white/10 cursor-pointer max-w-[341px] sm:max-w-[455px] md:max-w-[604px]
                   ${activeImage === 'post' 
                     ? 'flex-[3] z-20' 
@@ -358,13 +408,12 @@ export default function CardDetailModal({
         {/* 📝 하단부 상세정보 구역 */}
         <div className="relative z-30 flex flex-col gap-4 lg:gap-6 mt-4 lg:mt-6 shrink-0">
           
-          {/* 📱 1. 모바일 전용 헤더 (PC 화면에서는 숨겨짐) */}
+          {/* 📱 1. 모바일 전용 헤더 */}
           <div className="flex lg:hidden flex-col sm:flex-row sm:items-start justify-between gap-4 w-full border-b border-zinc-300 dark:border-zinc-700 pb-4 transition-colors">
             {ModalHeader}
           </div>
 
-          {/* 📱 2. 모바일 전용 책갈피(폴더) 탭 (PC 화면에서는 숨겨짐) */}
-          {/* 🌟 overflow-x-auto와 custom-scrollbar를 과감하게 삭제하고 flex-wrap을 넣습니다! */}
+          {/* 📱 2. 모바일 전용 책갈피 탭 */}
           <div className="flex flex-wrap lg:hidden pt-3 px-2 sm:px-3 border-b border-zinc-300 dark:border-zinc-700 mt-2 gap-1.5 justify-center sm:justify-start">
             {[
               { id: "status", label: "☑ 카드 상태" },
@@ -395,18 +444,17 @@ export default function CardDetailModal({
             })}
           </div>
 
-          {/* 🌟 3. 본문 2단 분할 영역 (PC에서는 오리지널 삼분할 레이아웃으로 복귀!) */}
+          {/* 🌟 3. 본문 2단 분할 영역 */}
           <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 mt-2 lg:mt-0">
             
-            {/* 👉 좌측 영역: (PC 헤더) + 뽑기 / 이벤트 / 악곡 (모바일에서는 'info' 탭일 때 3개가 동시에 노출됨!) */}
+            {/* 👉 좌측 영역: 뽑기 / 이벤트 / 악곡 */}
             <div className={`flex-[3] flex-col gap-6 md:gap-8 ${activeMobileTab === 'info' ? 'flex' : 'hidden'} lg:flex`}>
               
-              {/* 💻 PC 전용 헤더 (모바일에서는 숨겨지고 오직 좌측 영역 최상단에만 등장) */}
+              {/* 💻 PC 전용 헤더 */}
               <div className="hidden lg:flex flex-col sm:flex-row sm:items-start justify-between gap-4 w-full border-b border-zinc-300 dark:border-zinc-700 pb-5 transition-colors">
                 {ModalHeader}
               </div>
 
-              {/* 🎰 관련 뽑기 */}
               <div className="flex gap-3.5 pt-2 lg:pt-0">
                 <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 shrink-0 overflow-hidden flex items-center justify-center transition-colors">
                   <img src={characterIconPath} alt="Character Icon" className="w-full h-full object-contain" />
@@ -435,7 +483,6 @@ export default function CardDetailModal({
                 </div>
               </div>
 
-              {/* 🎪 관련 이벤트 */}
               <div className="flex gap-3.5">
                 <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 shrink-0 overflow-hidden flex items-center justify-center transition-colors">
                   <span className="text-zinc-400 dark:text-zinc-500 text-lg">🎪</span>
@@ -464,7 +511,6 @@ export default function CardDetailModal({
                 </div>
               </div>
 
-              {/* 🎵 관련 악곡 */}
               <div className="flex gap-3.5">
                 <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 shrink-0 overflow-hidden flex items-center justify-center transition-colors">
                   <span className="text-zinc-400 dark:text-zinc-500 text-lg">🎵</span>
@@ -500,7 +546,7 @@ export default function CardDetailModal({
             {/* 👉 우측 영역: 카드 상태 / 관련 의상 */}
             <div className={`flex-[2] w-full lg:min-w-[320px] lg:max-w-[380px] shrink-0 flex-col gap-4 md:gap-6 self-start ${['status', 'costume'].includes(activeMobileTab) ? 'flex' : 'hidden'} lg:flex`}>
               
-              {/* 📊 카드 상태 */}
+              {/* 📊 카드 상태 & 🎯 덱 시뮬레이터 구역 */}
               <div className={`${activeMobileTab === 'status' ? 'flex' : 'hidden'} lg:flex bg-zinc-50 dark:bg-zinc-950/50 border border-zinc-300 dark:border-zinc-700 rounded-2xl p-4 flex-col justify-between gap-4 transition-colors`}>
                 <div className="flex items-start justify-between gap-3 pb-2 border-b border-zinc-300 dark:border-zinc-700 transition-colors">
                   <div className="min-w-0 flex-1 flex items-baseline">
@@ -575,14 +621,8 @@ export default function CardDetailModal({
 
                 <div className="space-y-1.5 pt-2 border-t border-zinc-300 dark:border-zinc-700 mt-2 transition-colors">
                   <div className="flex justify-between items-center text-xs mb-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-zinc-500 dark:text-zinc-400 font-medium transition-colors">스킬 레벨 (Lv.)</span>
-                      {calculatedSkillBonus > 0 && (
-                        <span className="bg-[var(--mix-bg)] border border-[var(--mix-border)] text-[var(--mix-text-light)] dark:text-[var(--mix-text-dark)] px-1.5 py-0.5 rounded text-[11px] font-medium tracking-wider animate-fade-in shadow-sm flex items-center gap-0.5 transition-colors">
-                          ⇪ +{calculatedSkillBonus}%
-                        </span>
-                      )}
-                    </div>
+                    {/* 🌟 중복 뱃지 삭제됨! 깔끔해진 라벨 */}
+                    <span className="text-zinc-500 dark:text-zinc-400 font-medium transition-colors">스킬 레벨 (Lv.)</span>
                     <span className="font-bold text-[var(--mix-text-light)] dark:text-[var(--mix-text-dark)] transition-colors">
                       {userState.isOwned ? `Lv.${userState.skillLevel || 1}` : `시뮬레이션: Lv.${simSkillLevel}`}
                     </span>
@@ -603,6 +643,106 @@ export default function CardDetailModal({
                     ))}
                   </div>
                 </div>
+
+                {/* 🎯 덱 시뮬레이터 UI 구역 */}
+                <div className="mt-2 pt-4 border-t border-zinc-300 dark:border-zinc-700/50">
+                  <div className="flex justify-between items-center mb-3">
+                    <h3 className="text-[13px] font-bold text-zinc-800 dark:text-zinc-200 transition-colors">
+                      {simMode === 'skill' ? '✨ 스킬 최대 효율 시뮬레이터' : '🌟 이벤트 배수 시뮬레이터'}
+                    </h3>
+                    
+                    {/* 🌟 블페 확인 분기: 블페면 토글, 아니면 스킬명 뱃지 표시! */}
+                    {isBloomFes ? (
+                      <div className="flex bg-zinc-200 dark:bg-zinc-900 rounded-full p-0.5 border border-zinc-300 dark:border-zinc-700">
+                        <button
+                          onClick={() => setIsSimAwakened(false)}
+                          className={`px-3 py-1 text-[11px] font-semibold rounded-full transition-all ${
+                            !isSimAwakened 
+                              ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm' 
+                              : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'
+                          }`}
+                        >
+                          특훈 전
+                        </button>
+                        <button
+                          onClick={() => setIsSimAwakened(true)}
+                          className={`px-3 py-1 text-[11px] font-semibold rounded-full transition-all ${
+                            isSimAwakened 
+                              ? 'bg-cyan-500 dark:bg-cyan-600 text-white shadow-sm' 
+                              : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'
+                          }`}
+                        >
+                          특훈 후
+                        </button>
+                      </div>
+                    ) : (
+                      <div className={`px-2.5 py-1 text-[11px] font-bold rounded-full transition-colors ${getSkillBadgeStyle(card.skillType || "")}`}>
+                        {card.skillType}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex items-end justify-between">
+                    {simMode === 'skill' ? (
+                      <div className="flex items-center gap-2">
+                        <div className="text-3xl font-black text-cyan-600 dark:text-cyan-400 tracking-tight">
+                          +{calculatedSkillBonus}%
+                        </div>
+                        <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">
+                          SCORE UP
+                        </div>
+
+                        {/* 💬 (i) 아이콘 및 말풍선 툴팁 */}
+                        <div className="relative group flex items-center justify-center cursor-help ml-1 mb-1.5">
+                          <div className="w-5 h-5 rounded-full bg-zinc-300 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300 flex items-center justify-center text-[10px] font-bold border border-zinc-400 dark:border-zinc-600 transition-colors group-hover:bg-cyan-500 group-hover:text-white group-hover:border-cyan-500">
+                            i
+                          </div>
+                          
+                          <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 hidden group-hover:block w-[240px] p-2.5 bg-zinc-800 dark:bg-zinc-900 border border-zinc-700 text-zinc-100 text-[11px] leading-relaxed rounded-lg shadow-xl z-50 text-center break-keep pointer-events-none animate-fade-in-up">
+                            {tooltipText}
+                            <div className="absolute top-full left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-zinc-800 dark:border-t-zinc-900"></div>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <div className="text-3xl font-black text-amber-500 dark:text-amber-400 tracking-tight">
+                          +???%
+                        </div>
+                        <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">
+                          EVENT BONUS
+                        </div>
+                        <div className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 mb-1 ml-1 bg-zinc-200 dark:bg-zinc-800 px-1.5 py-0.5 rounded-sm">
+                          개발 중
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 🔄 모드 전환 버튼 (✦ / ⇪ 아이콘 토글 버튼) */}
+                    <div 
+                      className="relative group flex items-center justify-center ml-2"
+                      onMouseLeave={() => setActiveTooltip(null)} // 마우스 떼면 툴팁 닫기
+                    >
+                      <button
+                        onClick={() => {
+                          setSimMode(prev => prev === 'skill' ? 'bonus' : 'skill');
+                          setActiveTooltip('simModeBtn'); // 📱 모바일 터치 시 툴팁 강제 노출!
+                        }}
+                        className="w-8 h-8 rounded-full border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 shadow-sm hover:border-cyan-400 dark:hover:border-cyan-500 hover:text-cyan-600 dark:hover:text-cyan-400 active:scale-95 transition-all flex items-center justify-center text-[15px]"
+                      >
+                        {simMode === 'skill' ? '✦' : '⇪'}
+                      </button>
+                      
+                      {/* 💬 토글 주석 말풍선 툴팁 */}
+                      <div className={`pointer-events-none absolute bottom-full right-0 mb-2 whitespace-nowrap transition-all duration-200 z-50 ${activeTooltip === 'simModeBtn' ? 'opacity-100' : 'opacity-0 lg:group-hover:opacity-100'}`}>
+                        <div className="bg-zinc-800 dark:bg-zinc-900 text-white text-[11px] font-bold px-2.5 py-1.5 rounded-lg shadow-xl border border-zinc-700">
+                          {simMode === 'skill' ? '배수 모드로 전환' : '스킬 모드로 전환'}
+                        </div>
+                        <div className="absolute top-full right-3 border-[5px] border-transparent border-t-zinc-800 dark:border-t-zinc-900"></div>
+                      </div>
+                    </div>
+                {/* 🎯 시뮬레이터 구역 끝 */}
+
               </div>
 
               {/* 👗 관련 의상 */}

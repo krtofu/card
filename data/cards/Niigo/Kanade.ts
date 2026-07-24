@@ -159,8 +159,8 @@ const KanadeNiigo = defineCharacterCards("니고", "요이사키 카나데", "Ni
             releaseDate: "2023-08-19",
           },
           media: {
-            gachaBannerPath: "/gachas/23y/banner_banner_23_33.png",
-            eventBannerPath: "/events/23y/banner_banner_23_33.png",
+            gachaBannerPath: "/gachas/23y/banner_23_33.png",
+            eventBannerPath: "/events/23y/banner_23_33.png",
           },
           costume: {
             hasCostume: true,
