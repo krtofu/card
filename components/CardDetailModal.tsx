@@ -414,7 +414,7 @@ export default function CardDetailModal({
             {[
               { id: "status", label: "☑ 카드 상태" },
               { id: "costume", label: "⟡ 관련 의상" },
-              { id: "info", label: "+ 관련 뽑기 & 이벤트 & 악곡" },
+              { id: "info", label: "+ 관련 정보" },
             ].map(tab => {
               const isActive = activeMobileTab === tab.id;
               return (
@@ -672,7 +672,8 @@ export default function CardDetailModal({
                       </div>
                     ) : (
                       <div className={`px-2.5 py-1 text-[11px] font-bold rounded-full transition-colors ${getSkillBadgeStyle(card.skillType || "")}`}>
-                        {card.skillType}
+                        {/* 🌟 힐/회복이면 '라이프 회복'으로 텍스트 변경! */}
+                        {card.skillType === "힐" || card.skillType === "회복" ? "라이프 회복" : card.skillType}
                       </div>
                     )}
                   </div>
@@ -687,12 +688,18 @@ export default function CardDetailModal({
                           SCORE UP
                         </div>
 
-                        <div className="relative group flex items-center justify-center cursor-help ml-1 mb-1.5">
+                        {/* 💬 (i) 아이콘 및 모바일 터치 / PC 호버 대응 툴팁 */}
+                        <div 
+                          className="relative group flex items-center justify-center cursor-help ml-1 mb-1.5"
+                          onClick={() => setActiveTooltip(prev => prev === 'simInfo' ? null : 'simInfo')}
+                          onMouseLeave={() => setActiveTooltip(null)}
+                        >
                           <div className="w-5 h-5 rounded-full bg-zinc-300 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300 flex items-center justify-center text-[10px] font-bold border border-zinc-400 dark:border-zinc-600 transition-colors group-hover:bg-cyan-500 group-hover:text-white group-hover:border-cyan-500">
                             i
                           </div>
                           
-                          <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 hidden group-hover:block w-[240px] p-2.5 bg-zinc-800 dark:bg-zinc-900 border border-zinc-700 text-zinc-100 text-[11px] leading-relaxed rounded-lg shadow-xl z-50 text-center break-keep pointer-events-none animate-fade-in-up">
+                          {/* 🌟 모바일은 클릭(activeTooltip), PC는 호버(group-hover)로 양쪽 다 작동! */}
+                          <div className={`absolute bottom-full mb-2 left-1/2 -translate-x-1/2 transition-all duration-200 z-50 ${activeTooltip === 'simInfo' ? 'block' : 'hidden'} lg:group-hover:block w-[240px] p-2.5 bg-zinc-800 dark:bg-zinc-900 border border-zinc-700 text-zinc-100 text-[11px] leading-relaxed rounded-lg shadow-xl text-center break-keep pointer-events-none animate-fade-in-up`}>
                             {tooltipText}
                             <div className="absolute top-full left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-zinc-800 dark:border-t-zinc-900"></div>
                           </div>
