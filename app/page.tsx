@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useEffect } from "react";
 import Image from "next/image";
-import Link from "next/link"; // 미래시 연결용 링크
+import Link from "next/link"; 
 
 import GachaCard from "@/components/GachaCard";
 import NoticePanel from "@/components/NoticePanel";
@@ -41,59 +41,67 @@ const UNIT_GROUPS = [
 
 export default function Home() {
   const [selectedType, setSelectedType] = useState<GachaType>("통상");
-  const [region, setRegion] = useState<Region>("한섭"); // 🌟 한섭/일섭 뼈대 스위치
+  const [region, setRegion] = useState<Region>("한섭"); 
+
+  // =========================================================================
+  // 🌟 4번 지시: 복각 배너 실시간 처리 (기존 UI 파괴 없이 데이터만 필터링)
+  // =========================================================================
+  const [activeReprintSections, setActiveReprintSections] = useState(REPRINT_SECTIONS);
+
+  useEffect(() => {
+    const updateReruns = () => {
+      const now = new Date();
+
+      // 기존 REPRINT_SECTIONS (또는 나중에 연결하실 FUTURE_EVENTS) 데이터에서
+      // 현재 시간에 '진행 중'인 데이터만 실시간으로 걸러내는 뼈대 로직입니다.
+      const filtered = REPRINT_SECTIONS.filter((section: any) => {
+        // ※ 실제 데이터 구조에 맞게 startDate, endDate를 가져오도록 맵핑하시면 됩니다.
+        if (section.startDate && section.endDate) {
+          const start = new Date(section.startDate);
+          const end = new Date(section.endDate);
+          return now >= start && now <= end;
+        }
+        return true; // 날짜 속성이 없는 테스트 데이터면 기본적으로 통과
+      });
+
+      // 진행 중인 배너가 없으면 기본값, 있으면 필터링된 배너로 상태 업데이트
+      setActiveReprintSections(filtered.length > 0 ? filtered : REPRINT_SECTIONS);
+    };
+
+    updateReruns(); // 켜지자마자 1회 실행
+    const timer = setInterval(updateReruns, 60000); // 1분마다 체크해서 자동 교체
+    return () => clearInterval(timer);
+  }, []);
+  // =========================================================================
 
   const currentVideo = YT_META[region];
-  const currentGacha = useMemo(
-    () => GACHA_DATA[selectedType],
-    [selectedType]
-  );
-
-  const costumePreview = useMemo(
-    () => COSTUME_PREVIEWS[selectedType],
-    [selectedType]
-  );
+  const currentGacha = useMemo(() => GACHA_DATA[selectedType], [selectedType]);
+  const costumePreview = useMemo(() => COSTUME_PREVIEWS[selectedType], [selectedType]);
 
   const worldLinkColor = useMemo(() => {
     if (selectedType !== "월링") return null;
-
-    // ✅ 1) 월링 + 기준이 "character"면 버싱 캐릭터 색
     if (currentGacha.worldLinkBase?.kind === "character") {
-      const name = currentGacha.worldLinkBase.value; // VirtualSinger
+      const name = currentGacha.worldLinkBase.value; 
       return VIRTUAL_SINGER_COLORS[name];
     }
-
-    // ✅ 2) 월링 + 기준이 "unit"이면 유닛색
     if (currentGacha.worldLinkBase?.kind === "unit") {
-      const unit = currentGacha.worldLinkBase.value; // UnitName
+      const unit = currentGacha.worldLinkBase.value; 
       return UNIT_COLORS[unit];
     }
-
-    // ✅ 3) fallback: tags에서 단일 유닛 찾기
     const unit = currentGacha.tags?.find((t) => t in UNIT_COLORS);
     if (unit) return UNIT_COLORS[unit as keyof typeof UNIT_COLORS];
-
     return null;
   }, [selectedType, currentGacha]);
 
-  // ✅ 속성 추출
-  const { attrs: gachaAttrs } = useMemo(
-    () => parseAttrsFromNote(currentGacha.note),
-    [currentGacha.note]
-  );
-
+  const { attrs: gachaAttrs } = useMemo(() => parseAttrsFromNote(currentGacha.note), [currentGacha.note]);
   const keywords = useMemo(() => {
     const base = currentGacha.tags ?? [];
     const merged = Array.from(new Set([...base, ...gachaAttrs]));
     return merged.sort((a, b) => getKeywordRank(a) - getKeywordRank(b));
   }, [currentGacha.tags, gachaAttrs]);
 
-  const toggleRegion = () =>
-    setRegion((prev) => (prev === "한섭" ? "일섭" : "한섭"));
+  const toggleRegion = () => setRegion((prev) => (prev === "한섭" ? "일섭" : "한섭"));
 
-  // ==========================================
-  // 🚀 [리뉴얼 핵심] 서버 연동형 통계 및 미래시 로직
-  // ==========================================
   const { themeColor } = useThemeColor();
   const [cardStates, setCardStates] = useState<Record<string, { isOwned?: boolean }>>({});
   const [mounted, setMounted] = useState(false);
@@ -104,7 +112,6 @@ export default function Home() {
     if (saved) try { setCardStates(JSON.parse(saved)); } catch (e) {}
   }, []);
 
-  // 오늘 날짜 기준 미래시 가챠 자동 세팅
   const autoDetectedGachaType = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -131,21 +138,15 @@ export default function Home() {
     if (autoDetectedGachaType) setSelectedType(autoDetectedGachaType);
   }, [autoDetectedGachaType]);
 
-  // 🌟 [기획자님 천재적 아이디어 반영] region(한섭/일섭)에 맞춰 유동적으로 변하는 4성 통계창!
   const stats = useMemo(() => {
     let total = 0;
     let owned = 0;
     const unitStats: Record<string, { total: number; owned: number }> = {};
     UNIT_GROUPS.forEach(u => unitStats[u.id] = { total: 0, owned: 0 });
-
     const today = new Date();
 
     ALL_CARDS.forEach(card => {
-      // 🔒 한섭 모드일 때는 미출시 카드(출시일이 오늘보다 미래인 카드)를 분모/통계에서 완전히 제외시킵니다!
-      if (region === "한섭" && card.releaseDate && new Date(card.releaseDate) > today) {
-        return; 
-      }
-
+      if (region === "한섭" && card.releaseDate && new Date(card.releaseDate) > today) return; 
       total++;
       if (cardStates[card.id]?.isOwned) owned++;
       const unitStr = (card.unit || "").toLowerCase();
@@ -155,11 +156,9 @@ export default function Home() {
         if (cardStates[card.id]?.isOwned) unitStats[matchedUnit.id].owned++;
       }
     });
-
     return { total, owned, unitStats };
-  }, [cardStates, region]); // 💡 region이 바뀔 때마다 실시간으로 수집율이 재계산됩니다!
+  }, [cardStates, region]); 
 
-  // 실시간 미래시 감지
   const { liveEvents, upcomingEvents } = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -187,10 +186,12 @@ export default function Home() {
   return (
     <div className="space-y-6 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 w-full py-6">
       
-      {/* Top */}
-      <ReprintSection sections={REPRINT_SECTIONS} />
+      {/* ========================================================================= */}
+      {/* 🌟 Top: 기획자님의 오리지널 UI 복구 + 실시간 데이터(activeReprintSections) 주입! */}
+      {/* ========================================================================= */}
+      <ReprintSection sections={activeReprintSections} />
 
-      {/* 📊 2번 지시: 구 비디오 패널 프레임 유지 + 내부에 실시간 통계 연동 대시보드 삽입 */}
+      {/* 📊 구 비디오 패널 프레임 유지 + 내부에 실시간 통계 연동 대시보드 삽입 */}
       <VideoPanel
         region={region}
         ytId={YT_IDS[region]}
@@ -202,7 +203,6 @@ export default function Home() {
             <h2 className="text-xl font-bold text-zinc-800 dark:text-zinc-100 flex items-center gap-2">
               <span className="text-2xl">🏆</span> 4성 수집 달성률
             </h2>
-            {/* 🌟 현재 어떤 모드로 통계가 나오고 있는지 친절한 서브 뱃지 추가 */}
             <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full transition-colors border ${region === "한섭" ? 'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20' : 'bg-blue-50 text-indigo-600 border-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-400 dark:border-indigo-500/20'}`}>
               {region === "한섭" ? "🇰🇷 현재 한섭 출시 기준" : "🇯🇵 일섭 미래시 포함 기준"}
             </span>
@@ -229,7 +229,7 @@ export default function Home() {
             </div>
           </div>
 
-          {/* 유닛별 진행도 (3단 분할 시원한 뷰) */}
+          {/* 유닛별 진행도 */}
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
             {UNIT_GROUPS.map(unit => {
               const uStat = stats.unitStats[unit.id];
@@ -258,7 +258,7 @@ export default function Home() {
         </div>
       </VideoPanel>
 
-      {/* 🚨 3번 지시: 실시간 미래시 대시보드 (의상 프리뷰 위쪽 공간 B안 가로형 배치) */}
+      {/* 실시간 미래시 대시보드 */}
       <section className="bg-white dark:bg-zinc-900/50 rounded-3xl p-6 border border-zinc-200 dark:border-white/10 shadow-sm transition-colors">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold text-zinc-800 dark:text-zinc-100 flex items-center gap-2">
@@ -292,10 +292,8 @@ export default function Home() {
 
       {/* Bottom: Costume Preview + Gacha */}
       <section className="grid gap-4 lg:grid-cols-[360px_1fr]">
-        {/* ✅ 왼쪽: 의상 프리뷰 (탭에 연동) */}
         <CostumePreviewCard preview={costumePreview} />
 
-        {/* ✅ 오른쪽: 가챠 */}
         <div className="relative p-4">
           <GachaTabs
             types={GACHA_TYPES}
@@ -309,11 +307,7 @@ export default function Home() {
                     const b = getKeywordBadgeStyle(k, currentGacha);
 
                     return (
-                      <span
-                        key={k}
-                        className={"group relative " + b.className}
-                        style={b.style}
-                      >
+                      <span key={k} className={"group relative " + b.className} style={b.style}>
                         {b.iconSrc ? (
                           <Image src={b.iconSrc} alt={b.label} width={27} height={27} className="block" />
                         ) : ( b.label )}

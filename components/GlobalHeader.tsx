@@ -14,8 +14,8 @@ export default function GlobalHeader() {
   const [isFilterOpen, setIsFilterOpen] = useState(true); 
   const pathname = usePathname();
   
-  // 🌟 [핵심 변경] 카드 페이지('/cards') 또는 미래시 페이지('/future')일 때 햄버거 버튼 활성화 허가!
-  const isShowHamburgerAllowed = pathname === "/cards" || pathname === "/future";
+  // 🌟 [핵심 변경] 이벤컷('/eventcuts') 페이지에서도 햄버거 버튼 활성화를 허가합니다!
+  const isShowHamburgerAllowed = pathname === "/cards" || pathname === "/future" || pathname === "/eventcuts";
 
   useEffect(() => {
     const savedRanks = localStorage.getItem("sekard_character_ranks");
@@ -28,7 +28,6 @@ export default function GlobalHeader() {
   // 🌟 무전기 수신: 각 페이지에서 쏘는 무전을 받아 상태를 즉각 반영합니다.
   useEffect(() => {
     const handleFilterState = (e: any) => {
-      // console.log("헤더가 무전을 받았습니다! 서랍 열림 상태:", e.detail); // 확인용 로그 (숨김 처리)
       setIsFilterOpen(e.detail);
     };
     window.addEventListener("sekard_filter_state", handleFilterState);
@@ -48,7 +47,7 @@ export default function GlobalHeader() {
         <div className="mx-auto flex h-14 w-full max-w-[1920px] items-center justify-between px-4 md:px-8">
           
           <div className="flex items-center gap-2 shrink-0 mr-auto">
-            {/* 🌟 햄버거 버튼: 카드 또는 미래시 페이지이면서, 필터가 닫혀있을 때만 뿅 나타납니다! */}
+            {/* 🌟 햄버거 버튼 */}
             {isShowHamburgerAllowed && !isFilterOpen && (
               <button
                 onClick={() => window.dispatchEvent(new CustomEvent("toggle_sekard_filter"))}
@@ -65,12 +64,17 @@ export default function GlobalHeader() {
             </Link>
           </div>
 
-          <nav className="flex items-center gap-2 text-sm shrink-0">
-            <Link href="/cards" className="rounded-lg px-3 py-1.5 font-semibold text-zinc-600 hover:text-primary hover:bg-primary/10 dark:text-zinc-300 dark:hover:text-primary dark:hover:bg-primary/20 transition-all">
+          <nav className="flex items-center gap-1 sm:gap-2 text-sm shrink-0">
+            <Link href="/cards" className={`rounded-lg px-2.5 sm:px-3 py-1.5 font-semibold transition-all ${pathname === '/cards' ? 'text-primary bg-primary/10 dark:bg-primary/20' : 'text-zinc-600 hover:text-primary hover:bg-primary/5 dark:text-zinc-300 dark:hover:text-primary dark:hover:bg-primary/10'}`}>
               내 카드
             </Link>
-            <Link href="/future" className="rounded-lg px-3 py-1.5 font-semibold text-zinc-600 hover:text-primary hover:bg-primary/10 dark:text-zinc-300 dark:hover:text-primary dark:hover:bg-primary/20 transition-all">
+            <Link href="/future" className={`rounded-lg px-2.5 sm:px-3 py-1.5 font-semibold transition-all ${pathname === '/future' ? 'text-primary bg-primary/10 dark:bg-primary/20' : 'text-zinc-600 hover:text-primary hover:bg-primary/5 dark:text-zinc-300 dark:hover:text-primary dark:hover:bg-primary/10'}`}>
               미래시
+            </Link>
+            
+            {/* 🌟 이벤컷 탭 추가! (다른 탭들과 동일한 스타일 및 활성화 로직 적용) */}
+            <Link href="/eventcuts" className={`rounded-lg px-2.5 sm:px-3 py-1.5 font-semibold transition-all ${pathname === '/eventcuts' ? 'text-primary bg-primary/10 dark:bg-primary/20' : 'text-zinc-600 hover:text-primary hover:bg-primary/5 dark:text-zinc-300 dark:hover:text-primary dark:hover:bg-primary/10'}`}>
+              이벤컷
             </Link>
 
             <ThemeToggle />

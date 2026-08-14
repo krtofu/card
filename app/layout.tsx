@@ -17,8 +17,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
           <main className="w-full">{children}</main>
 
-          <footer className="mx-auto w-full max-w-[1920px] px-4 md:px-8 pb-10 pt-6 text-xs text-zinc-500">
-            개인 제작 사이트 · 데이터/이미지의 권리는 각 권리자에게 있습니다.
+          <footer className="mx-auto w-full max-w-[1920px] px-4 md:px-8 pb-10 pt-6 text-xs text-zinc-500 flex flex-col md:flex-row items-center gap-1 md:gap-2">
+            <span>개인 제작 사이트 · 데이터/이미지의 권리는 각 권리자에게 있습니다.</span>
+            <span className="hidden md:inline-block">|</span>
+            <span>이벤컷 데이터 제공 : ☆ミク님</span>
           </footer>
         </Providers>
       </body>
