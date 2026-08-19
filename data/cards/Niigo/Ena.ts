@@ -597,6 +597,29 @@ const EnaNiigo = defineCharacterCards("니고", "시노노메 에나", "Niigo", 
             costumeName: "cherished moment",
           },
         },
+        {
+          info: {
+            id: "ng_Ena_029",
+            cardName: "[그때 말하지 못했던 것]",
+            attribute: "cool",
+            gachaType: "월링",
+            gachaPoolName: "Crawl out of Vibrant hell 뽑기",
+            eventName: "Again And Again Ambition!",
+            skillType: "스업",
+            releaseDate: "2027-08-17",
+          },
+          media: {
+            gachaBannerPath: "/gachas/27y/jbanner_27_24.png",
+            eventBannerPath: "/events/27y/jbanner_27_24.png",
+            songName: "미공개",
+            songJacketPath: "/jacket/27y/추후첨부.png",
+          },
+          costume: {
+            hasCostume: true,
+            costumeName: "Painting ambition",
+            hasHair: true,
+          },
+        },
   ]
 });
 
