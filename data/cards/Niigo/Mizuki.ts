@@ -162,8 +162,8 @@ const MizukiNiigo = defineCharacterCards("니고", "아키야마 미즈키", "Ni
             releaseDate: "2023-07-10",
           },
           media: {
-            gachaBannerPath: "/gachas/23y/banner_nn_n_n.png",
-            eventBannerPath: "/events/23y/banner_nn_n_n.png",
+            gachaBannerPath: "/gachas/23y/banner_23_28.png",
+            eventBannerPath: "/events/23y/banner_23_28.png",
           },
           costume: {
             hasCostume: true,
