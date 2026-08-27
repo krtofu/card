@@ -490,18 +490,18 @@ const EnaNiigo = defineCharacterCards("니고", "시노노메 에나", "Niigo", 
         {
           info: {
             id: "ng_Ena_024",
-            cardName: "[열렬한 환영에 쩔쩔매고!]",
+            cardName: "[열렬한 환영에 우물쭈물!]",
             attribute: "happy",
             gachaType: "통상",
-            gachaPoolName: "너에게 활짝 피는 fuzzy daisy 뽑기",
+            gachaPoolName: "너를 향해 웃는 fuzzy daisy 뽑기",
             eventName: "풀리지 않는 내일에 손을 뻗어서",
             skillType: "퍼스업",
             releaseDate: "2026-08-22",
           },
           media: {
-            gachaBannerPath: "/gachas/26y/jbanner_26_24_n.png",
-            eventBannerPath: "/events/26y/jbanner_26_24_n.png",
-            songName: "장식하며",
+            gachaBannerPath: "/gachas/26y/banner_26_24_n.png",
+            eventBannerPath: "/events/26y/banner_26_24_n.png",
+            songName: "장식해",
             songJacketPath: "/jacket/26y/Kazatte.png",
           },
           costume: {
