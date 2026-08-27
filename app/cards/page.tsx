@@ -673,7 +673,7 @@ export default function MyCardsPage() {
       <div className="flex-1 flex flex-col min-w-0 bg-zinc-50/50 dark:bg-zinc-900/30 rounded-3xl p-4 md:p-6 border border-zinc-200 dark:border-white/5 relative shadow-sm transition-colors duration-300">
         
         {/* 🌟 컨트롤 바 (Sticky): 상단 여백을 없애서 박스 천장에 완벽하게 밀착시켰습니다! */}
-        <div className="sticky top-0 bg-white/90 dark:bg-zinc-950/85 backdrop-blur-md py-4 -mt-4 md:-mt-6 -mx-4 md:-mx-6 px-4 md:px-6 rounded-t-3xl border-b border-zinc-200 dark:border-white/5 z-50 flex flex-wrap items-center justify-end gap-x-4 gap-y-3 mb-6 transition-colors duration-300">
+        <div className="sticky top-14 bg-white/90 dark:bg-zinc-950/85 backdrop-blur-md py-4 -mt-4 md:-mt-6 -mx-4 md:-mx-6 px-4 md:px-6 rounded-t-3xl border-b border-zinc-200 dark:border-white/5 z-50 flex flex-wrap items-center justify-end gap-x-4 gap-y-3 mb-6 transition-colors duration-300">
           
           {/* 🎯 1. 타이틀 구역 (mr-auto 마법: 남는 공간을 모두 밀어내서 우측 요소들을 끝으로 보냅니다) */}
           <div className="shrink-0 mr-auto">

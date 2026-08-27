@@ -740,7 +740,7 @@ export default function FuturePage() {
       <div className="flex-1 flex flex-col min-w-0 bg-zinc-50/50 dark:bg-zinc-900/30 rounded-3xl p-4 md:p-6 border border-zinc-200 dark:border-white/5 relative transition-colors">
         
         {/* 🌟 글로벌 헤더(<GlobalHeader />) 바로 아랫선에 빈틈없이 붙어서 따라오도록 높이 재단 완료! */}
-        <div className="sticky top-14 xl:top-16 bg-white/85 dark:bg-zinc-950/85 backdrop-blur-md py-4 -mx-4 md:-mx-6 px-4 md:px-6 rounded-t-3xl border-b border-zinc-200 dark:border-white/5 z-[100] flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-4 transition-colors">
+        <div className="sticky top-14 xl:top-14 bg-white/85 dark:bg-zinc-950/85 backdrop-blur-md py-4 -mx-4 md:-mx-6 px-4 md:px-6 rounded-t-3xl border-b border-zinc-200 dark:border-white/5 z-[100] flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-4 transition-colors">
           <div className="shrink-0 mr-auto">
             <div className="flex items-center gap-3">
               <h1 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-white shrink-0 transition-colors">📅 미래시 타임라인</h1>
