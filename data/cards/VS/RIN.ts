@@ -248,6 +248,29 @@ const RINLeoneed = defineCharacterCards("레오니", "카가미네 린", "VS", "
             costumeName: "Cheer of neighbor",
           },
         },
+        {
+          info: {
+            id: "VS_RIN_028",
+            cardName: "[할 일이 가득?!]",
+            attribute: "cute",
+            gachaType: "한정",
+            gachaPoolName: "Tucked in a box 뽑기",
+            eventName: "Echo of a Prayer",
+            skillType: "팀스업",
+            releaseDate: "2027-07-31",
+          },
+          media: {
+            gachaBannerPath: "/gachas/27y/jbanner_27_22_l.png",
+            eventBannerPath: "/events/27y/jbanner_27_22_l.png",
+            songName: "천칭, 손끝으로 닿으며",
+            songJacketPath: "/jacket/27y/Tenbin_Yubisaki_de_Furete.png",
+          },
+          costume: {
+            hasCostume: true,
+            costumeName: "Accompany dress",
+            hasHair: true,
+          },
+        },
   ]
 });
 
