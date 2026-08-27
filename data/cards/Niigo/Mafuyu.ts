@@ -332,7 +332,7 @@ const MafuyuNiigo = defineCharacterCards("니고", "아사히나 마후유", "Ni
             gachaType: "통상",
             gachaPoolName: "Memory of Melody 뽑기",
             eventName: "그날, 연주한 음색을",
-            skillType: "스업",
+            skillType: "판강",
             releaseDate: "2024-12-20",
           },
           media: {
