@@ -7,7 +7,7 @@ import { MIKUCards } from "./VS/MIKU";
 import { RINCards } from "./VS/RIN";
 import { LENCards } from "./VS/LEN";
 import { LUKACards } from "./VS/LUKA";
-// import { MEIKOCards } from "./VS/MEIKO";
+import { MEIKOCards } from "./VS/MEIKO";
 import { KAITOCards } from "./VS/KAITO";
 
 const VS_CARDS = [
@@ -15,7 +15,7 @@ const VS_CARDS = [
   ...RINCards,
   ...LENCards,
   ...LUKACards,
-  // ...MEIKOCards,
+  ...MEIKOCards,
   ...KAITOCards,
 ];
 
@@ -85,13 +85,13 @@ const Wds_CARDS = [
 import { KanadeCards } from "./Niigo/Kanade"; // 👈 폴더 경로도 완벽하게 Niigo로 동기화!
 import { MafuyuCards } from "./Niigo/Mafuyu";
 import { EnaCards } from "./Niigo/Ena";
-// import { MizukiCards } from "./Niigo/Mizuki";
+import { MizukiCards } from "./Niigo/Mizuki";
 
 const Niigo_CARDS = [
   ...KanadeCards,
   ...MafuyuCards,
   ...EnaCards,
-  // ...MizukiCards,
+  ...MizukiCards,
 ];
 
 // ==========================================
