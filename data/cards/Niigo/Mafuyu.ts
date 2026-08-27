@@ -552,7 +552,7 @@ const MafuyuNiigo = defineCharacterCards("니고", "아사히나 마후유", "Ni
             releaseDate: "2027-03-30",
           },
           media: {
-            gachaBannerPath: "/gachas/27y/jbanner_27_f21",
+            gachaBannerPath: "/gachas/27y/jbanner_27_f21.png",
             eventBannerPath: "/events/27y/jbanner_27_10_w.png",
             songName: "꼭두각시의 현실",
             songJacketPath: "/jacket/27y/Puppet.png",
