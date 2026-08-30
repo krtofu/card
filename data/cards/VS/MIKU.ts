@@ -130,7 +130,7 @@ const MIKUOriginal = defineCharacterCards("버싱", "하츠네 미쿠", "VS", "M
         gachaPoolName: "Velvet Afternoon 뽑기",
         eventName: "Link the Beats!",
         skillType: "스업",
-        releaseDate: "2025-09-06",
+        releaseDate: "2026-09-06",
       },
       media: {
         gachaBannerPath: "/gachas/26y/jbanner_26_26_0.png",
