@@ -121,8 +121,8 @@ const MEIKOOriginal = defineCharacterCards("버싱", "메이코", "VS", "MEIKO",
           media: {
             gachaBannerPath: "/gachas/27y/jbanner_27_24.png",
             eventBannerPath: "/events/27y/jbanner_27_24.png",
-            songName: "미공개",
-            songJacketPath: "/jacket/27y/추후첨부.png",
+            songName: "안티 재능",
+            songJacketPath: "/jacket/27y/ANTI_SAINOU.png",
           },
           costume: {
             hasCostume: true,
