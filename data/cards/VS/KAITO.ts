@@ -104,7 +104,7 @@ const KAITOOriginal = defineCharacterCards("버싱", "카이토", "VS", "KAITO",
             gachaBannerPath: "/gachas/26y/jbanner_26_26_0.png",
             eventBannerPath: "/events/26y/jbanner_26_26_0.png",
             songName: "톤데모 원더즈",
-            songJacketPath: "/jacket/22y/Tondemo-Wonderz.png",
+            songJacketPath: "/jacket/22y/Tondemo_Wonderz.png",
           },
           costume: {
             hasCostume: true,

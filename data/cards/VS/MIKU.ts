@@ -29,7 +29,7 @@ const MIKUOriginal = defineCharacterCards("버싱", "하츠네 미쿠", "VS", "M
         cardName: "[적어도, 나에게]",
         attribute: "pure",
         gachaType: "페스",
-        gachaPoolName: "컬러풀 페스티벌 드림 픽 뽑기",
+        gachaPoolName: "[390만 명 돌파 기념] 컬러풀 페스티벌 드림 픽 뽑기",
         skillType: "굿스업",
         releaseDate: "2023-10-16",
       },

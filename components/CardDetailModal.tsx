@@ -238,19 +238,41 @@ export default function CardDetailModal({
     return "";
   };
 
-  // 🎨 스킬명 오마카세 컬러 뱃지
-  const getSkillBadgeStyle = (skill: string) => {
-    if (!skill) return "bg-zinc-500 dark:bg-zinc-600 text-white shadow-sm";
+  // 🎨 스킬명 오마카세 컬러 뱃지 (전체 스킬 프리미엄 뱃지 이식 완료!)
+  const getSkillBadgeStyle = (skill: string, unitName: string = "") => {
+    // ✨ 기획자님의 프리미엄 효과 압축 변수 (모든 뱃지에 공통으로 발라줍니다!)
+    const premiumStyle = "text-white border border-white/35 bg-[linear-gradient(180deg,rgba(255,255,255,0.18),rgba(255,255,255,0)_55%)] [text-shadow:0px_1px_2px_rgba(24,24,27,0.5),0px_0px_3px_rgba(24,24,27,0.2)] shadow-sm";
+
+    if (!skill) return `bg-zinc-400 dark:bg-zinc-500 ${premiumStyle}`;
     const s = skill.replace(/\s+/g, "").toLowerCase();
     
-    if (s.includes("퍼스업")) return "bg-fuchsia-500 dark:bg-fuchsia-600 text-white shadow-sm";
-    if (s.includes("굿스업")) return "bg-teal-500 dark:bg-teal-600 text-white shadow-sm";
-    if (s.includes("체스업") || s.includes("힐") || s.includes("회복")) return "bg-green-500 dark:bg-green-600 text-white shadow-sm"; 
-    if (s.includes("팀스업")) return "bg-orange-500 dark:bg-orange-600 text-white shadow-sm";
-    if (s.includes("스업")) return "bg-blue-500 dark:bg-blue-600 text-white shadow-sm";
-    if (s.includes("판강") || s.includes("판정")) return "bg-violet-500 dark:bg-violet-600 text-white shadow-sm";
+    // 🌟 1. 팀스업일 경우 (유닛 컬러 적용)
+    if (s.includes("팀스업")) {
+      const lowerUnit = unitName.toLowerCase();
+      let bgColor = "bg-orange-400 dark:bg-orange-500"; // 못 찾았을 때의 기본 주황도 화사하게 변경!
+      
+      if (lowerUnit.includes("레오니") || lowerUnit.includes("leo") || lowerUnit === "l/n") bgColor = "bg-[#4455dd]";
+      else if (lowerUnit.includes("모모점") || lowerUnit.includes("more") || lowerUnit === "mmj") bgColor = "bg-[#88dd44]";
+      else if (lowerUnit.includes("비배스") || lowerUnit.includes("vivid") || lowerUnit === "vbs") bgColor = "bg-[#ee1166]";
+      else if (lowerUnit.includes("원더쇼") || lowerUnit.includes("wonder") || lowerUnit === "wds") bgColor = "bg-[#ff9900]";
+      else if (lowerUnit.includes("니고") || lowerUnit.includes("25") || lowerUnit === "ng" || lowerUnit === "niigo") bgColor = "bg-[#884499]";
+      else if (lowerUnit.includes("버싱") || lowerUnit.includes("virtual") || lowerUnit === "vs") bgColor = "bg-[#33ccbb]";
+      
+      return `${bgColor} ${premiumStyle}`;
+    }
     
-    return "bg-zinc-500 dark:bg-zinc-600 text-white shadow-sm";
+    // 🌟 2. 나머지 스킬들 (화사하고 쨍한 컬러로 전면 교체!)
+    if (s.includes("퍼스업")) return `bg-[#ff3388] dark:bg-[#ff4499] ${premiumStyle}`; // 💖 쨍한 형광 분홍
+    if (s.includes("굿스업")) return `bg-sky-400 dark:bg-sky-500 ${premiumStyle}`; // 💎 맑은 하늘색
+    
+    // 🔥 체스업과 힐(회복) 분리!
+    if (s.includes("체스업")) return `bg-emerald-400 dark:bg-emerald-500 ${premiumStyle}`; // 🍀 체스업은 기존 에메랄드 초록 유지
+    if (s.includes("힐") || s.includes("회복")) return `bg-[#a3e635] dark:bg-[#84cc16] ${premiumStyle}`; // 🍏 힐은 화사하고 생기있는 연두색(라임)으로 독립!
+    
+    if (s.includes("스업")) return `bg-[#15cabb] dark:bg-[#1addcc] ${premiumStyle}`; // 💠 아이콘 색에 맞춘 쨍한 민트
+    if (s.includes("판강") || s.includes("판정")) return `bg-violet-400 dark:bg-violet-500 ${premiumStyle}`; // 🔮 밝고 화사한 보라
+    
+    return `bg-zinc-400 dark:bg-zinc-500 ${premiumStyle}`;
   };
 
   const currentGachaStyle = getGachaBadgeStyle(card.gachaType);
@@ -468,7 +490,17 @@ export default function CardDetailModal({
                           </div>
                         )}
                       </div>
-                      <span className="text-xs text-zinc-500 dark:text-zinc-400 font-medium transition-colors">({card.gachaPoolName})</span>
+
+                      {/* 🌟 뽑기 이름과 출시일(yyyy.mm.dd)을 나란히 배치! */}
+                      <div className="mt-1 text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400 font-medium transition-colors">
+                        · {card.gachaPoolName}
+                        {card.releaseDate && (
+                          <>
+                            <span className="mx-1.5 text-zinc-300 dark:text-zinc-600">|</span>
+                            <span className="font-mono tracking-tight">{card.releaseDate.replace(/-/g, ".")}</span> 
+                          </>
+                        )}
+                      </div>
                     </>
                   ) : (
                     <div className="w-full max-w-[480px] h-24 sm:h-28 bg-zinc-50 dark:bg-zinc-900/30 border border-zinc-200 dark:border-white/10 border-dashed rounded-xl flex flex-col items-center justify-center gap-2 transition-colors">
@@ -496,7 +528,7 @@ export default function CardDetailModal({
                           </div>
                         )}
                       </div>
-                      <span className="text-xs text-zinc-500 dark:text-zinc-400 font-medium transition-colors">{card.eventName}</span>
+                      <span className="text-xs text-zinc-500 dark:text-zinc-400 font-medium transition-colors">· {card.eventName}</span>
                     </>
                   ) : (
                     <div className="w-full max-w-[480px] h-24 sm:h-28 bg-zinc-50 dark:bg-zinc-900/30 border border-zinc-200 dark:border-white/10 border-dashed rounded-xl flex flex-col items-center justify-center gap-2 transition-colors">
@@ -671,7 +703,7 @@ export default function CardDetailModal({
                         </button>
                       </div>
                     ) : (
-                      <div className={`px-2.5 py-1 text-[11px] font-bold rounded-full transition-colors ${getSkillBadgeStyle(card.skillType || "")}`}>
+                      <div className={`px-2.5 py-1 text-[11px] font-bold rounded-full transition-colors ${getSkillBadgeStyle(card.skillType || "", card.unit || "")}`}>
                         {/* 🌟 힐/회복이면 '라이프 회복'으로 텍스트 변경! */}
                         {card.skillType === "힐" || card.skillType === "회복" ? "라이프 회복" : card.skillType}
                       </div>

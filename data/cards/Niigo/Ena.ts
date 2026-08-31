@@ -115,7 +115,7 @@ const EnaNiigo = defineCharacterCards("니고", "시노노메 에나", "Niigo", 
             gachaBannerPath: "/gachas/23y/banner_23_09_n.png",
             eventBannerPath: "/events/23y/banner_23_09_n.png",
             songName: "로워",
-            songJacketPath: "/jacket/23y/Lower_one-s_eyes.png",
+            songJacketPath: "/jacket/23y/Lower_one_s_eyes.png",
           },
           costume: {
             hasCostume: true,
