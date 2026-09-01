@@ -14,8 +14,14 @@ export default function GlobalHeader() {
   const [isFilterOpen, setIsFilterOpen] = useState(true); 
   const pathname = usePathname();
   
+  // 🌟 툴팁 상태 추가!
+  const [activeTooltip, setActiveTooltip] = useState<string | null>(null); 
+  
   // 🌟 [핵심 변경] 이벤컷('/eventcuts') 페이지에서도 햄버거 버튼 활성화를 허가합니다!
   const isShowHamburgerAllowed = pathname === "/cards" || pathname === "/future" || pathname === "/eventcuts";
+
+  // 🌟 헤더용 말풍선 툴팁 클래스 (화면 맨 위쪽이라서 툴팁이 '아래'로 열리도록 조정 완료!)
+  const getTooltipClass = (isActive: boolean) => `absolute top-full mt-3 right-0 px-2.5 py-1.5 bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-100 text-[11px] font-bold rounded-lg shadow-xl border border-zinc-200 dark:border-white/10 transition-all pointer-events-none whitespace-nowrap z-[100000] ${isActive ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-1 lg:group-hover:opacity-100 lg:group-hover:translate-y-0'}`;
 
   useEffect(() => {
     const savedRanks = localStorage.getItem("sekard_character_ranks");
@@ -72,7 +78,7 @@ export default function GlobalHeader() {
               미래시
             </Link>
             
-            {/* 🌟 이벤컷 탭 추가! (다른 탭들과 동일한 스타일 및 활성화 로직 적용) */}
+            {/* 🌟 이벤컷 탭 */}
             <Link href="/eventcuts" className={`rounded-lg px-2.5 sm:px-3 py-1.5 font-semibold transition-all ${pathname === '/eventcuts' ? 'text-primary bg-primary/10 dark:bg-primary/20' : 'text-zinc-600 hover:text-primary hover:bg-primary/5 dark:text-zinc-300 dark:hover:text-primary dark:hover:bg-primary/10'}`}>
               이벤컷
             </Link>
@@ -80,13 +86,25 @@ export default function GlobalHeader() {
             <ThemeToggle />
             <div className="w-px h-4 bg-zinc-300 dark:bg-zinc-700 mx-1 transition-colors" />
 
-            <button
-              onClick={() => setIsSettingsOpen(true)}
-              className="p-1.5 rounded-lg text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-white/10 transition-colors"
-              title="블룸 페스 랭크 설정"
-            >
-              ⚙️
-            </button>
+            {/* 🌟 말풍선 툴팁이 장착된 설정 버튼! */}
+            <div className="relative group flex items-center">
+              <button
+                onClick={() => setIsSettingsOpen(true)}
+                onMouseEnter={() => setActiveTooltip('settings')}
+                onMouseLeave={() => setActiveTooltip(null)}
+                onClickCapture={() => setActiveTooltip(null)} // 누를 때 툴팁 숨기기
+                className="p-1.5 rounded-lg text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-white/10 transition-colors"
+                title="블룸 페스 랭크 설정"
+              >
+                ⚙️
+              </button>
+              
+              <span className={getTooltipClass(activeTooltip === 'settings')}>
+                블룸 페스 랭크 설정
+                {/* 말풍선 꼬리 (위쪽을 향함) */}
+                <span className="absolute right-3 -top-1 h-2 w-2 rotate-45 border-l border-t border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-800" />
+              </span>
+            </div>
           </nav>
         </div>
       </header>
