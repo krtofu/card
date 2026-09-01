@@ -8,6 +8,7 @@ import CardDetailModal from "@/components/CardDetailModal";
 import { FinalCardInfo } from "@/data/cards/template";
 import { UserCardState } from "@/app/cards/page"; 
 import { useThemeColor } from "@/app/providers";
+import { getEventDisplayInfo } from "@/lib/eventHelpers";
 
 // 🌟 PC에서는 호버, 모바일에서는 터치 상태(activeFilterTooltip)일 때만 표시되도록 제어 클래스 분리!
 const getTooltipClass = (isActive: boolean) => `absolute bottom-full mb-2 left-1/2 -translate-x-1/2 px-2.5 py-1 bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-100 text-[11px] font-bold rounded-lg shadow-xl border border-zinc-200 dark:border-white/10 transition-opacity pointer-events-none whitespace-nowrap z-[60] ${isActive ? 'opacity-100' : 'opacity-0 lg:group-hover:opacity-100'}`;
@@ -182,8 +183,9 @@ export default function FuturePage() {
       };
       
       // 🌟 날짜 데이터 형식(2023-01-05 등)에서 하이픈을 빼고 순수 문자열로 만들어 검색 유연성을 확보합니다!
-      const cleanEventDate = getStr(currentEvent?.period?.start).replace(/[^0-9]/g, "");
-      const matchYear = cleanEventDate.includes(q) || getStr(currentEvent?.period?.start).includes(q);
+      // 🌟 날짜 데이터 형식(2023-01-05 등)에서 하이픈을 빼고 순수 문자열로 만들어 검색 유연성을 확보합니다!
+      const cleanEventDate = getStr(currentEvent?.gacha?.period?.start).replace(/[^0-9]/g, "");
+      const matchYear = cleanEventDate.includes(q) || getStr(currentEvent?.gacha?.period?.start).includes(q);
       const matchName = getStr(card.cardName).includes(q);
       const matchChar = getStr(card.character).includes(q);
       const matchEvent = getStr(card.eventName).includes(q);
@@ -249,10 +251,11 @@ export default function FuturePage() {
     return true; 
   };
 
-  const uniqueYears = [...new Set(FUTURE_EVENTS.map(e => e.period.start.split('-')[0]))].sort() as string[];
+  // 🌟 V3 대응: e.period -> e.gacha.period 로 변경!
+  const uniqueYears = [...new Set(FUTURE_EVENTS.map(e => e.gacha.period.start.split('-')[0]))].sort() as string[];
   
   const getMonthsForYear = (year: string) => {
-    const months = FUTURE_EVENTS.filter(e => e.period.start.startsWith(year)).map(e => e.period.start.split('-')[1]);
+    const months = FUTURE_EVENTS.filter(e => e.gacha.period.start.startsWith(year)).map(e => e.gacha.period.start.split('-')[1]);
     return [...new Set(months)].sort() as string[];
   };
 
@@ -283,24 +286,43 @@ export default function FuturePage() {
   const condIds = condSubs.map(s => s.id);
   const isAllCondSelected = condIds.length > 0 && condIds.every(id => selectedSkills.includes(id));
   
-  const processedEvents = FUTURE_EVENTS.map(event => {
+  const processedEvents = FUTURE_EVENTS.map(rawEvent => {
+    // 🚀 1. 마법의 추출기 가동!
+    const displayInfo = getEventDisplayInfo(rawEvent as any, ALL_CARDS);
+
+    // 🚀 2. 데이터 어댑터: V3 템플릿 구조를 기존 필터/컴포넌트가 읽을 수 있도록 변환
+    const event = {
+      ...rawEvent,
+      name: displayInfo.gachaName,                   // 추출한 뽑기 이름
+      eventName: displayInfo.eventName,              // 추출한 이벤트 이름
+      eventType: rawEvent.event?.type || "없음",     // V3의 event.type을 밖으로 꺼냄
+      // 🌟 (주의!) 이제 period를 억지로 밖으로 꺼내지 않고, 원래 V3 구조인 gacha.period를 따릅니다.
+      eventBannerPath: displayInfo.eventBanner,      // 추출한 이벤트 배너
+      gacha: {
+        ...rawEvent.gacha,
+        bannerPath: displayInfo.gachaBanner,         // 추출한 가챠 배너
+      }
+    };
+
     let isEventMatched = true;
     let matchedCardIds: string[] = [];
+    
     if (isFilterActive) {
       const passEventType = !isAnyEventTypeSelected || selectedEventTypes.includes(event.eventType || "없음");
       
       const passGachaType = !isAnyGachaTypeSelected || (event.gacha.types && selectedGachaTypes.some(sel => {
-        if (sel === "exclude_rerun") return !event.gacha.types.includes("복각") && !event.gacha.types.includes("뾱각");
-        return event.gacha.types.includes(sel);
+        // 🌟 타입 에러 해결: sel은 string이므로 'as any'를 붙여 엄격한 타입 체크를 통과시킵니다.
+        if (sel === "exclude_rerun") return !event.gacha.types.includes("복각" as any) && !event.gacha.types.includes("뾱각" as any);
+        return event.gacha.types.includes(sel as any);
       }));
 
       const eventCards = event.gacha.featuredCardIds.map(id => ALL_CARDS.find(c => c.id === id || ((c as any).info && (c as any).info.id === id))).filter(c => c !== undefined) as any[];
       const matchedCards = eventCards.filter(c => checkCardMatch(c, event)); 
       matchedCardIds = matchedCards.map(c => (c as any).info ? (c as any).info.id : c.id);
       
-      // 🌟 [핵심] 연도나 이벤트 이름이 직접 맞았을 때는 카드가 0장이라도 무조건 노출되게 예외 처리!
+      // 🌟 V3 대응: event.period.start -> event.gacha.period.start
       const q = searchQuery.toLowerCase().trim().replace("년", "");
-      const isDirectMatch = q.length > 0 && (event.period.start.includes(q) || event.name.toLowerCase().includes(q) || (event.eventName && event.eventName.toLowerCase().includes(q)));
+      const isDirectMatch = q.length > 0 && (event.gacha.period.start.includes(q) || event.name.toLowerCase().includes(q) || (event.eventName && event.eventName.toLowerCase().includes(q)));
 
       if (!passEventType || !passGachaType || (matchedCardIds.length === 0 && !isDirectMatch)) {
         isEventMatched = false;
@@ -319,10 +341,11 @@ export default function FuturePage() {
     let isOngoing = false;
     let isEnded = false;
     try {
-      const cleanStartStr = item.event.period.start.split(' ')[0].replace(/[\.-]/g, '/');
+      // 🌟 V3 대응: item.event.period -> item.event.gacha.period
+      const cleanStartStr = item.event.gacha.period.start.split(' ')[0].replace(/[\.-]/g, '/');
       const eventStart = new Date(cleanStartStr);
       eventStart.setHours(0, 0, 0, 0);
-      const cleanEndStr = (item.event.period.end || item.event.period.start).split(' ')[0].replace(/[\.-]/g, '/');
+      const cleanEndStr = (item.event.gacha.period.end || item.event.gacha.period.start).split(' ')[0].replace(/[\.-]/g, '/');
       const eventEnd = new Date(cleanEndStr);
       eventEnd.setHours(23, 59, 59, 999);
       const diffTime = eventStart.getTime() - today.getTime();
@@ -844,8 +867,9 @@ export default function FuturePage() {
           <div className="space-y-20 xl:space-y-12 pb-20">
             {visibleEventsWithStatus.map(({ event, isEventMatched, matchedCardIds, daysLeft, isOngoing, isEnded }, index) => {
               
-              const eventYear = event.period.start.split('-')[0];
-              const eventMonth = event.period.start.split('-')[1];
+              // 🌟 V3 대응: event.period.start -> event.gacha.period.start
+              const eventYear = event.gacha.period.start.split('-')[0];
+              const eventMonth = event.gacha.period.start.split('-')[1];
               const eventYearMonth = `${eventYear}-${eventMonth}`;
 
               const showYearMarker = eventYear !== lastRenderedYear;

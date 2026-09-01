@@ -28,6 +28,7 @@ import { COSTUME_PREVIEWS } from "@/data/costumes";
 import { ALL_CARDS } from "@/data/cards";
 import { FUTURE_EVENTS } from "@/data/events/index";
 import { useThemeColor } from "@/app/providers";
+import { getEventDisplayInfo } from "@/lib/eventHelpers";
 
 // 🌟 유닛별 통계 매핑 데이터
 const UNIT_GROUPS = [
@@ -112,14 +113,16 @@ export default function Home() {
     if (saved) try { setCardStates(JSON.parse(saved)); } catch (e) {}
   }, []);
 
+  // 🎯 1. 현재 진행 중인 가챠 타입 자동 추적
   const autoDetectedGachaType = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const activeEvent = FUTURE_EVENTS.find(ev => {
       try {
-        const start = new Date(ev.period.start.split(' ')[0].replace(/[\.-]/g, '/'));
+        // 🌟 V3 대응: ev.period -> ev.gacha.period
+        const start = new Date(ev.gacha.period.start.split(' ')[0].replace(/[\.-]/g, '/'));
         start.setHours(0, 0, 0, 0);
-        const end = new Date((ev.period.end || ev.period.start).split(' ')[0].replace(/[\.-]/g, '/'));
+        const end = new Date((ev.gacha.period.end || ev.gacha.period.start).split(' ')[0].replace(/[\.-]/g, '/'));
         end.setHours(23, 59, 59, 999);
         return today >= start && today <= end;
       } catch (e) { return false; }
@@ -159,6 +162,7 @@ export default function Home() {
     return { total, owned, unitStats };
   }, [cardStates, region]); 
 
+  // 🎯 2. 실시간 & 예정 이벤트 분류 및 이름 맵핑
   const { liveEvents, upcomingEvents } = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -167,16 +171,31 @@ export default function Home() {
     
     FUTURE_EVENTS.forEach(ev => {
       try {
-        const start = new Date(ev.period.start.split(' ')[0].replace(/[\.-]/g, '/'));
+        // 🌟 V3 대응: ev.period -> ev.gacha.period
+        const start = new Date(ev.gacha.period.start.split(' ')[0].replace(/[\.-]/g, '/'));
         start.setHours(0, 0, 0, 0);
-        const end = new Date((ev.period.end || ev.period.start).split(' ')[0].replace(/[\.-]/g, '/'));
+        const end = new Date((ev.gacha.period.end || ev.gacha.period.start).split(' ')[0].replace(/[\.-]/g, '/'));
         end.setHours(23, 59, 59, 999);
-        if (today >= start && today <= end) live.push(ev);
-        else if (start > today) upcoming.push(ev);
+
+        // 🌟 마법의 추출기를 써서 이름 가져오기!
+        const displayInfo = getEventDisplayInfo(ev as any, ALL_CARDS);
+        
+        // 🌟 JSX에서 편하게 쓰기 위해 데이터를 가공해서 넣습니다.
+        const processedEv = {
+          ...ev,
+          displayName: displayInfo.gachaName,    // V3에서 추출한 이름
+          displayStart: ev.gacha.period.start,   // V3 가챠 시작일
+          displayEnd: ev.gacha.period.end        // V3 가챠 종료일
+        };
+
+        if (today >= start && today <= end) live.push(processedEv);
+        else if (start > today) upcoming.push(processedEv);
       } catch(e) {}
     });
     
-    upcoming.sort((a, b) => new Date(a.period.start.split(' ')[0].replace(/[\.-]/g, '/')).getTime() - new Date(b.period.start.split(' ')[0].replace(/[\.-]/g, '/')).getTime());
+    // 🌟 정렬 기준도 가공된 날짜(displayStart)로 변경!
+    upcoming.sort((a, b) => new Date(a.displayStart.split(' ')[0].replace(/[\.-]/g, '/')).getTime() - new Date(b.displayStart.split(' ')[0].replace(/[\.-]/g, '/')).getTime());
+    
     return { liveEvents: live, upcomingEvents: upcoming };
   }, []);
 
@@ -274,16 +293,18 @@ export default function Home() {
             liveEvents.map((ev, idx) => (
               <Link key={`live-${idx}`} href="/future" className="group bg-zinc-50 dark:bg-zinc-950/50 border border-zinc-200 dark:border-white/5 hover:border-zinc-300 dark:hover:border-white/20 rounded-2xl p-4 flex flex-col gap-2 transition-all hover:-translate-y-0.5 shadow-sm hover:shadow-md">
                 <span className="text-[10px] font-bold text-red-500 bg-red-50 dark:bg-red-500/10 px-2 py-0.5 rounded border border-red-200 dark:border-red-500/20 self-start transition-colors">🔴 NOW LIVE</span>
-                <h3 className="font-bold text-zinc-800 dark:text-zinc-100 group-hover:text-primary transition-colors">{ev.name}</h3>
-                <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mt-auto pt-2">{ev.period.start} ~ {ev.period.end}</p>
+                {/* 🌟 V3 대응: ev.name -> ev.displayName */}
+                <h3 className="font-bold text-zinc-800 dark:text-zinc-100 group-hover:text-primary transition-colors line-clamp-2">{ev.displayName}</h3>
+                {/* 🌟 V3 대응: ev.period.start -> ev.displayStart */}
+                <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mt-auto pt-2">{ev.displayStart} ~ {ev.displayEnd}</p>
               </Link>
             ))
           ) : (
             upcomingEvents.slice(0, 3).map((ev, idx) => (
               <Link key={`up-${idx}`} href="/future" className="group bg-zinc-50 dark:bg-zinc-950/50 border border-zinc-200 dark:border-white/5 hover:border-zinc-300 dark:hover:border-white/20 rounded-2xl p-4 flex flex-col gap-2 transition-all hover:-translate-y-0.5 shadow-sm hover:shadow-md">
                 <span className="text-[10px] font-bold text-amber-600 bg-amber-50 dark:bg-amber-500/10 px-2 py-0.5 rounded border border-amber-200 dark:border-amber-500/20 self-start transition-colors">🟡 UPCOMING</span>
-                <h3 className="font-bold text-zinc-800 dark:text-zinc-100 group-hover:text-primary transition-colors line-clamp-2">{ev.name}</h3>
-                <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mt-auto pt-2">{ev.period.start} 시작 예정</p>
+                <h3 className="font-bold text-zinc-800 dark:text-zinc-100 group-hover:text-primary transition-colors line-clamp-2">{ev.displayName}</h3>
+                <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mt-auto pt-2">{ev.displayStart} 시작 예정</p>
               </Link>
             ))
           )}
