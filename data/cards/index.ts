@@ -24,58 +24,58 @@ const VS_CARDS = [
 // ==========================================
 import { IchikaCards } from "./Leoneed/Ichika";
 import { SakiCards } from "./Leoneed/Saki";
-// import { HonamiCards } from "./Leoneed/Honami";
+import { HonamiCards } from "./Leoneed/Honami";
 import { ShihoCards } from "./Leoneed/Shiho";
 
 const Leoneed_CARDS = [
   ...IchikaCards,
   ...SakiCards,
-  // ...HonamiCards,
+  ...HonamiCards,
   ...ShihoCards,
 ];
 
 // ==========================================
 // ☘️ 3. MORE MORE JUMP! (MMJ)
 // ==========================================
-// import { MinoriCards } from "./MMJ/Minori";
-// import { HarukaCards } from "./MMJ/Haruka";
-// import { AiriCards } from "./MMJ/Airi";
-// import { ShizukuCards } from "./MMJ/Shizuku";
+import { MinoriCards } from "./MMJ/Minori";
+import { HarukaCards } from "./MMJ/Haruka";
+import { AiriCards } from "./MMJ/Airi";
+import { ShizukuCards } from "./MMJ/Shizuku";
 
 const MMJ_CARDS = [
-  // ...MinoriCards,
-  // ...HarukaCards,
-  // ...AiriCards,
-  // ...ShizukuCards,
+  ...MinoriCards,
+  ...HarukaCards,
+  ...AiriCards,
+  ...ShizukuCards,
 ];
 
 // ==========================================
 // 🎤 4. Vivid BAD SQUAD (VBS)
 // ==========================================
-// import { KohaneCards } from "./VBS/Kohane";
-// import { AnCards } from "./VBS/An";
-// import { AkitoCards } from "./VBS/Akito";
-// import { ToyaCards } from "./VBS/Toya";
+import { KohaneCards } from "./VBS/Kohane";
+import { AnCards } from "./VBS/An";
+import { AkitoCards } from "./VBS/Akito";
+import { ToyaCards } from "./VBS/Toya";
 
 const VBS_CARDS = [
-  // ...KohaneCards,
-  // ...AnCards,
-  // ...AkitoCards,
-  // ...ToyaCards,
+  ...KohaneCards,
+  ...AnCards,
+  ...AkitoCards,
+  ...ToyaCards,
 ];
 
 // ==========================================
 // 🎪 5. Wonderlands×Showtime (Wds)
 // ==========================================
 import { TsukasaCards } from "./Wds/Tsukasa";
-// import { EmuCards } from "./Wds/Emu";
-// import { NeneCards } from "./Wds/Nene";
+import { EmuCards } from "./Wds/Emu";
+import { NeneCards } from "./Wds/Nene";
 import { RuiCards } from "./Wds/Rui";
 
 const Wds_CARDS = [
  ...TsukasaCards,
-  // ...EmuCards,
-  // ...NeneCards,
+ ...EmuCards,
+ ...NeneCards,
  ...RuiCards,
 ];
 

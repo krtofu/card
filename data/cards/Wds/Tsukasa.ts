@@ -2,7 +2,7 @@ import { defineCharacterCards } from "../template"; // 경로에 맞게 ../ 혹�
 
 // 🎪 Wonderlands×Showtime (원더쇼) 츠카사
 // -> 얼굴 아이콘: Tsukasa.png 자동 매핑
-const TsukasaWxs = defineCharacterCards("원더쇼", "텐마 츠카사", "Wds", "Tsukasa", {
+const TsukasaWds = defineCharacterCards("원더쇼", "텐마 츠카사", "Wds", "Tsukasa", {
   cards: [
         {
           info: {
@@ -32,5 +32,5 @@ const TsukasaWxs = defineCharacterCards("원더쇼", "텐마 츠카사", "Wds", 
 
 // 🌟 츠카사 카드를 배열로 내보내기!
 export const TsukasaCards = [
-  ...TsukasaWxs,
+  ...TsukasaWds,
 ];

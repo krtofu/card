@@ -1,5 +1,62 @@
 // src/lib/bonusCalculator.ts
 
+// 🌟 성씨 무시, 오직 '이름(또는 버싱)' 단독 매칭 판독기!
+const isTargetMember = (card: any, targetName: string) => {
+  const target = targetName.toLowerCase().replace(/\s+/g, "");
+  const cName = (card.character || "").toLowerCase().replace(/\s+/g, "");
+  const cUnit = (card.unit || "").toLowerCase().replace(/[^a-z0-9가-힣]/g, "");
+
+  const vsNames = ["미쿠", "린", "렌", "루카", "메이코", "카이토", "miku", "rin", "len", "luka", "meiko", "kaito"];
+  
+  // 1. 버싱(VS) 계열 처리
+  if (vsNames.some(vs => target.includes(vs)) && (target.includes("레오니") || target.includes("모모점") || target.includes("비배스") || target.includes("원더쇼") || target.includes("니고") || target.includes("버싱"))) {
+    
+    const isCharMatch = vsNames.some(vs => target.includes(vs) && cName.includes(vs));
+    
+    if (isCharMatch) {
+      if (target.includes("레오니") && (cUnit.includes("레오니") || cUnit.includes("leo") || cUnit === "l/n")) return true;
+      if (target.includes("모모점") && (cUnit.includes("모모점") || cUnit.includes("mmj") || cUnit.includes("more"))) return true;
+      if (target.includes("비배스") && (cUnit.includes("비배스") || cUnit.includes("vivid") || cUnit === "vbs")) return true;
+      if (target.includes("원더쇼") && (cUnit.includes("원더쇼") || cUnit.includes("wonder") || cUnit === "wxs") || cUnit === "wds") return true;
+      if (target.includes("니고") && (cUnit.includes("니고") || cUnit.includes("25") || cUnit.includes("niigo") || cUnit.includes("n25") || cUnit === "ng")) return true;
+      if (target.includes("버싱") && (cUnit.includes("버싱") || cUnit === "vs" || cUnit.includes("virtual"))) return true;
+    }
+    return false; 
+  }
+
+  // 2. 오리지널 캐릭터 & 성 없는 버싱(KAITO, MEIKO 등) 처리
+  // 카드 캐릭터 이름에서 성씨를 떼고 이름만 추출하거나, 전체 이름에 해당 이름 단어가 온전히 포함되는지 확인합니다.
+  // 예: target이 "사키"일 때 cName에 "사키"가 들어가되, "요이사키"처럼 다른 글자에 파묻힌 건 제외합니다.
+  
+  // 등록된 캐릭터들의 허용 가능한 '이름' 목록
+  const characterNames = [
+    "이치카", "사키", "호나미", "시호",
+    "미노리", "하루카", "아이리", "시즈쿠",
+    "코하네", "안", "아키토", "토우야",
+    "츠카사", "에무", "네네", "루이",
+    "카나데", "마후유", "에나", "미즈키",
+    "미쿠", "린", "렌", "루카", "메이코", "카이토",
+    "meiko", "kaito", "miku", "rin", "len", "luka"
+  ];
+
+  // 만약 입력한 target이 위 이름 목록에 포함된다면, 카드 이름이 그 '이름'을 정확히 포함하는지 확인 (성씨 무시)
+  // 단, '카나데'의 '사키(요이사키)' 같은 오인식을 막기 위해 정확한 경계 검사 수행
+  for (const name of characterNames) {
+    if (target === name) {
+      // 카드의 이름 부분에 해당 이름이 포함되어 있는지 확인
+      // 정규식을 이용해 독립된 단어로 포함되어 있는지 체크 (예: '사키'는 '요이사키'를 통과시키지 않음)
+      const regex = new RegExp(name, "i");
+      if (regex.test(cName)) {
+        // 단, 요이사키 카나데 예외 방어
+        if (name === "사키" && cName.includes("요이사키")) return false;
+        return true;
+      }
+    }
+  }
+
+  return cName.includes(target) || target.includes(cName);
+};
+
 // 🌟 1. 올바른 템플릿 파일에서 EventData를 가져오도록 수정!
 import type { EventData } from "@/data/events/template";
 import type { FinalCardInfo } from "@/data/cards/template";
@@ -23,17 +80,22 @@ const matchAttribute = (cardAttr: string, targetAttr: string) => {
   return false;
 };
 
-// 유닛 매칭 헬퍼 (🌟 최신형 철벽 방어 판독기 적용 완료)
+// 🌟 통합형 유닛 매칭 헬퍼 (wds, ng, mmj 완벽 대응!)
 const matchUnit = (cardUnit: string, targetUnit: string) => {
   const c = (cardUnit || "").toLowerCase().replace(/[^a-z0-9가-힣]/g, "");
   const t = (targetUnit || "").toLowerCase().replace(/[^a-z0-9가-힣]/g, "");
   if (!c || !t) return false;
   
-  if (t.includes("leo") && (c.includes("leo") || c.includes("레오니") || c.includes("ln"))) return true;
-  if (t.includes("mmj") && (c.includes("more") || c.includes("모모점") || c.includes("mmj"))) return true;
-  if (t.includes("vbs") && (c.includes("vivid") || c.includes("비배스") || c.includes("vbs"))) return true;
-  if (t.includes("wds") && (c.includes("wonder") || c.includes("원더쇼") || c.includes("wxs"))) return true;
-  if (t.includes("niigo") && (c.includes("25") || c.includes("니고") || c.includes("niigo") || c.includes("n25"))) return true;
+  if ((t.includes("leo") || t.includes("ln")) && (c.includes("leo") || c.includes("레오니") || c.includes("ln"))) return true;
+  if ((t.includes("mmj") || t.includes("more")) && (c.includes("more") || c.includes("모모점") || c.includes("mmj"))) return true;
+  if ((t.includes("vbs") || t.includes("vivid")) && (c.includes("vivid") || c.includes("비배스") || c.includes("vbs"))) return true;
+  
+  // 🌟 wxs, wds 무엇을 쓰든 원더쇼로 인식!
+  if ((t.includes("wds") || t.includes("wxs")) && (c.includes("wonder") || c.includes("원더쇼") || c.includes("wxs") || c.includes("wds"))) return true;
+  
+  // 🌟 n25, ng 무엇을 쓰든 니고로 인식!
+  if ((t.includes("ng") || t.includes("n25") || t.includes("niigo")) && (c.includes("25") || c.includes("니고") || c.includes("niigo") || c.includes("n25") || c.includes("ng"))) return true;
+  
   if (t.includes("vs") && (c.includes("vs") || c.includes("virtual") || c.includes("버싱"))) return true;
   
   return c.includes(t) || t.includes(c);
@@ -58,15 +120,10 @@ export const calculateCardEventBonus = (
   // 🎯 V3 구조에 맞춘 다중 배열 매칭 시스템
   // ==========================================
   
-  // 1. 캐릭터 매칭 (characters -> members로 변경됨)
+  // 1. 캐릭터 매칭 (🌟 서브유닛 버싱 완벽 판독기 연결 완료!)
   let isCharMatch = false;
   if (bonusInfo.members && bonusInfo.members.length > 0) {
-    isCharMatch = bonusInfo.members.some((targetChar: string) => {
-      const t = String(targetChar).toLowerCase();
-      const cName = (card.character || "").toLowerCase();
-      const cId = (card.id || "").toLowerCase();
-      return cName.includes(t) || t.includes(cName) || cId.includes(t);
-    });
+    isCharMatch = bonusInfo.members.some((targetChar: string) => isTargetMember(card, targetChar));
   }
   
   // 2. 유닛 매칭 (V3부터 다중 선택 배열로 변경됨)

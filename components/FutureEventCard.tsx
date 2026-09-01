@@ -52,16 +52,22 @@ const matchAttribute = (cardAttr: string, targetAttr: string) => {
   return false;
 };
 
+// 🌟 통합형 유닛 매칭 헬퍼 (wds, ng, mmj 완벽 대응!)
 const matchUnit = (cardUnit: string, targetUnit: string) => {
   const c = (cardUnit || "").toLowerCase().replace(/[^a-z0-9가-힣]/g, "");
   const t = (targetUnit || "").toLowerCase().replace(/[^a-z0-9가-힣]/g, "");
   if (!c || !t) return false;
   
-  if (t.includes("leo") && (c.includes("leo") || c.includes("레오니") || c.includes("ln"))) return true;
-  if (t.includes("mmj") && (c.includes("more") || c.includes("모모점") || c.includes("mmj"))) return true;
-  if (t.includes("vbs") && (c.includes("vivid") || c.includes("비배스") || c.includes("vbs"))) return true;
-  if (t.includes("wds") && (c.includes("wonder") || c.includes("원더쇼") || c.includes("wxs"))) return true;
-  if (t.includes("niigo") && (c.includes("25") || c.includes("니고") || c.includes("niigo") || c.includes("n25"))) return true;
+  if ((t.includes("leo") || t.includes("ln")) && (c.includes("leo") || c.includes("레오니") || c.includes("ln"))) return true;
+  if ((t.includes("mmj") || t.includes("more")) && (c.includes("more") || c.includes("모모점") || c.includes("mmj"))) return true;
+  if ((t.includes("vbs") || t.includes("vivid")) && (c.includes("vivid") || c.includes("비배스") || c.includes("vbs"))) return true;
+  
+  // 🌟 wxs, wds 무엇을 쓰든 원더쇼로 인식!
+  if ((t.includes("wds") || t.includes("wxs")) && (c.includes("wonder") || c.includes("원더쇼") || c.includes("wxs") || c.includes("wds"))) return true;
+  
+  // 🌟 n25, ng 무엇을 쓰든 니고로 인식!
+  if ((t.includes("ng") || t.includes("n25") || t.includes("niigo")) && (c.includes("25") || c.includes("니고") || c.includes("niigo") || c.includes("n25") || c.includes("ng"))) return true;
+  
   if (t.includes("vs") && (c.includes("vs") || c.includes("virtual") || c.includes("버싱"))) return true;
   
   return c.includes(t) || t.includes(c);
@@ -69,14 +75,35 @@ const matchUnit = (cardUnit: string, targetUnit: string) => {
 
 const getUnitLogo = (unitName: string) => {
   if (!unitName) return null;
-  const u = unitName.toLowerCase();
-  if (u.includes("leo")) return "/icons/Leoneed_icon.png";
-  if (u.includes("mmj")) return "/icons/MMJ_icon.png";
-  if (u.includes("vbs")) return "/icons/VBS_icon.png";
-  if (u.includes("wds")) return "/icons/Wds_icon.png";
-  if (u.includes("niigo")) return "/icons/Niigo_icon.png";
-  if (u.includes("vs") || u.includes("virtual")) return "/icons/VS_icon.png";
+  const u = unitName.toLowerCase().replace(/[^a-z0-9가-힣]/g, "");
+  
+  // 🌟 한글("레오니", "모모점")도 알아듣게 만들고, 파일명은 다시 _icon.png 로 원상복구!
+  if (u.includes("leo") || u.includes("레오니") || u.includes("ln")) return "/icons/Leoneed_icon.png";
+  if (u.includes("mmj") || u.includes("모모점") || u.includes("more")) return "/icons/MMJ_icon.png";
+  if (u.includes("vbs") || u.includes("비배스") || u.includes("vivid")) return "/icons/VBS_icon.png";
+  if (u.includes("wds") || u.includes("원더쇼") || u.includes("wonder")) return "/icons/Wds_icon.png";
+  if (u.includes("niigo") || u.includes("니고") || u.includes("25") || u.includes("n25")) return "/icons/Niigo_icon.png";
+  if (u.includes("vs") || u.includes("virtual") || u.includes("버싱")) return "/icons/VS_icon.png";
+  
   return null;
+};
+
+// 🌟 멤버 이름만 보고 소속 유닛을 알아맞히는 마법의 함수!
+const guessUnitByMember = (memberName: string) => {
+  if (!memberName) return "";
+  const m = memberName.replace(/\s+/g, "");
+
+  // 🥇 1순위: 버싱 이름이 하나라도 포함되어 있으면 묻지도 따지지도 않고 '버싱' 로고 당첨! (예: "니고 미쿠")
+  if (["미쿠", "린", "렌", "루카", "메이코", "카이토", "버싱"].some(n => m.includes(n))) return "버싱";
+
+  // 🥈 2순위: 버싱이 아니라면 오리지널 캐릭터 소속 유닛 찾기
+  if (["이치카", "사키", "호나미", "시호", "레오니"].some(n => m.includes(n))) return "레오니";
+  if (["미노리", "하루카", "아이리", "시즈쿠", "모모점"].some(n => m.includes(n))) return "모모점";
+  if (["코하네", "안", "아키토", "토우야", "비배스"].some(n => m.includes(n))) return "비배스";
+  if (["츠카사", "에무", "네네", "루이", "원더쇼"].some(n => m.includes(n))) return "원더쇼";
+  if (["카나데", "마후유", "에나", "미즈키", "니고"].some(n => m.includes(n))) return "니고";
+  
+  return "";
 };
 
 const getSkillBonusPercentage = (skillType: string, level: number, unit: string, isAwakened: boolean, charRank: number = 1, isOwned: boolean = false) => {
@@ -228,9 +255,9 @@ export default function FutureEventCard({
     ? (event as any).eventBannerPath 
     : (event.gacha as any)?.bannerPath;
 
-  // 🌟 2. event.eventType 대신 순정 V3 구조인 event.event?.type 으로 직접 확인!
-  const unitLogo = isEventMode && event.event?.type === "하코" && event.event?.bonus?.units?.[0] 
-    ? getUnitLogo(event.event.bonus.units[0]) 
+  // 🌟 units가 비어있어도 당황하지 않고, 첫 번째 멤버 이름을 보고 유닛 로고를 찾아옵니다!
+  const unitLogo = isEventMode && event.eventType?.trim() === "하코"
+    ? getUnitLogo(event.event?.bonus?.units?.[0] || guessUnitByMember(event.event?.bonus?.members?.[0] || ""))
     : null;
 
   const fadeClass = isFilterActive && !isEventMatched 
@@ -345,10 +372,17 @@ export default function FutureEventCard({
               <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-1 truncate transition-colors">
                 {isEventMode ? (event.eventName || event.name) : event.name}
               </h3>
-              {/* 🌟 철벽 방어: 날짜 값이 입력되지 않아도(undefined) replace가 터지지 않게 보호막 장착! */}
-              <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400 transition-colors tracking-wide">
-                🕒 {event.gacha?.period?.start?.replace(/-/g, '.') || "미정"} ~ {(event.gacha?.period?.end || event.gacha?.period?.start || "").replace(/-/g, '.') || "미정"}
-              </p>
+              {/* 🌟 이벤트 모드일 땐 이벤트 기간, 가챠 모드일 땐 가챠 기간 표시! */}
+              {(() => {
+                const displayPeriod = isEventMode && event.event?.period ? event.event.period : event.gacha?.period;
+                const startStr = displayPeriod?.start?.replace(/-/g, '.') || "미정";
+                const endStr = (displayPeriod?.end || displayPeriod?.start || "").replace(/-/g, '.') || "미정";
+                return (
+                  <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400 transition-colors tracking-wide">
+                    🕒 {startStr} ~ {endStr}
+                  </p>
+                );
+              })()}
             </div>
             
             {daysLeft !== undefined && !isNaN(daysLeft) && (

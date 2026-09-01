@@ -2,7 +2,7 @@ import { defineCharacterCards } from "../template"; // 경로에 맞게 ../ 혹�
 
 // 🎪 Wonderlands×Showtime (원더쇼) 루이
 // -> 얼굴 아이콘: Rui.png 자동 매핑
-const RuiWxs = defineCharacterCards("원더쇼", "카미시로 루이", "Wds", "Rui", {
+const RuiWds = defineCharacterCards("원더쇼", "카미시로 루이", "Wds", "Rui", {
   cards: [
         {
           info: {
@@ -32,5 +32,5 @@ const RuiWxs = defineCharacterCards("원더쇼", "카미시로 루이", "Wds", "
 
 // 🌟 루이 카드를 배열로 내보내기!
 export const RuiCards = [
-  ...RuiWxs,
+  ...RuiWds,
 ];

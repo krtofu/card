@@ -229,13 +229,14 @@ export default function FuturePage() {
         if (charObj.isVirtual && charObj.matchKeys) {
           const cleanUnit = (card.unit || "").trim().toLowerCase();
           const targetUnitId = parentUnit?.id || "";
+          // 🌟 ng, Wds 등 기획자님 입맛대로 필터 ID를 바꿔도 다 호환되도록 세팅!
           let isCorrectUnit = false;
-          if (targetUnitId === "ln" && (cleanUnit.includes("레오니") || cleanUnit.includes("leo") || cleanUnit === "l/n")) isCorrectUnit = true;
-          else if (targetUnitId === "mmj" && (cleanUnit.includes("모모점") || cleanUnit.includes("more") || cleanUnit === "mmj")) isCorrectUnit = true;
-          else if (targetUnitId === "vbs" && (cleanUnit.includes("비배스") || cleanUnit.includes("vivid") || cleanUnit === "vbs")) isCorrectUnit = true;
-          else if (targetUnitId === "wxs" && (cleanUnit.includes("원더쇼") || cleanUnit.includes("wonder") || cleanUnit === "wxs")) isCorrectUnit = true;
-          else if (targetUnitId === "n25" && (cleanUnit.includes("니고") || cleanUnit.includes("25") || cleanUnit === "niigo" || cleanUnit === "ng")) isCorrectUnit = true;
-          else if (targetUnitId === "vs" && (cleanUnit.includes("버싱") || cleanUnit.includes("virtual") || cleanUnit === "" || cleanUnit === "vs")) isCorrectUnit = true;
+          if ((targetUnitId === "ln" || targetUnitId === "leo") && (cleanUnit.includes("레오니") || cleanUnit.includes("leo") || cleanUnit === "l/n" || cleanUnit === "ln")) isCorrectUnit = true;
+          else if ((targetUnitId === "mmj") && (cleanUnit.includes("모모점") || cleanUnit.includes("more") || cleanUnit === "mmj")) isCorrectUnit = true;
+          else if ((targetUnitId === "vbs") && (cleanUnit.includes("비배스") || cleanUnit.includes("vivid") || cleanUnit === "vbs")) isCorrectUnit = true;
+          else if ((targetUnitId === "wxs" || targetUnitId === "wds") && (cleanUnit.includes("원더쇼") || cleanUnit.includes("wonder") || cleanUnit === "wxs" || cleanUnit === "wds")) isCorrectUnit = true;
+          else if ((targetUnitId === "n25" || targetUnitId === "ng") && (cleanUnit.includes("니고") || cleanUnit.includes("25") || cleanUnit === "niigo" || cleanUnit === "n25" || cleanUnit === "ng")) isCorrectUnit = true;
+          else if ((targetUnitId === "vs") && (cleanUnit.includes("버싱") || cleanUnit.includes("virtual") || cleanUnit === "" || cleanUnit === "vs")) isCorrectUnit = true;
           return isCorrectUnit && charObj.matchKeys.some(key => card.character.includes(key));
         }
         return card.character === charObj.name;

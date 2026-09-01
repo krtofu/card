@@ -254,7 +254,7 @@ export default function CardDetailModal({
       if (lowerUnit.includes("레오니") || lowerUnit.includes("leo") || lowerUnit === "l/n") bgColor = "bg-[#4455dd]";
       else if (lowerUnit.includes("모모점") || lowerUnit.includes("more") || lowerUnit === "mmj") bgColor = "bg-[#88dd44]";
       else if (lowerUnit.includes("비배스") || lowerUnit.includes("vivid") || lowerUnit === "vbs") bgColor = "bg-[#ee1166]";
-      else if (lowerUnit.includes("원더쇼") || lowerUnit.includes("wonder") || lowerUnit === "wds") bgColor = "bg-[#ff9900]";
+      else if (lowerUnit.includes("원더쇼") || lowerUnit.includes("wonder") || lowerUnit === "Wds") bgColor = "bg-[#ff9900]";
       else if (lowerUnit.includes("니고") || lowerUnit.includes("25") || lowerUnit === "ng" || lowerUnit === "niigo") bgColor = "bg-[#884499]";
       else if (lowerUnit.includes("버싱") || lowerUnit.includes("virtual") || lowerUnit === "vs") bgColor = "bg-[#33ccbb]";
       
