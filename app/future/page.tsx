@@ -286,21 +286,43 @@ export default function FuturePage() {
   const condIds = condSubs.map(s => s.id);
   const isAllCondSelected = condIds.length > 0 && condIds.every(id => selectedSkills.includes(id));
   
+  // 🌟 [추가 1] 영어 이름을 한글로 찰떡같이 바꿔주는 미니 사전!
+  const CHAR_KO_MAP: Record<string, string> = {
+    "Ichika": "이치카", "Saki": "사키", "Honami": "호나미", "Shiho": "시호",
+    "Minori": "미노리", "Haruka": "하루카", "Airi": "아이리", "Shizuku": "시즈쿠",
+    "Kohane": "코하네", "An": "안", "Akito": "아키토", "Toya": "토우야",
+    "Tsukasa": "츠카사", "Emu": "에무", "Nene": "네네", "Rui": "루이",
+    "Kanade": "카나데", "Mafuyu": "마후유", "Ena": "에나", "Mizuki": "미즈키",
+    "MIKU": "미쿠", "RIN": "린", "LEN": "렌", "LUKA": "루카", "MEIKO": "메이코", "KAITO": "카이토"
+  };
+
+  // 🌟 [추가 2] N차 하코를 자동으로 세어주는 카운터 기계!
+  const hakoCounts: Record<string, number> = {};
+
   const processedEvents = FUTURE_EVENTS.map(rawEvent => {
     // 🚀 1. 마법의 추출기 가동!
     const displayInfo = getEventDisplayInfo(rawEvent as any, ALL_CARDS);
 
+    // 🌟 [추가 3] N차 하코 뱃지 이름표(Tag) 생성 로직!
+    let hakoTag: string | undefined = undefined;
+    if (rawEvent.event?.type === "하코" && rawEvent.event?.bonus?.members?.[0]) {
+      const mainChar = rawEvent.event.bonus.members[0]; // 주인공 영어 이름
+      hakoCounts[mainChar] = (hakoCounts[mainChar] || 0) + 1; // n번째 카운트 찰칵!
+      const charNameKo = CHAR_KO_MAP[mainChar] || mainChar; // 한글로 변환
+      hakoTag = `${charNameKo} ${hakoCounts[mainChar]}차 하코`; // ➔ "사키 1차 하코"
+    }
+
     // 🚀 2. 데이터 어댑터: V3 템플릿 구조를 기존 필터/컴포넌트가 읽을 수 있도록 변환
     const event = {
       ...rawEvent,
-      name: displayInfo.gachaName,                   // 추출한 뽑기 이름
-      eventName: displayInfo.eventName,              // 추출한 이벤트 이름
-      eventType: rawEvent.event?.type || "없음",     // V3의 event.type을 밖으로 꺼냄
-      // 🌟 (주의!) 이제 period를 억지로 밖으로 꺼내지 않고, 원래 V3 구조인 gacha.period를 따릅니다.
-      eventBannerPath: displayInfo.eventBanner,      // 추출한 이벤트 배너
+      name: displayInfo.gachaName,
+      eventName: displayInfo.eventName,
+      eventType: rawEvent.event?.type || "없음",
+      eventBannerPath: displayInfo.eventBanner,
+      hakoTag, // 🌟 방금 만든 N차 하코 뱃지를 여기에 몰래 얹어서 카드로 배달!
       gacha: {
         ...rawEvent.gacha,
-        bannerPath: displayInfo.gachaBanner,         // 추출한 가챠 배너
+        bannerPath: displayInfo.gachaBanner,
       }
     };
 
@@ -320,9 +342,14 @@ export default function FuturePage() {
       const matchedCards = eventCards.filter(c => checkCardMatch(c, event)); 
       matchedCardIds = matchedCards.map(c => (c as any).info ? (c as any).info.id : c.id);
       
-      // 🌟 V3 대응: event.period.start -> event.gacha.period.start
+      // 🌟 V3 대응 및 N차 하코 검색 완벽 연동! ("마후유 4차" 라고 쳐도 찰떡같이 나옵니다)
       const q = searchQuery.toLowerCase().trim().replace("년", "");
-      const isDirectMatch = q.length > 0 && (event.gacha.period.start.includes(q) || event.name.toLowerCase().includes(q) || (event.eventName && event.eventName.toLowerCase().includes(q)));
+      const isDirectMatch = q.length > 0 && (
+        event.gacha.period.start.includes(q) || 
+        event.name.toLowerCase().includes(q) || 
+        (event.eventName && event.eventName.toLowerCase().includes(q)) ||
+        (event.hakoTag && event.hakoTag.replace(/\s+/g, '').includes(q.replace(/\s+/g, ''))) // 띄어쓰기 무시 ("사키1차" 라고 쳐도 인식)
+      );
 
       if (!passEventType || !passGachaType || (matchedCardIds.length === 0 && !isDirectMatch)) {
         isEventMatched = false;

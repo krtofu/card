@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { EventData } from "@/data/events/index";
+import { EventData } from "@/data/events/template";
 import { ALL_CARDS } from "@/data/cards"; 
 import CardItem from "@/components/CardItem"; 
 import { UserCardState } from "@/app/cards/page";
@@ -112,7 +112,17 @@ const getSkillBonusPercentage = (skillType: string, level: number, unit: string,
 };
 
 interface FutureEventCardProps {
-  event: EventData;
+  // 🌟 순정 EventData에 부모가 몰래 얹어준 데이터(name, eventType 등)를 합쳐서 허가증 발급!
+  event: EventData & {
+    name: string;
+    eventName?: string;
+    eventType?: string;
+    eventBannerPath?: string;
+    hakoTag?: string; // 🌟 추가! (예: "사키 1차 하코")
+    gacha: EventData["gacha"] & {
+      bannerPath?: string;
+    };
+  };
   index: number;
   userStates: Record<string, UserCardState>; 
   onCardClick: (card: FinalCardInfo) => void; 
@@ -137,14 +147,14 @@ export default function FutureEventCard({
   const [refMasterRank, setRefMasterRank] = useState<number>(0);
   const [refSkillLevel, setRefSkillLevel] = useState<number>(1);
 
-  const pickupCards = event.gacha.featuredCardIds
+  // 🌟 철벽 방어: featuredCardIds가 혹시 스니펫에서 누락되더라도 에러 없이 빈 배열로 처리!
+  const pickupCards = (event.gacha?.featuredCardIds || [])
     .map((cardId) => ALL_CARDS.find((c: any) => c.id === cardId || ((c as any).info && (c as any).info.id === cardId)))
     .filter((c) => c !== undefined)
     .map(card => {
       const realId = (card as any).info ? (card as any).info.id : (card as any).id;
       const myState = userStates[realId];
       
-      // 🌟 미보유 카드라도 우측 상단의 마랭/스킬렙 시뮬레이터 값을 적용하기 위해 가상 상태 생성
       const fakeState = myState?.isOwned ? myState : { 
         isOwned: true, 
         masterRank: refMasterRank, 
@@ -152,7 +162,6 @@ export default function FutureEventCard({
         isTarget: myState?.isTarget 
       };
       
-      // 🌟 0으로 죽어있던 보너스와 스킬 수치에 계산기를 완벽하게 연결!
       const bonus = calculateCardEventBonus(card as any, fakeState, event);
       const score = getSkillBonusPercentage((card as any).skillType || "", fakeState.skillLevel, (card as any).unit || "", showPostAwake, 1, fakeState.isOwned);
 
@@ -160,38 +169,23 @@ export default function FutureEventCard({
     });
 
   const getBonusCards = () => {
-    if (!event.bonus) return [];
+    // 🌟 이벤트가 없거나 보너스 정보가 없으면 빈 배열 반환
+    if (!event.event?.bonus) return [];
 
-    const matchingCards = ALL_CARDS.filter(card => {
-      // 🌟 [복구 완료] 카드 출시일 비교 기능! (에러 없는 8자리 숫자 비교 방식)
+    // 🌟 1. 해당 이벤트 시작일 기준으로 이미 출시된 모든 카드 가져오기
+    const releasedCards = ALL_CARDS.filter(card => {
       if (card.releaseDate) {
-        // 날짜 텍스트에서 숫자만 8자리(YYYYMMDD) 추출 (예: "2022-05-21. 15:00" -> 20220521)
-        const eventDateNum = parseInt(event.period.start.replace(/[^0-9]/g, "").substring(0, 8), 10);
+        const startStr = event.gacha?.period?.start || "";
+        const eventDateNum = parseInt(startStr.replace(/[^0-9]/g, "").substring(0, 8) || "99999999", 10);
         const cardDateNum = parseInt(card.releaseDate.replace(/[^0-9]/g, "").substring(0, 8), 10);
         
-        // 카드의 출시일 숫자가 이벤트 시작일 숫자보다 크다면 (아직 출시되지 않은 미래의 카드라면) 제외!
-        if (cardDateNum > eventDateNum) return false;
+        if (cardDateNum > eventDateNum) return false; // 미래의 카드는 제외!
       }
-
-      // 1. 속성 매칭 (필수 조건)
-      if (!matchAttribute(card.attribute || "", event.bonus!.attribute)) return false;
-
-      // 2. 유닛 매칭
-      const matchesUnit = event.bonus!.unit ? matchUnit(card.unit || "", event.bonus!.unit) : false;
-      
-      // 3. 캐릭터 매칭 (영문/한글 혼용 대응을 위해 ID까지 검색!)
-      const matchesChar = event.bonus!.characters ? event.bonus!.characters.some(targetChar => {
-        const t = String(targetChar).toLowerCase();
-        const cName = (card.character || "").toLowerCase();
-        const cId = (card.id || "").toLowerCase(); // 영어 이름은 보통 ID(ln_Ichika_001)에 들어있음!
-        return cName.includes(t) || t.includes(cName) || cId.includes(t);
-      }) : false;
-
-      // 유닛이 일치하거나, 캐릭터가 일치하면 보너스 멤버로 인정!
-      return matchesUnit || matchesChar;
+      return true;
     });
 
-    const cardsWithValues = matchingCards.map(card => {
+    // 🌟 2. 가상 상태(마랭/스킬렙)를 입혀서 보너스 계산기를 돌리고, 0% 초과만 싹 남기기!
+    const cardsWithValues = releasedCards.map(card => {
       const realId = (card as any).info ? (card as any).info.id : (card as any).id;
       const myState = userStates[realId];
       
@@ -206,25 +200,38 @@ export default function FutureEventCard({
       const score = getSkillBonusPercentage((card as any).skillType || "", fakeState.skillLevel, (card as any).unit || "", showPostAwake, 1, fakeState.isOwned);
       
       return { card, myState, bonus, score };
-    });
+    }).filter(item => item.bonus > 0); // 💡 핵심: 20%든 50%든 보너스가 0%만 아니면 전부 합격!
 
+    // 🌟 3. 정렬 기준(이벤포순 or 스코어순)에 따라 나열하기
     return cardsWithValues.sort((a, b) => {
       if (sortMode === "score") {
         if (b.score !== a.score) return b.score - a.score;
       } else {
         if (b.bonus !== a.bonus) return b.bonus - a.bonus;
       }
+      
+      // 내가 보유한 카드 > 타겟 카드 > 미보유 카드 순으로 정렬
       const valA = a.myState?.isOwned ? 2 : (a.myState?.isTarget ? 1 : 0);
       const valB = b.myState?.isOwned ? 2 : (b.myState?.isTarget ? 1 : 0);
       if (valA !== valB) return valB - valA;
+      
+      // 동일하면 출시일 최신순 정렬
       return ((b.card as any).releaseDate || "").localeCompare((a.card as any).releaseDate || "");
     });
   };
 
   const bonusCards = getBonusCards();
   const displayItems = isEventMode ? bonusCards : pickupCards;
-  const displayBanner = isEventMode && event.eventBannerPath ? event.eventBannerPath : event.gacha.bannerPath;
-  const unitLogo = isEventMode && event.eventType === "하코" && event.bonus?.unit ? getUnitLogo(event.bonus?.unit) : null;
+  
+  // 🌟 (event.gacha as any) 를 써서 타입스크립트의 잔소리 완벽 차단!
+  const displayBanner = isEventMode && (event as any).eventBannerPath 
+    ? (event as any).eventBannerPath 
+    : (event.gacha as any)?.bannerPath;
+
+  // 🌟 2. event.eventType 대신 순정 V3 구조인 event.event?.type 으로 직접 확인!
+  const unitLogo = isEventMode && event.event?.type === "하코" && event.event?.bonus?.units?.[0] 
+    ? getUnitLogo(event.event.bonus.units[0]) 
+    : null;
 
   const fadeClass = isFilterActive && !isEventMatched 
     ? "opacity-30 grayscale hover:opacity-60 transition-opacity duration-300" 
@@ -238,7 +245,8 @@ export default function FutureEventCard({
         name: c.character,
         title: c.cardName, 
         subtitle: `${c.cardName} ${c.costume.name}`, 
-        sets: c.costume.sets.map((set: any) => ({
+        // 🌟 철벽 방어: 의상 세트가 없을 경우를 대비
+        sets: (c.costume.sets || []).map((set: any) => ({
           key: set.key, label: set.label, front: [set.front], back: [set.back]
         }))
       }));
@@ -257,9 +265,8 @@ export default function FutureEventCard({
   return (
     <div className={`flex flex-col xl:flex-row items-stretch gap-4 xl:gap-8 ${fadeClass}`}>
       
-      {/* 🌟 ================= 모바일 전용 타임라인 (배너 위쪽) ================= */}
+      {/* 🌟 ================= 모바일 전용 타임라인 ================= */}
       <div className="xl:hidden relative flex flex-col items-center justify-center w-full mt-2 mb-2">
-        {/* 윗 배너에서 동그라미로 내려오는 연결선 (맨 위 index 0 이면 선 없음!) */}
         {index > 0 && (
           <div className="absolute -top-[52px] bottom-1/2 w-px bg-zinc-200 dark:bg-white/10 -z-10" />
         )}
@@ -271,7 +278,6 @@ export default function FutureEventCard({
             </div>
           )}
           
-          {/* 🌟 이벤트 모드일 때만 유닛 로고 렌더링! 뽑기 모드일 땐 작은 점! */}
           {isEventMode && unitLogo ? (
             <div className="w-8 h-8 rounded-full bg-white dark:bg-zinc-900 border-2 border-zinc-200 dark:border-white/20 shadow-md flex items-center justify-center overflow-hidden p-1 z-20">
               <img src={unitLogo} alt="Unit Logo" className="w-full h-full object-contain drop-shadow-sm" />
@@ -281,16 +287,15 @@ export default function FutureEventCard({
           )}
         </div>
 
-        {/* 동그라미에서 배너(아래)로 향해 내려가는 짧은 연결선 */}
         <div className="absolute top-1/2 -bottom-2 w-px bg-zinc-200 dark:bg-white/10 -z-10" />
       </div>
 
       {/* ================= 좌측: 배너 영역 ================= */}
       <div className="flex-1 w-full relative z-10 flex flex-col justify-center xl:px-4 py-2 shrink-0">
-        {/* 🌟 다크/라이트모드 배경 대응 */}
         <div className="w-full max-w-[520px] mx-auto bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 rounded-2xl overflow-visible shadow-xl flex flex-col relative h-fit transition-colors">
           
-          {event.bonus && (
+          {/* 🌟 잔당 처치: 이벤트 모드 토글 버튼 노출 조건을 V3에 맞게 event.event?.bonus로 교체! */}
+          {event.event?.bonus && (
              <div className="absolute -left-6 sm:-left-12 md:-left-[70px] top-1/2 -translate-y-1/2 flex items-center z-50">
                <button
                  onClick={() => { setIsEventMode(!isEventMode); setShowCostumes(false); }}
@@ -318,7 +323,8 @@ export default function FutureEventCard({
             
             {!isEventMode && (
               <div className="absolute top-3 left-3 flex gap-2 z-20">
-                {event.gacha.types.map((type, idx) => (
+                {/* 🌟 철벽 방어: types 배열이 없더라도 에러 없이 렌더링 통과! */}
+                {(event.gacha?.types || []).map((type, idx) => (
                   <span key={idx} className={`${PREMIUM_BADGE_CLASS} ${getGachaBadgeBg(type)}`} style={PREMIUM_BADGE_STYLE}>{type}</span>
                 ))}
               </div>
@@ -326,7 +332,10 @@ export default function FutureEventCard({
 
             {event.eventType && event.eventType !== "없음" && (
               <div className="absolute top-3 right-3 flex z-20">
-                <span className={`${PREMIUM_BADGE_CLASS} ${getEventTypeBadgeBg(event.eventType)}`} style={PREMIUM_BADGE_STYLE}>{event.eventType}</span>
+                {/* 🌟 N차 하코 뱃지는 지우고, 원래 있던 이벤트 타입(하코/혼합) 뱃지만 남깁니다! */}
+                <span className={`${PREMIUM_BADGE_CLASS} ${getEventTypeBadgeBg(event.eventType)}`} style={PREMIUM_BADGE_STYLE}>
+                  {event.eventType}
+                </span>
               </div>
             )}
           </div>
@@ -336,12 +345,12 @@ export default function FutureEventCard({
               <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-1 truncate transition-colors">
                 {isEventMode ? (event.eventName || event.name) : event.name}
               </h3>
+              {/* 🌟 철벽 방어: 날짜 값이 입력되지 않아도(undefined) replace가 터지지 않게 보호막 장착! */}
               <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400 transition-colors tracking-wide">
-                🕒 {event.period.start.replace(/-/g, '.')} ~ {event.period.end.replace(/-/g, '.')}
+                🕒 {event.gacha?.period?.start?.replace(/-/g, '.') || "미정"} ~ {(event.gacha?.period?.end || event.gacha?.period?.start || "").replace(/-/g, '.') || "미정"}
               </p>
             </div>
             
-            {/* 🌟 xl:hidden을 제거하여 데스크톱/모바일 전체 뷰 공통으로 이름 우측 박스에 안착시킵니다! */}
             {daysLeft !== undefined && !isNaN(daysLeft) && (
               <div className="shrink-0 flex items-center pt-0.5">
                 {isEnded ? (
@@ -376,7 +385,6 @@ export default function FutureEventCard({
             </div>
           )}
 
-          {/* 🌟 데스크톱 뷰에서도 이벤트 모드일 때만 조건부로 유닛 로고 노출, 뽑기 모드일 땐 깔끔한 점 표시! */}
           {isEventMode && unitLogo ? (
             <div className="w-9 h-9 rounded-full bg-white dark:bg-zinc-900 border-2 border-zinc-200 dark:border-white/20 shadow-md dark:shadow-[0_0_15px_rgba(255,255,255,0.3)] z-20 flex items-center justify-center overflow-hidden p-1 transition-all">
                <img src={unitLogo} alt="Unit Logo" className="w-full h-full object-contain drop-shadow-sm dark:drop-shadow-md" />
@@ -391,14 +399,11 @@ export default function FutureEventCard({
       <div className="flex-1 w-full relative z-10 flex flex-col justify-center xl:px-4 py-2 shrink-0">
         <div className="bg-white/50 dark:bg-zinc-900/30 border border-zinc-200 dark:border-white/5 rounded-3xl p-6 w-full max-w-[520px] mx-auto flex flex-col h-fit transition-colors">
           
-          {/* 🎯 한 줄이 뭉개지기 전에 우측 뱃지 그룹 전체가 아랫줄 좌측 정렬로 떨어지도록 유연한 flex-wrap 마감 처리 */}
           <div className="flex flex-wrap items-center justify-start sm:justify-between gap-3 mb-4 pb-3 border-b border-zinc-200 dark:border-white/10 shrink-0 transition-colors">
-            {/* 왼쪽 타이틀 구역 */}
             <div className="flex items-center gap-1.5 font-bold text-zinc-700 dark:text-zinc-300 text-sm transition-colors shrink-0">
               {isEventMode ? <><span className="text-amber-500 dark:text-amber-400">🎁</span> 이벤트 보너스 멤버</> : <><span className="text-primary dark:text-sky-400">✨</span> 가챠 픽업 멤버</>}
             </div>
             
-            {/* 오른쪽 뱃지 및 정렬 버튼 그룹 (덩어리로 묶어서 탈락하게 만듦) */}
             <div className="flex flex-wrap items-center gap-2 shrink-0">
                {isEventMode ? (
                  <>
@@ -454,7 +459,8 @@ export default function FutureEventCard({
                       </button>
                     )}
 
-                    {event.gacha.types.map(t => {
+                    {/* 🌟 철벽 방어: 배열이 비어있어도 통과! */}
+                    {(event.gacha?.types || []).map(t => {
                       if (t === "통상") return <img key={t} src="/icons/status/normal.png" className="w-[30px] h-[30px] rounded-full shadow-md" alt="통상" title="통상" />;
                       if (["한정", "페스", "월링"].includes(t)) return <img key={t} src="/icons/status/limited.png" className="w-[30px] h-[30px] rounded-full shadow-md" alt={t} title={t} />;
                       return null;
@@ -490,7 +496,7 @@ export default function FutureEventCard({
                 );
               }) : (
                 <div className="w-full py-10 flex justify-center text-zinc-500 text-xs font-bold">
-                  보너스 조건에 맞는 멤버가 없습니다.
+                  {isEventMode ? "보너스 조건에 맞는 멤버가 없습니다." : "데이터를 입력해 주세요."}
                 </div>
               )}
             </div>
