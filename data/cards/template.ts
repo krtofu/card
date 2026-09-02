@@ -68,10 +68,10 @@ export type FinalCardInfo = {
 
   costume?: {
     name: string;
-    sets: CostumeSetPaths[]; 
+    sets: CostumeSetPaths[];
+    hasHair: boolean;    
   };
-
-  hasHair: boolean;         
+      
 };
 
 export function defineCharacterCards(
@@ -140,7 +140,7 @@ export function defineCharacterCards(
         front: `${folderBase}/c_front_${index}.png`,
         back: `${folderBase}/c_back_${index}.png`,
       }));
-      costumeData = { name: costume.costumeName, sets };
+      costumeData = { name: costume.costumeName, sets, hasHair: !!costume.hasHair, isMovieStyle: !!costume.isMovieStyle };
     }
 
     return {
@@ -168,7 +168,6 @@ export function defineCharacterCards(
       songJacketPath: media?.songJacketPath,
       
       costume: costumeData,
-      hasHair: !!costume?.hasHair, 
     };
   });
 }

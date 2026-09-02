@@ -1,17 +1,19 @@
 // src/components/ModalCostumePreviewCard.tsx
 
 import Image from "next/image";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import type { CostumePreview, CostumeSet } from "@/data/costumes";
 import { useThemeColor } from "@/app/providers";
 
-// 모달 전용 Props (유저의 상태를 받음)
+// 🌟 1. 카드 ID를 받아올 수 있도록 Props에 cardId 추가!
 interface ModalCostumePreviewProps {
   preview: CostumePreview;
   userState?: { isOwned: boolean; masterRank: number };
+  cardId?: string;
+  hasHair?: boolean;
+  isMovieStyle?: boolean;
 }
 
-// 🌟 [하단 점 페이저] 배경색 테마에 맞춰 점 색상 자동 변경
 function DotPager({ total, active, onPick, customBg }: { total: number; active: number; onPick?: (i: number) => void; customBg: "auto" | "light" | "dark" }) {
   if (total <= 1) return null;
   return (
@@ -39,7 +41,6 @@ function DotPager({ total, active, onPick, customBg }: { total: number; active: 
   );
 }
 
-// 🌟 [앞/뒷면 회전 버튼] 배경색 테마에 맞춰 버튼 색상 자동 변경
 function FlipSideButton({ side, onToggle, customBg }: { side: "front" | "back"; onToggle: () => void; customBg: "auto" | "light" | "dark" }) {
   const isFront = side === "front";
   
@@ -68,13 +69,20 @@ function FlipSideButton({ side, onToggle, customBg }: { side: "front" | "back"; 
   );
 }
 
-export default function ModalCostumePreviewCard({ preview, userState }: ModalCostumePreviewProps) {
-  const { themeColor } = useThemeColor(); // 🌟 직통 전화기 수신!
+export default function ModalCostumePreviewCard({ preview, userState, cardId, hasHair, isMovieStyle }: ModalCostumePreviewProps) {
+  const { themeColor } = useThemeColor();
   const [side, setSide] = useState<"front" | "back">("front");
   const [charIdx, setCharIdx] = useState(0);
   const [setIdx, setSetIdx] = useState(0);
   const [hoverSetIdx, setHoverSetIdx] = useState<number | null>(null);
   const [customBg, setCustomBg] = useState<"auto" | "light" | "dark">("auto");
+
+  // 🌟 2. 픽토그램 아이콘 상태 관리 (옷 -> 악세 -> 전용악세)
+  const [iconType, setIconType] = useState<"cos" | "acc" | "only">("cos");
+  const [isIconError, setIsIconError] = useState(false);
+
+  const [hairType, setHairType] = useState<"normal" | "after">("normal");
+  const [isHairError, setIsHairError] = useState(false);
 
   const safeChars = preview.characters?.length ? preview.characters : [{ name: "미등록", sets: [] }];
   const currentChar = safeChars[charIdx % safeChars.length];
@@ -115,6 +123,23 @@ export default function ModalCostumePreviewCard({ preview, userState }: ModalCos
   const pickSet = (idx: number) => setSetIdx(idx);
   const toggleSide = () => setSide((prev) => (prev === "front" ? "back" : "front"));
 
+  // 🌟 3. 마법의 자동 경로 조립기! (ex: /cards/Wds/Emu/Wds_Emu_001/pv_cos_0.png)
+  const [unit, char] = (cardId || "").split("_");
+  const currentIconPath = cardId ? `/cards/${unit}/${char}/${cardId}/pv_${iconType}_${activeTabIndex}.png` : "";
+  const currentHairPath = cardId ? `/cards/${unit}/${char}/${cardId}/pv_hair${hairType === "after" ? "_after" : ""}.png` : "";
+
+  useEffect(() => {
+    setIsIconError(false);
+  }, [currentIconPath]);
+
+  useEffect(() => {
+    setIsHairError(false);
+  }, [currentHairPath]);
+
+  useEffect(() => {
+    if (activeTabIndex === 0) setHairType("normal");
+  }, [activeTabIndex]);
+
   return (
     <div className="p-4 flex flex-col h-full">
       
@@ -127,16 +152,12 @@ export default function ModalCostumePreviewCard({ preview, userState }: ModalCos
         </div>
         {userState && (
           <div
-            // 🌟 불필요한 style 속성(토널 팔레트 엔진)은 완전히 삭제했습니다!
             className={
               "shrink-0 inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border tracking-tight transition-all shadow-sm " +
               (!userState.isOwned
-                // 1. 미보유
                 ? "bg-zinc-100 dark:bg-zinc-900 border-zinc-300 dark:border-zinc-700 text-zinc-500" 
                 : isUnlocked
-                // 2. 개방 (🌟 기획자님의 오리지널 에메랄드 고정!)
                 ? "bg-emerald-50 dark:bg-emerald-950 border-emerald-500 dark:border-emerald-400 text-emerald-600 dark:text-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.2)] dark:shadow-[0_0_8px_rgba(52,211,153,0.15)]" 
-                // 3. 미개방
                 : "bg-zinc-200 dark:bg-zinc-900 border-zinc-400 dark:border-zinc-400 text-zinc-600 dark:text-zinc-300") 
             }
           >
@@ -145,7 +166,6 @@ export default function ModalCostumePreviewCard({ preview, userState }: ModalCos
         )}
       </div>
 
-      {/* 🌟 여기서부터 마법 시작! 박스를 없애고, 구분선 아래 전체 구역(-mx-4 -mb-4)이 물들게 만듭니다! */}
       <div className={`relative -mx-4 -mb-4 mt-0 p-4 pt-14 rounded-b-2xl transition-colors duration-500 flex-1 flex flex-col ${
         customBg === 'light' ? 'bg-white' 
         : customBg === 'dark' ? 'bg-zinc-950' 
@@ -174,13 +194,101 @@ export default function ModalCostumePreviewCard({ preview, userState }: ModalCos
           />
         </div>
 
-        {/* 좌우 화살표 (우측 상단 안착) */}
-        {safeChars.length > 1 ? (
-          <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
-            <button onClick={() => goChar(-1)} className="h-8 w-8 rounded-full border border-white/20 bg-black/40 text-white backdrop-blur-sm hover:bg-black/60 hover:scale-105 active:scale-97 transition-all">⊲</button>
-            <button onClick={() => goChar(1)} className="h-8 w-8 rounded-full border border-white/20 bg-black/40 text-white backdrop-blur-sm hover:bg-black/60 hover:scale-105 active:scale-97 transition-all">⊳</button>
+        {/* 🌟 우측 상단 UI 묶음 (화살표 & 의상/헤어 아이콘) */}
+        <div className="absolute top-4 right-4 z-20 flex flex-col items-end gap-3 pointer-events-none">
+          
+          {/* 캐릭터 전환 화살표 */}
+          {safeChars.length > 1 && (
+            <div className="flex items-center gap-2 pointer-events-auto">
+              <button onClick={() => goChar(-1)} className="h-8 w-8 rounded-full border border-white/20 bg-black/40 text-white backdrop-blur-sm hover:bg-black/60 hover:scale-105 active:scale-97 transition-all">⊲</button>
+              <button onClick={() => goChar(1)} className="h-8 w-8 rounded-full border border-white/20 bg-black/40 text-white backdrop-blur-sm hover:bg-black/60 hover:scale-105 active:scale-97 transition-all">⊳</button>
+            </div>
+          )}
+
+          {/* 🌟 아이콘들을 세로로 예쁘게 정렬하는 스택 컨테이너 */}
+          <div className="flex flex-col gap-2.5 mt-1">
+            
+            {/* 1. 마법의 의상/악세 토글 버튼 (🤖 자동 파일 감지 시스템 탑재!) */}
+            {cardId && (
+              <div className="relative group pointer-events-auto">
+                <button
+                  type="button"
+                  onClick={() => setIconType(p => p === "cos" ? "acc" : p === "acc" ? "only" : "cos")}
+                  className="w-16 h-16 md:w-[72px] md:h-[72px] rounded-[14px] border-[2.5px] border-white/90 shadow-[0_4px_12px_rgba(0,0,0,0.3)] bg-zinc-200/50 dark:bg-black/30 backdrop-blur-md transition-all hover:scale-105 active:scale-95 flex items-center justify-center overflow-hidden"
+                >
+                  {/* 🌟 마법의 분기: 컴퓨터가 파일을 못 찾아서 에러가 났다면 알아서 [없음] 띄움! */}
+                  {isIconError ? (
+                    <div className="w-full h-full flex flex-col items-center justify-center bg-black/40 text-white/60 animate-fade-in">
+                      <span className="text-xl md:text-2xl opacity-70">✖</span>
+                      <span className="text-[9px] md:text-[10px] font-bold mt-0.5 tracking-wider">없음</span>
+                    </div>
+                  ) : (
+                    <img
+                      src={currentIconPath}
+                      alt="Costume Icon"
+                      className="w-full h-full object-cover transition-opacity duration-300"
+                      // 👇 마법의 주문: 이미지 로딩에 실패하면 즉시 에러 감지기를 발동시킨다!
+                      onError={() => setIsIconError(true)} 
+                      onLoad={(e) => { (e.currentTarget as HTMLImageElement).style.opacity = '1'; }}
+                    />
+                  )}
+                </button>
+
+                <div className="absolute top-full right-0 mt-2.5 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
+                  <div className="bg-white dark:bg-zinc-900 text-zinc-800 dark:text-white text-[11px] font-bold pl-2 pr-2 py-1 rounded-md shadow-xl border border-zinc-200 dark:border-zinc-700 flex items-center gap-1.5 transition-colors">
+                    <img src="/icons/cos.png" alt="아이콘" className="w-3 h-3 object-contain invert dark:invert-0" />
+                    <span className={`tracking-wide ${iconType === "only" ? "pr-3" : ""}`}>
+                      {iconType === "cos" ? "의상" : iconType === "acc" ? "악세" : "전용악세"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 2. 💇‍♀️ 헤어 썸네일 아이콘 (오리지널 흑백 잠금 + 극장판 전용 토글!) */}
+            {cardId && hasHair && (
+              <div className="relative group pointer-events-auto animate-fade-in-up">
+                <button
+                  type="button"
+                  // 🌟 마법의 조건: isMovieStyle이고, 어나더 탭(>0)일 때만 헤어 토글이 작동함!
+                  onClick={() => {
+                    if (isMovieStyle && activeTabIndex > 0) {
+                      setHairType(p => p === "normal" ? "after" : "normal");
+                    }
+                  }}
+                  // 오리지널(0번 탭)이거나 일반 캐릭터면 클릭할 수 없게 마우스 커서를 기본(default)으로 둡니다.
+                  className={`w-16 h-16 md:w-[72px] md:h-[72px] rounded-[14px] border-[2.5px] border-white/90 shadow-[0_4px_12px_rgba(0,0,0,0.3)] bg-zinc-200/50 dark:bg-black/30 flex items-center justify-center overflow-hidden transition-colors 
+                    ${isMovieStyle && activeTabIndex > 0 ? "hover:bg-zinc-300/50 dark:hover:bg-black/50 cursor-pointer" : "cursor-default"}`}
+                >
+                  {isHairError ? (
+                    <div className="w-full h-full flex flex-col items-center justify-center bg-black/40 text-white/60 animate-fade-in">
+                      <span className="text-xl md:text-2xl opacity-70">✖</span>
+                    </div>
+                  ) : (
+                    <img
+                      src={currentHairPath}
+                      alt="Hair Icon"
+                      // 🌟 대망의 오리지널 탭 미해방 연출! (흑백으로 죽이고 + 오퍼시티 40%로 반투명화 + 대비 살짝 낮춤)
+                      className={`w-full h-full object-cover transition-all duration-300 ${activeTabIndex === 0 ? "grayscale opacity-40 contrast-75" : ""}`}
+                      onError={() => setIsHairError(true)}
+                    />
+                  )}
+                </button>
+
+                <div className="absolute top-full right-0 mt-2.5 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
+                  <div className="bg-white dark:bg-zinc-900 text-zinc-800 dark:text-white text-[11px] font-bold pl-2 pr-2 py-1 rounded-md shadow-xl border border-zinc-200 dark:border-zinc-700 flex items-center gap-1.5 transition-colors">
+                    <img src="/icons/cos.png" alt="아이콘" className="w-3 h-3 object-contain invert dark:invert-0" />
+                    <span className="tracking-wide">
+                      {/* 🌟 툴팁도 상황에 맞게 스마트하게 변신! */}
+                      {activeTabIndex === 0 ? "헤어 (미해방)" : (hairType === "after" ? "헤어 (어나더)" : "헤어")}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+
           </div>
-        ) : null}
+        </div>
 
         {/* 🖼️ 의상 뷰어 (박스 테두리 제거) */}
         <div className="relative mx-auto aspect-[435/849] w-full max-h-[400px] flex-1">
@@ -204,13 +312,11 @@ export default function ModalCostumePreviewCard({ preview, userState }: ModalCos
                 const showFull = !isAnother || active || hovered;
                 const visibleLabel = showFull ? s.label : shortLabel;
 
-                // 비활성 탭 디자인
                 const inactiveLightClass = "bg-zinc-100/90 border-zinc-300 text-zinc-500 hover:bg-zinc-200 hover:text-zinc-800";
                 const inactiveDarkClass = "bg-white/5 border-white/10 text-zinc-400 hover:bg-white/10 hover:text-zinc-200";
                 const inactiveAutoClass = "bg-zinc-100/90 dark:bg-white/5 border-zinc-300 dark:border-white/10 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-white/10";
                 const inactiveClass = customBg === 'light' ? inactiveLightClass : customBg === 'dark' ? inactiveDarkClass : inactiveAutoClass;
 
-                // 🌟 [디자인 원상복구] 디폴트든 팔레트든, 무조건 영롱한 투명 믹스(15%) 양식을 씁니다!
                 const activeTextClass = customBg === 'light' ? "text-[var(--mix-text-light)]" : customBg === 'dark' ? "text-[var(--mix-text-dark)]" : "text-[var(--mix-text-light)] dark:text-[var(--mix-text-dark)]";
                 const activeClass = `bg-[var(--mix-bg)] border-[var(--mix-border)] ${activeTextClass} shadow-[0_0_8px_var(--mix-glow)]`;
 
@@ -221,8 +327,6 @@ export default function ModalCostumePreviewCard({ preview, userState }: ModalCos
                     onClick={() => pickSet(i)}
                     onMouseEnter={() => setHoverSetIdx(i)}
                     onMouseLeave={() => setHoverSetIdx(null)}
-                    // 🌟 에메랄드 찌꺼기(, #10b981)만 뺀 순수 color-mix 엔진을 조건 없이 가동합니다!
-                    // (providers.tsx가 주는 색상을 가져와서 알아서 예쁘게 섞습니다)
                     style={active ? {
                       "--mix-bg": "color-mix(in srgb, var(--color-primary) 15%, transparent)",
                       "--mix-border": "var(--color-primary)",

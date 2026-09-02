@@ -541,7 +541,7 @@ export default function CardDetailModal({
 
               <div className="flex gap-3.5">
                 <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 shrink-0 overflow-hidden flex items-center justify-center transition-colors">
-                  <span className="text-zinc-400 dark:text-zinc-500 text-lg">🎵</span>
+                  <img src="/icons/music.png" alt="악곡" className="w-[22px] h-[22px] object-contain" />
                 </div>
                 <div className="flex-1 flex flex-col gap-2">
                   <span className="font-bold text-zinc-800 dark:text-zinc-200 text-sm mt-0.5 transition-colors">관련 악곡</span>
@@ -559,8 +559,8 @@ export default function CardDetailModal({
                       ))}
                     </div>
                   ) : (
-                    <div className="w-28 md:w-36 h-28 md:h-36 bg-zinc-50 dark:bg-zinc-900/30 border border-zinc-200 dark:border-white/10 border-dashed rounded-xl flex flex-col items-center justify-center gap-2 shrink-0 transition-colors">
-                      <span className="text-2xl opacity-50">💿</span>
+                    <div className="w-28 md:w-36 h-28 md:h-36 bg-zinc-50 dark:bg-zinc-900/30 border border-zinc-200 dark:border-white/10 border-dashed rounded-xl flex flex-col items-center justify-center gap-2.5 shrink-0 transition-colors">
+                      <img src="/icons/no_muslc.png" alt="악곡 없음" className="w-8 h-8 object-contain opacity-40 dark:opacity-50 invert dark:invert-0" />
                       <span className="text-[11px] text-zinc-500 font-medium tracking-wide">관련 악곡 없음</span>
                     </div>
                   )}
@@ -783,7 +783,7 @@ export default function CardDetailModal({
               <div className={`${activeMobileTab === 'costume' ? 'block' : 'hidden'} lg:block w-full`}>
                 {costumePreviewData ? (
                   <div className="w-full animate-fade-in shadow-xl rounded-2xl bg-zinc-50 dark:bg-zinc-950/50 border border-zinc-300 dark:border-zinc-700 overflow-hidden transition-colors">
-                    <ModalCostumePreviewCard preview={costumePreviewData as any} userState={userState} />
+                    <ModalCostumePreviewCard preview={costumePreviewData as any} userState={userState} cardId={card.id} hasHair={card.costume?.hasHair} isMovieStyle={card.costume?.isMovieStyle} />
                   </div>
                 ) : (
                   <div className="w-full h-32 bg-zinc-50 dark:bg-zinc-900/20 border border-zinc-300 dark:border-zinc-700 border-dashed rounded-2xl flex flex-col items-center justify-center gap-2 shadow-inner animate-fade-in transition-colors">

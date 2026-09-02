@@ -92,11 +92,12 @@ export default function GlobalHeader() {
                 onClick={() => setIsSettingsOpen(true)}
                 onMouseEnter={() => setActiveTooltip('settings')}
                 onMouseLeave={() => setActiveTooltip(null)}
-                onClickCapture={() => setActiveTooltip(null)} // 누를 때 툴팁 숨기기
-                className="p-1.5 rounded-lg text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-white/10 transition-colors"
+                onClickCapture={() => setActiveTooltip(null)}
+                className="p-1.5 rounded-lg text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-white/10 transition-colors flex items-center justify-center"
                 title="블룸 페스 랭크 설정"
               >
-                ⚙️
+                {/* 👇 invert dark:invert-0 적용! */}
+                <img src="/icons/setting_1.png" alt="설정" className="w-5 h-5 object-contain opacity-70 hover:opacity-100 invert dark:invert-0 transition-opacity" />
               </button>
               
               <span className={getTooltipClass(activeTooltip === 'settings')}>

@@ -44,7 +44,10 @@ export default function CharacterSettingsModal({
         
         <div className="flex items-center justify-between border-b border-zinc-200 dark:border-white/10 pb-4 mb-4 shrink-0 transition-colors">
           <div>
-            <h2 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2">⚙️ 도감 엔진 설정</h2>
+            <h2 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+              <img src="/icons/setting_1.png" alt="설정" className="w-5 h-5 object-contain invert dark:invert-0" />
+              도감 엔진 설정
+            </h2>
             <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1">캐릭터 랭크에 따라 <strong className="text-zinc-700 dark:text-zinc-300">블룸 페스</strong> 보너스가 갱신됩니다.</p>
           </div>
           <button onClick={onClose} className="text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors w-8 h-8 flex items-center justify-center bg-zinc-100 dark:bg-zinc-900 rounded-full border border-zinc-200 dark:border-white/5 shadow-sm">✕</button>
