@@ -70,6 +70,7 @@ export type FinalCardInfo = {
     name: string;
     sets: CostumeSetPaths[];
     hasHair: boolean;    
+    isMovieStyle?: boolean;
   };
       
 };

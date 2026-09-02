@@ -214,7 +214,7 @@ export default function ModalCostumePreviewCard({ preview, userState, cardId, ha
                 <button
                   type="button"
                   onClick={() => setIconType(p => p === "cos" ? "acc" : p === "acc" ? "only" : "cos")}
-                  className="w-16 h-16 md:w-[72px] md:h-[72px] rounded-[14px] border-[2.5px] border-white/90 shadow-[0_4px_12px_rgba(0,0,0,0.3)] bg-zinc-200/50 dark:bg-black/30 backdrop-blur-md transition-all hover:scale-105 active:scale-95 flex items-center justify-center overflow-hidden"
+                  className="w-16 h-16 md:w-[72px] md:h-[72px] rounded-[14px] border-[2.5px] border-white/90 shadow-[0_4px_12px_rgba(0,0,0,0.3)] bg-zinc-200/50 dark:bg-black/30 flex items-center justify-center overflow-hidden transition-colors hover:bg-zinc-300/50 dark:hover:bg-black/50"
                 >
                   {/* 🌟 마법의 분기: 컴퓨터가 파일을 못 찾아서 에러가 났다면 알아서 [없음] 띄움! */}
                   {isIconError ? (
@@ -280,7 +280,9 @@ export default function ModalCostumePreviewCard({ preview, userState, cardId, ha
                     <img src="/icons/cos.png" alt="아이콘" className="w-3 h-3 object-contain invert dark:invert-0" />
                     <span className="tracking-wide">
                       {/* 🌟 툴팁도 상황에 맞게 스마트하게 변신! */}
-                      {activeTabIndex === 0 ? "헤어 (미해방)" : (hairType === "after" ? "헤어 (어나더)" : "헤어")}
+                      <span className={`tracking-wide ${activeTabIndex === 0 ? "text-left pr-3" : ""}`}>
+                      {activeTabIndex === 0 ? "헤어 미개방" : (hairType === "after" ? "헤어 (어나더)" : "헤어")}
+                      </span>
                     </span>
                   </div>
                 </div>
