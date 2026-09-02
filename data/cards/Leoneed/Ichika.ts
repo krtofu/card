@@ -1,12 +1,9 @@
-import { defineCharacterCards } from "../template";
+import { defineCharacterCards } from "../template"; // 경로에 맞게 ../../ 로 맞춰주세요!
 
-export const IchikaCards = defineCharacterCards(
-  "레오니",
-  "호시노 이치카",
-  "Leoneed",
-  "Ichika",
-  {
-    cards: [
+// 🎸 Leo/need (레오니) 이치카
+// -> 얼굴 아이콘: Ichika.png 자동 매핑
+const IchikaLeoneed = defineCharacterCards("레오니", "호시노 이치카", "Leoneed", "Ichika", {
+  cards: [
       {
         info: {
           id: "ln_Ichika_001",
@@ -571,6 +568,33 @@ export const IchikaCards = defineCharacterCards(
           hasHair: true,
         },
       },
+      {
+        info: {
+          id: "ln_Ichika_027",
+          cardName: "[후회 없는 선택]",
+          attribute: "cute",
+          gachaType: "한정",
+          gachaPoolName: "Tucked in a box 뽑기",
+          eventName: "Echo of a Prayer",
+          skillType: "퍼스업",
+            releaseDate: "2027-07-31",
+         },
+        media: {
+          gachaBannerPath: "/gachas/27y/jbanner_27_22_l.png",
+          eventBannerPath: "/events/27y/jbanner_27_22_l.png",
+          songName: "천칭, 손끝으로 닿으며",
+           songJacketPath: "/jacket/27y/Tenbin_Yubisaki_de_Furete.png",
+         },
+        costume: {
+          hasCostume: true,
+          costumeName: "Waver jacket",
+          hasHair: true,
+        },
+      },
     ]
-  }
-);
+});
+
+// 🌟 이치카 카드를 배열로 내보내기!
+export const IchikaCards = [
+  ...IchikaLeoneed,
+];
