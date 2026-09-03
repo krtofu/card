@@ -602,6 +602,28 @@ const KanadeNiigo = defineCharacterCards("니고", "요이사키 카나데", "Ni
             hasHair: true,
           },
         },
+        {
+          info: {
+            id: "ng_Kanade_029",
+            cardName: "[Shadow Shadow]",
+            attribute: "happy",
+            gachaType: "콜라보",
+            gachaPoolName: "Dressed in Melodies 뽑기",
+            skillType: "판강",
+            releaseDate: "2027-09-03",
+            hasAwakening: false,
+          },
+          media: {
+            gachaBannerPath: "/gachas/collab/jbanner_c6.png",
+            songName: "Shadow Shadow",
+            songJacketPath: "/jacket/25y/Shadow_Shadow.png",
+          },
+          costume: {
+            hasCostume: true,
+            costumeName: "Shadow Shadow",
+            hasHair: true,
+          },
+        },
   ]
 });
 

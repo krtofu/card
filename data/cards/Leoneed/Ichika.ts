@@ -591,6 +591,28 @@ const IchikaLeoneed = defineCharacterCards("레오니", "호시노 이치카", "
           hasHair: true,
         },
       },
+      {
+        info: {
+          id: "ln_Ichika_028",
+          cardName: "[모자이크 롤(Reloaded)]",
+          attribute: "mysterious",
+          gachaType: "콜라보",
+          gachaPoolName: "Dressed in Melodies 뽑기",
+          skillType: "힐",
+          releaseDate: "2027-09-03",
+          hasAwakening: false,
+        },
+        media: {
+          gachaBannerPath: "/gachas/collab/jbanner_c6.png",
+          songName: "모자이크 롤(Reloaded)",
+          songJacketPath: "/jacket/25y/Mozaik_Role_Reloaded.png",
+        },
+        costume: {
+          hasCostume: true,
+          costumeName: "모자이크 롤(Reloaded)",
+          hasHair: true,
+        },
+      },
     ]
 });
 

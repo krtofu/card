@@ -219,7 +219,7 @@ export default function FuturePage() {
       if (!(matchNormal || matchLimited || matchCollab)) return false;
     }
     if (selectedHairs.length > 0) {
-      if (!( (selectedHairs.includes("hair_o") && card.hasHair) || (selectedHairs.includes("hair_x") && !card.hasHair) )) return false;
+      if (!( (selectedHairs.includes("hair_o") && card.costume?.hasHair) || (selectedHairs.includes("hair_x") && !card.costume?.hasHair) )) return false;
     }
     if (selectedChars.length > 0) {
       const matchesChar = selectedChars.some(selId => {
@@ -414,8 +414,11 @@ export default function FuturePage() {
       `}>
         <div className="w-[300px] h-full flex flex-col p-6 md:p-0 bg-white dark:bg-zinc-950 md:bg-transparent">
           
-          <div className="flex items-center justify-between border-b border-zinc-200 dark:border-white/10 pb-3 mb-6 transition-colors">
-            <h2 className="text-lg md:text-sm font-bold text-zinc-700 dark:text-zinc-300 tracking-wider uppercase transition-colors">🔍 필터</h2>
+            <div className="flex items-center justify-between border-b border-zinc-200 dark:border-white/10 pb-3 mb-6 transition-colors">
+            <h2 className="flex items-center gap-1.5 text-lg md:text-sm font-bold text-zinc-700 dark:text-zinc-300 tracking-wider uppercase transition-colors">
+              <img src="/icons/Search.png" alt="필터" className="w-[15px] h-[15px] object-contain opacity-70 invert dark:invert-0 transition-all" />
+              필터
+             </h2>
             <div className="flex items-center gap-2">
               <button onClick={handleReset} className="w-8 h-8 md:w-7 md:h-7 flex items-center justify-center rounded-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 text-zinc-500 dark:text-zinc-400 hover:text-primary dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors text-sm md:text-sm shadow-sm" title="초기화">
                 <span className="leading-none -mt-[1px] inline-block" style={{ transform: `rotate(${spinDeg}deg)`, transition: 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)' }}>↺</span>
@@ -819,7 +822,9 @@ export default function FuturePage() {
             
             {/* 1. 검색창: 화면 폭이 좁아져도 자신의 크기를 유지하며 상단에 버팀 */}
             <div className="relative flex items-center w-full sm:w-[180px] lg:w-64 xl:w-80 shrink-0">
-              <span className="absolute left-3 text-zinc-400 text-sm">🔍</span>
+              <span className="absolute left-3.5 flex items-center justify-center pointer-events-none">
+                <img src="/icons/Search.png" alt="검색" className="w-[14px] h-[14px] object-contain opacity-40 dark:opacity-60 invert dark:invert-0 transition-all" />
+              </span>
               <input
                 type="text"
                 placeholder="카드명, 의상, 악곡, 배너 검색..."
@@ -1024,5 +1029,6 @@ const COLLAB_FILTERS = [
   { id: "collab_enstar", name: "앙스타", matchKeys: ["앙스타", "앙상블", "ensemble"] },
   { id: "collab_tamagotchi", name: "다마고치", matchKeys: ["다마고치", "tamagotchi"] },
   { id: "collab_touhou", name: "동방", matchKeys: ["뒤섞이는 경계", "동방"] },
-  { id: "collab_movie", name: "극장판", matchKeys: ["창의 세카이에서", "극장판"] }
+  { id: "collab_movie", name: "극장판", matchKeys: ["창의 세카이에서", "극장판"] },
+  { id: "collab_TheMusicStyle", name: "보카로 악곡", matchKeys: ["Dressed in Melodies", "보카로 악곡", "The Music Style"] }
 ];

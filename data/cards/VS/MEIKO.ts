@@ -427,6 +427,28 @@ const MEIKOVbs = defineCharacterCards("비배스", "메이코", "VS", "MEIKO", {
             costumeName: "Love suffering",
           },
         },
+        {
+          info: {
+            id: "VS_MEIKO_029",
+            cardName: "[취한 줄을 모르고]",
+            attribute: "cool",
+            gachaType: "콜라보",
+            gachaPoolName: "Dressed in Melodies 뽑기",
+            skillType: "스업",
+            releaseDate: "2027-09-03",
+            hasAwakening: false,
+          },
+          media: {
+            gachaBannerPath: "/gachas/collab/jbanner_c6.png",
+            songName: "취한 줄을 모르고",
+            songJacketPath: "/jacket/25y/Yoidore_Shirazu.png",
+          },
+          costume: {
+            hasCostume: true,
+            costumeName: "취한 줄을 모르고",
+            hasHair: true,
+          },
+        },
 
   ]
 });

@@ -325,14 +325,18 @@ export default function FutureEventCard({
           {event.event?.bonus && (
              <div className="absolute -left-6 sm:-left-12 md:-left-[70px] top-1/2 -translate-y-1/2 flex items-center z-50">
                <button
-                 onClick={() => { setIsEventMode(!isEventMode); setShowCostumes(false); }}
-                 className="w-10 h-10 rounded-full bg-white dark:bg-zinc-800 border-[3px] border-zinc-200 dark:border-zinc-950 shadow-[0_0_15px_rgba(0,0,0,0.1)] dark:shadow-[0_0_15px_rgba(0,0,0,0.5)] flex items-center justify-center text-[18px] hover:bg-zinc-100 dark:hover:bg-zinc-700 hover:scale-110 transition-all z-10 relative"
-                 title={isEventMode ? "가챠 배너로 돌아가기" : "이벤트 배너 보기"}
-               >
-                 {isEventMode ? '🎪' : '🎰'}
-               </button>
-               <div className="w-6 sm:w-10 md:w-[46px] h-[3px] bg-zinc-300 dark:bg-zinc-600 absolute left-5 top-1/2 -translate-y-1/2 -z-10 shadow-sm transition-colors" />
-             </div>
+                onClick={() => { setIsEventMode(!isEventMode); setShowCostumes(false); }}
+                className="w-10 h-10 rounded-full bg-white dark:bg-zinc-800 border-[3px] border-zinc-200 dark:border-zinc-950 shadow-[0_0_15px_rgba(0,0,0,0.1)] dark:shadow-[0_0_15px_rgba(0,0,0,0.5)] flex items-center justify-center hover:bg-zinc-100 dark:hover:bg-zinc-700 hover:scale-110 transition-all z-10 relative"
+                title={isEventMode ? "가챠 배너로 돌아가기" : "이벤트 배너 보기"}
+              > 
+                <img 
+                 src={isEventMode ? "/icons/Can.png" : "/icons/Crystal.png"} 
+                 alt="모드 전환" 
+                 className="w-[22px] h-[22px] object-contain drop-shadow-sm transition-transform active:scale-95" 
+                />
+              </button>
+             <div className="w-6 sm:w-10 md:w-[46px] h-[3px] bg-zinc-300 dark:bg-zinc-600 absolute left-5 top-1/2 -translate-y-1/2 -z-10 shadow-sm transition-colors" />
+            </div>
           )}
 
           <div className="relative aspect-[21/9] w-full bg-zinc-100 dark:bg-zinc-950/40 flex items-center justify-center border-b border-zinc-200 dark:border-white/10 overflow-hidden rounded-t-2xl shrink-0 transition-colors">

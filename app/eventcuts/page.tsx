@@ -363,7 +363,10 @@ export default function EventCutsPage() {
           
           {/* 필터 헤더 구역 */}
           <div className="flex items-center justify-between border-b border-zinc-200 dark:border-white/10 pb-3 mb-6 transition-colors">
-            <h2 className="text-lg md:text-sm font-bold text-zinc-700 dark:text-zinc-300 tracking-wider uppercase transition-colors">🔍 필터</h2>
+             <h2 className="flex items-center gap-1.5 text-lg md:text-sm font-bold text-zinc-700 dark:text-zinc-300 tracking-wider uppercase transition-colors">
+               <img src="/icons/Search.png" alt="필터" className="w-[15px] h-[15px] object-contain opacity-70 invert dark:invert-0 transition-all" />
+               필터
+             </h2>
             <div className="flex items-center gap-2">
               <button onClick={handleReset} className="w-8 h-8 md:w-7 md:h-7 flex items-center justify-center rounded-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 text-zinc-500 dark:text-zinc-400 hover:text-primary dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors text-sm md:text-sm shadow-sm" title="초기화">
                 <span className="leading-none -mt-[1px] inline-block" style={{ transform: `rotate(${spinDeg}deg)`, transition: 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)' }}>↺</span>
@@ -606,7 +609,7 @@ export default function EventCutsPage() {
           </div>
 
           <div className="flex items-center justify-end gap-3 shrink-0">
-            {/* 🔍 태그/검색창 */}
+            {/* 태그/검색창 */}
             <div className="relative w-[140px] sm:w-[200px]">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-xs">#</span>
               <input

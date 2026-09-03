@@ -12,6 +12,7 @@ interface ModalCostumePreviewProps {
   cardId?: string;
   hasHair?: boolean;
   isMovieStyle?: boolean;
+  isEvillious?: boolean;
 }
 
 function DotPager({ total, active, onPick, customBg }: { total: number; active: number; onPick?: (i: number) => void; customBg: "auto" | "light" | "dark" }) {
@@ -69,7 +70,7 @@ function FlipSideButton({ side, onToggle, customBg }: { side: "front" | "back"; 
   );
 }
 
-export default function ModalCostumePreviewCard({ preview, userState, cardId, hasHair, isMovieStyle }: ModalCostumePreviewProps) {
+export default function ModalCostumePreviewCard({ preview, userState, cardId, hasHair, isMovieStyle, isEvillious }: ModalCostumePreviewProps) {
   const { themeColor } = useThemeColor();
   const [side, setSide] = useState<"front" | "back">("front");
   const [charIdx, setCharIdx] = useState(0);
@@ -83,6 +84,8 @@ export default function ModalCostumePreviewCard({ preview, userState, cardId, ha
 
   const [hairType, setHairType] = useState<"normal" | "after">("normal");
   const [isHairError, setIsHairError] = useState(false);
+
+  const [activeTooltip, setActiveTooltip] = useState<"cos" | "hair" | null>(null);
 
   const safeChars = preview.characters?.length ? preview.characters : [{ name: "미등록", sets: [] }];
   const currentChar = safeChars[charIdx % safeChars.length];
@@ -123,10 +126,13 @@ export default function ModalCostumePreviewCard({ preview, userState, cardId, ha
   const pickSet = (idx: number) => setSetIdx(idx);
   const toggleSide = () => setSide((prev) => (prev === "front" ? "back" : "front"));
 
-  // 🌟 3. 마법의 자동 경로 조립기! (ex: /cards/Wds/Emu/Wds_Emu_001/pv_cos_0.png)
-  const [unit, char] = (cardId || "").split("_");
-  const currentIconPath = cardId ? `/cards/${unit}/${char}/${cardId}/pv_${iconType}_${activeTabIndex}.png` : "";
-  const currentHairPath = cardId ? `/cards/${unit}/${char}/${cardId}/pv_hair${hairType === "after" ? "_after" : ""}.png` : "";
+  // 🌟 3. 궁극의 경로 조립기 (ID 쪼개기 폐기! 3D 모델 경로에서 폴더 주소만 훔쳐옵니다)
+  const folderPath = currentSrc.includes("/") 
+    ? currentSrc.substring(0, currentSrc.lastIndexOf('/')) 
+    : "";
+
+  const currentIconPath = folderPath ? `${folderPath}/pv_${iconType}_${activeTabIndex}.png` : "";
+  const currentHairPath = folderPath ? `${folderPath}/pv_hair${(isMovieStyle && activeTabIndex === 1) ? "_after" : ""}.png` : "";
 
   useEffect(() => {
     setIsIconError(false);
@@ -208,15 +214,25 @@ export default function ModalCostumePreviewCard({ preview, userState, cardId, ha
           {/* 🌟 아이콘들을 세로로 예쁘게 정렬하는 스택 컨테이너 */}
           <div className="flex flex-col gap-2.5 mt-1">
             
-            {/* 1. 마법의 의상/악세 토글 버튼 (🤖 자동 파일 감지 시스템 탑재!) */}
+            {/* 1. 마법의 의상/악세 토글 버튼 */}
             {cardId && (
               <div className="relative group pointer-events-auto">
                 <button
                   type="button"
-                  onClick={() => setIconType(p => p === "cos" ? "acc" : p === "acc" ? "only" : "cos")}
-                  className="w-16 h-16 md:w-[72px] md:h-[72px] rounded-[14px] border-[2.5px] border-white/90 shadow-[0_4px_12px_rgba(0,0,0,0.3)] bg-zinc-200/50 dark:bg-black/30 flex items-center justify-center overflow-hidden transition-colors hover:bg-zinc-300/50 dark:hover:bg-black/50"
+                  onClick={() => {
+                    // 🌟 에빌 시리즈면 'acc'를 건너뛰고 'cos' <-> 'only' 2단 토글!
+                    if (isEvillious) {
+                      setIconType(p => p === "cos" ? "only" : "cos");
+                    } else {
+                      // 일반 카드는 기존대로 3단 토글!
+                      setIconType(p => p === "cos" ? "acc" : p === "acc" ? "only" : "cos");
+                    }
+                    setActiveTooltip("cos"); 
+                  }}
+                  onMouseLeave={() => setActiveTooltip(null)}
+                  className="w-16 h-16 md:w-[72px] md:h-[72px] rounded-[14px] border-[2.5px] border-white/90 shadow-[0_4px_12px_rgba(0,0,0,0.3)] bg-zinc-200/50 dark:bg-black/30 flex items-center justify-center overflow-hidden transition-all duration-200 hover:border-blue-400/80 active:scale-95 cursor-pointer"
                 >
-                  {/* 🌟 마법의 분기: 컴퓨터가 파일을 못 찾아서 에러가 났다면 알아서 [없음] 띄움! */}
+                  {/* ... (이 안의 이미지 렌더링 코드는 기존과 100% 동일하게 둡니다!) ... */}
                   {isIconError ? (
                     <div className="w-full h-full flex flex-col items-center justify-center bg-black/40 text-white/60 animate-fade-in">
                       <span className="text-xl md:text-2xl opacity-70">✖</span>
@@ -227,18 +243,20 @@ export default function ModalCostumePreviewCard({ preview, userState, cardId, ha
                       src={currentIconPath}
                       alt="Costume Icon"
                       className="w-full h-full object-cover transition-opacity duration-300"
-                      // 👇 마법의 주문: 이미지 로딩에 실패하면 즉시 에러 감지기를 발동시킨다!
                       onError={() => setIsIconError(true)} 
                       onLoad={(e) => { (e.currentTarget as HTMLImageElement).style.opacity = '1'; }}
                     />
                   )}
                 </button>
 
-                <div className="absolute top-full right-0 mt-2.5 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
+                <div className={`absolute top-full right-0 mt-2.5 whitespace-nowrap transition-opacity duration-200 pointer-events-none z-50 
+                  ${activeTooltip === "cos" ? "opacity-100" : "opacity-0 md:group-hover:opacity-100"}`}>
                   <div className="bg-white dark:bg-zinc-900 text-zinc-800 dark:text-white text-[11px] font-bold pl-2 pr-2 py-1 rounded-md shadow-xl border border-zinc-200 dark:border-zinc-700 flex items-center gap-1.5 transition-colors">
                     <img src="/icons/cos.png" alt="아이콘" className="w-3 h-3 object-contain invert dark:invert-0" />
-                    <span className={`tracking-wide ${iconType === "only" ? "pr-3" : ""}`}>
-                      {iconType === "cos" ? "의상" : iconType === "acc" ? "악세" : "전용악세"}
+                    <span className={`tracking-wide ${isEvillious || iconType === "only" ? "pr-3" : ""}`}>
+                      {isEvillious 
+                        ? (iconType === "cos" ? "전용의상" : "전용악세") 
+                        : (iconType === "cos" ? "의상" : iconType === "acc" ? "악세" : "전용악세")}
                     </span>
                   </div>
                 </div>
@@ -250,15 +268,10 @@ export default function ModalCostumePreviewCard({ preview, userState, cardId, ha
               <div className="relative group pointer-events-auto animate-fade-in-up">
                 <button
                   type="button"
-                  // 🌟 마법의 조건: isMovieStyle이고, 어나더 탭(>0)일 때만 헤어 토글이 작동함!
-                  onClick={() => {
-                    if (isMovieStyle && activeTabIndex > 0) {
-                      setHairType(p => p === "normal" ? "after" : "normal");
-                    }
-                  }}
-                  // 오리지널(0번 탭)이거나 일반 캐릭터면 클릭할 수 없게 마우스 커서를 기본(default)으로 둡니다.
-                  className={`w-16 h-16 md:w-[72px] md:h-[72px] rounded-[14px] border-[2.5px] border-white/90 shadow-[0_4px_12px_rgba(0,0,0,0.3)] bg-zinc-200/50 dark:bg-black/30 flex items-center justify-center overflow-hidden transition-colors 
-                    ${isMovieStyle && activeTabIndex > 0 ? "hover:bg-zinc-300/50 dark:hover:bg-black/50 cursor-pointer" : "cursor-default"}`}
+                  // 모바일에서 툴팁 띄우는 용도로만 조용히 작동합니다.
+                  onClick={() => setActiveTooltip("hair")}
+                  onMouseLeave={() => setActiveTooltip(null)}
+                  className="w-16 h-16 md:w-[72px] md:h-[72px] rounded-[14px] border-[2.5px] border-white/90 shadow-[0_4px_12px_rgba(0,0,0,0.3)] bg-zinc-200/50 dark:bg-black/30 flex items-center justify-center overflow-hidden transition-all duration-200 cursor-default"
                 >
                   {isHairError ? (
                     <div className="w-full h-full flex flex-col items-center justify-center bg-black/40 text-white/60 animate-fade-in">
@@ -268,20 +281,22 @@ export default function ModalCostumePreviewCard({ preview, userState, cardId, ha
                     <img
                       src={currentHairPath}
                       alt="Hair Icon"
-                      // 🌟 대망의 오리지널 탭 미해방 연출! (흑백으로 죽이고 + 오퍼시티 40%로 반투명화 + 대비 살짝 낮춤)
-                      className={`w-full h-full object-cover transition-all duration-300 ${activeTabIndex === 0 ? "grayscale opacity-40 contrast-75" : ""}`}
+                      className={`w-full h-full object-cover transition-all duration-300 ${activeTabIndex === 0 && !isMovieStyle ? "grayscale opacity-40 contrast-75" : ""}`}
                       onError={() => setIsHairError(true)}
                     />
                   )}
                 </button>
 
-                <div className="absolute top-full right-0 mt-2.5 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
+                <div className={`absolute top-full right-0 mt-2.5 whitespace-nowrap transition-opacity duration-200 pointer-events-none z-50 
+                  ${activeTooltip === "hair" ? "opacity-100" : "opacity-0 md:group-hover:opacity-100"}`}>
                   <div className="bg-white dark:bg-zinc-900 text-zinc-800 dark:text-white text-[11px] font-bold pl-2 pr-2 py-1 rounded-md shadow-xl border border-zinc-200 dark:border-zinc-700 flex items-center gap-1.5 transition-colors">
                     <img src="/icons/cos.png" alt="아이콘" className="w-3 h-3 object-contain invert dark:invert-0" />
                     <span className="tracking-wide">
-                      {/* 🌟 툴팁도 상황에 맞게 스마트하게 변신! */}
-                      <span className={`tracking-wide ${activeTabIndex === 0 ? "text-left pr-3" : ""}`}>
-                      {activeTabIndex === 0 ? "헤어 미개방" : (hairType === "after" ? "헤어 (어나더)" : "헤어")}
+                      {/* 🌟 수정: 극장판일 때와 일반 카드일 때의 툴팁 텍스트를 상황에 맞게 찰떡으로 출력! */}
+                      <span className={`tracking-wide ${(activeTabIndex === 0 && !isMovieStyle) ? "text-left pr-3" : ""}`}>
+                        {isMovieStyle 
+                          ? (activeTabIndex === 0 ? "헤어" : "헤어") 
+                          : (activeTabIndex === 0 ? "헤어 미개방" : "헤어")}
                       </span>
                     </span>
                   </div>
