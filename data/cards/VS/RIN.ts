@@ -202,7 +202,7 @@ const RINLeoneed = defineCharacterCards("레오니", "카가미네 린", "VS", "
           },
           costume: {
             hasCostume: true,
-            costumeName: "어여쁜 잎사귀의 옷 (무늬 검열 x)",
+            costumeName: "어여쁜 잎사귀의 옷",
           },
         },
         {
