@@ -263,12 +263,11 @@ export default function ModalCostumePreviewCard({ preview, userState, cardId, ha
               </div>
             )}
 
-            {/* 2. 💇‍♀️ 헤어 썸네일 아이콘 (오리지널 흑백 잠금 + 극장판 전용 토글!) */}
+            {/* 2. 💇‍♀️ 헤어 썸네일 아이콘 (마랭 연동 스마트 잠금 해제!) */}
             {cardId && hasHair && (
               <div className="relative group pointer-events-auto animate-fade-in-up">
                 <button
                   type="button"
-                  // 모바일에서 툴팁 띄우는 용도로만 조용히 작동합니다.
                   onClick={() => setActiveTooltip("hair")}
                   onMouseLeave={() => setActiveTooltip(null)}
                   className="w-16 h-16 md:w-[72px] md:h-[72px] rounded-[14px] border-[2.5px] border-white/90 shadow-[0_4px_12px_rgba(0,0,0,0.3)] bg-zinc-200/50 dark:bg-black/30 flex items-center justify-center overflow-hidden transition-all duration-200 cursor-default"
@@ -281,7 +280,12 @@ export default function ModalCostumePreviewCard({ preview, userState, cardId, ha
                     <img
                       src={currentHairPath}
                       alt="Hair Icon"
-                      className={`w-full h-full object-cover transition-all duration-300 ${activeTabIndex === 0 && !isMovieStyle ? "grayscale opacity-40 contrast-75" : ""}`}
+                      // 🌟 마법의 조건: 0번 탭이고, 극장판이 아니고, '마랭이 2 미만일 때만' 흑백으로 잠금!
+                      className={`w-full h-full object-cover transition-all duration-300 ${
+                        activeTabIndex === 0 && !isMovieStyle && (userState?.masterRank ?? 0) < 2
+                          ? "grayscale opacity-40 contrast-75" 
+                          : ""
+                      }`}
                       onError={() => setIsHairError(true)}
                     />
                   )}
@@ -291,19 +295,23 @@ export default function ModalCostumePreviewCard({ preview, userState, cardId, ha
                   ${activeTooltip === "hair" ? "opacity-100" : "opacity-0 md:group-hover:opacity-100"}`}>
                   <div className="bg-white dark:bg-zinc-900 text-zinc-800 dark:text-white text-[11px] font-bold pl-2 pr-2 py-1 rounded-md shadow-xl border border-zinc-200 dark:border-zinc-700 flex items-center gap-1.5 transition-colors">
                     <img src="/icons/cos.png" alt="아이콘" className="w-3 h-3 object-contain invert dark:invert-0" />
-                    <span className="tracking-wide">
-                      {/* 🌟 수정: 극장판일 때와 일반 카드일 때의 툴팁 텍스트를 상황에 맞게 찰떡으로 출력! */}
-                      <span className={`tracking-wide ${(activeTabIndex === 0 && !isMovieStyle) ? "text-left pr-3" : ""}`}>
-                        {isMovieStyle 
-                          ? (activeTabIndex === 0 ? "헤어" : "헤어") 
-                          : (activeTabIndex === 0 ? "헤어 미개방" : "헤어")}
-                      </span>
+                    
+                    {/* 🌟 툴팁 디자인: 잠겨있을 때만 글씨 여백(pr-3)을 줍니다! */}
+                    <span className={`tracking-wide ${
+                      activeTabIndex === 0 && !isMovieStyle && (userState?.masterRank ?? 0) < 2 ? "text-left pr-3" : ""
+                    }`}>
+                      {/* 🌟 툴팁 텍스트: 마랭 2 이상이면 기본 탭이어도 "헤어" 라고 띄워줍니다! */}
+                      {isMovieStyle 
+                        ? (activeTabIndex === 0 ? "헤어 (닫힌 창)" : "헤어 (열린 창)") 
+                        : (activeTabIndex === 0 
+                            ? ((userState?.masterRank ?? 0) >= 2 ? "헤어" : "헤어 미개방") 
+                            : "헤어")}
                     </span>
                   </div>
                 </div>
               </div>
             )}
-
+            
           </div>
         </div>
 

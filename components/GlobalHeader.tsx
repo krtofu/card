@@ -71,6 +71,9 @@ export default function GlobalHeader() {
           </div>
 
           <nav className="flex items-center gap-1 sm:gap-2 text-sm shrink-0">
+            <Link href="/deck" className={`rounded-lg px-2.5 sm:px-3 py-1.5 font-semibold transition-all ${pathname === '/deck' ? 'text-primary bg-primary/10 dark:bg-primary/20' : 'text-zinc-600 hover:text-primary hover:bg-primary/5 dark:text-zinc-300 dark:hover:text-primary dark:hover:bg-primary/10'}`}>
+              덱 시뮬
+            </Link>
             <Link href="/cards" className={`rounded-lg px-2.5 sm:px-3 py-1.5 font-semibold transition-all ${pathname === '/cards' ? 'text-primary bg-primary/10 dark:bg-primary/20' : 'text-zinc-600 hover:text-primary hover:bg-primary/5 dark:text-zinc-300 dark:hover:text-primary dark:hover:bg-primary/10'}`}>
               내 카드
             </Link>
