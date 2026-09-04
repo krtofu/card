@@ -583,7 +583,7 @@ export default function FuturePage() {
                             "--mix-text-dark": "color-mix(in srgb, var(--color-primary) 40%, white)",
                             "--mix-glow": "color-mix(in srgb, var(--color-primary) 30%, transparent)",
                           } as React.CSSProperties : {}}
-                          className={`py-2.5 md:py-2 px-1 text-[12px] font-bold tracking-tight rounded-lg transition-all duration-300 border ${
+                          className={`py-2.5 md:py-2 px-1 text-[12px] font-bold tracking-tight rounded-lg transition-all duration-300 border whitespace-pre-line ${
                             isSelected 
                               ? themeColor === "default"
                                 ? "bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary shadow-sm scale-105 border-primary/30 dark:border-primary/50"
@@ -1030,5 +1030,5 @@ const COLLAB_FILTERS = [
   { id: "collab_tamagotchi", name: "다마고치", matchKeys: ["다마고치", "tamagotchi"] },
   { id: "collab_touhou", name: "동방", matchKeys: ["뒤섞이는 경계", "동방"] },
   { id: "collab_movie", name: "극장판", matchKeys: ["창의 세카이에서", "극장판"] },
-  { id: "collab_TheMusicStyle", name: "보카로 악곡", matchKeys: ["Dressed in Melodies", "보카로 악곡", "The Music Style"] }
+  { id: "collab_TheMusicStyle", name: "보카로\n악곡", matchKeys: ["Dressed in Melodies", "보카로 악곡", "The Music Style"] }
 ];
