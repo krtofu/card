@@ -69,7 +69,7 @@ export default function DeckSimulator() {
   const [isSwapMode, setIsSwapMode] = useState(false);
   const [swapSourceIndex, setSwapSourceIndex] = useState<number | null>(null);
 
-  // 일반 클릭(멤버 선택창)과 스왑 클릭을 구분해주는 똑똑한 함수!
+  // 🌟 일반 클릭(멤버 선택창)과 스왑 클릭을 구분해주는 똑똑한 함수!
   const handleSlotClick = (index: number) => {
     if (isSwapMode) {
       if (swapSourceIndex === null) {
@@ -86,12 +86,11 @@ export default function DeckSimulator() {
         newPresets[activeTab] = newDeck;
         setPresets(newPresets);
         
-        // 교체 완료 후 모드 초기화
-        setSwapSourceIndex(null);
-        setIsSwapMode(false);
+        // 🌟 2번 피드백 반영: 교체 완료 후 '첫 번째 선택'만 초기화하고, 스왑 모드는 계속 유지합니다!
+        setSwapSourceIndex(null); 
       }
     } else {
-      openMemberSelect(index); // 스왑 모드가 아닐 땐 원래대로 멤버 선택창 열기
+      openMemberSelect(index);
     }
   };
 
@@ -199,6 +198,66 @@ export default function DeckSimulator() {
     return foundKey ? charNameMap[foundKey] : "";
   };
 
+  // 🌟 1. 스킬 보너스 퍼센트 계산기
+const getSkillBonusPercentage = (skillType: string, level: number, unit: string, isAwakened: boolean, charRank: number = 1, isOwned: boolean = false) => {
+  const safeLevel = Math.max(1, Math.min(4, level)); 
+  const idx = safeLevel - 1;
+  const skill = (skillType || "").replace(/\s+/g, "").toLowerCase();
+
+  if (skill.includes("블페") || skill.includes("블룸")) {
+    if (isAwakened) {
+      const maxLimits = [140, 145, 150, 160];
+      if (!isOwned) return maxLimits[idx];
+      const bases = [90, 95, 100, 110];
+      const bloomBonus = Math.floor(charRank / 2);
+      return Math.min(maxLimits[idx], bases[idx] + bloomBonus);
+    }
+    const isVS = unit === "무소속 / VIRTUAL SINGER" || unit.includes("버싱") || unit.includes("VS") || unit.toLowerCase().includes("virtual");
+    return isVS ? [130, 135, 140, 150][idx] : [120, 130, 140, 150][idx];
+  }
+
+  if (skill.includes("스업") && !skill.includes("퍼스업") && !skill.includes("굿스업") && !skill.includes("체스업") && !skill.includes("팀스업") && !skill.includes("조건부")) return [100, 105, 110, 120][idx];
+  if (skill.includes("퍼스업")) return [110, 115, 120, 130][idx];
+  if (skill.includes("굿스업")) return [120, 125, 130, 140][idx];
+  if (skill.includes("체스업")) return [120, 125, 130, 140][idx];
+  if (skill.includes("팀스업")) return [130, 135, 140, 150][idx];
+  if (skill.includes("판강") || skill.includes("판정")) return [80, 85, 90, 100][idx];
+  if (skill.includes("힐") || skill.includes("회복")) return [80, 85, 90, 100][idx];
+
+  return 0;
+};
+
+// 🌟 2. 스킬명 오마카세 프리미엄 컬러 뱃지
+const getSkillBadgeStyle = (skill: string, unitName: string = "") => {
+  const premiumStyle = "text-white border border-white/35 bg-[linear-gradient(180deg,rgba(255,255,255,0.18),rgba(255,255,255,0)_55%)] [text-shadow:0px_1px_2px_rgba(24,24,27,0.5),0px_0px_3px_rgba(24,24,27,0.2)] shadow-sm";
+
+  if (!skill) return `bg-zinc-400 dark:bg-zinc-500 ${premiumStyle}`;
+  const s = skill.replace(/\s+/g, "").toLowerCase();
+  
+  if (s.includes("팀스업")) {
+    const lowerUnit = unitName.toLowerCase();
+    let bgColor = "bg-orange-400 dark:bg-orange-500"; 
+    
+    if (lowerUnit.includes("레오니") || lowerUnit.includes("leo") || lowerUnit === "l/n") bgColor = "bg-[#4455dd]";
+    else if (lowerUnit.includes("모모점") || lowerUnit.includes("more") || lowerUnit === "mmj") bgColor = "bg-[#88dd44]";
+    else if (lowerUnit.includes("비배스") || lowerUnit.includes("vivid") || lowerUnit === "vbs") bgColor = "bg-[#ee1166]";
+    else if (lowerUnit.includes("원더쇼") || lowerUnit.includes("wonder") || lowerUnit === "Wds") bgColor = "bg-[#ff9900]";
+    else if (lowerUnit.includes("니고") || lowerUnit.includes("25") || lowerUnit === "ng" || lowerUnit === "niigo") bgColor = "bg-[#884499]";
+    else if (lowerUnit.includes("버싱") || lowerUnit.includes("virtual") || lowerUnit === "vs") bgColor = "bg-[#33ccbb]";
+    
+    return `${bgColor} ${premiumStyle}`;
+  }
+  
+  if (s.includes("퍼스업")) return `bg-[#ff3388] dark:bg-[#ff4499] ${premiumStyle}`;
+  if (s.includes("굿스업")) return `bg-sky-400 dark:bg-sky-500 ${premiumStyle}`; 
+  if (s.includes("체스업")) return `bg-emerald-400 dark:bg-emerald-500 ${premiumStyle}`; 
+  if (s.includes("힐") || s.includes("회복")) return `bg-[#a3e635] dark:bg-[#84cc16] ${premiumStyle}`; 
+  if (s.includes("스업")) return `bg-[#15cabb] dark:bg-[#1addcc] ${premiumStyle}`; 
+  if (s.includes("판강") || s.includes("판정")) return `bg-violet-400 dark:bg-violet-500 ${premiumStyle}`; 
+  
+  return `bg-zinc-400 dark:bg-zinc-500 ${premiumStyle}`;
+};
+
   // 🌟 필터링 로직 확장!
   const toggleDraftUnitChars = (chars: string[]) => {
     const isAllSelected = chars.every(c => draftChars.includes(c));
@@ -247,33 +306,113 @@ export default function DeckSimulator() {
           ))}
         </div>
       </div>
-      
-      
 
-      {/* 2. 중앙 5칸 카드 슬롯 */}
-      <div className="w-full bg-white/60 dark:bg-zinc-900/60 backdrop-blur-xl rounded-3xl p-4 md:p-6 shadow-2xl border border-white/50 dark:border-white/10 relative overflow-hidden">
-        <div className="grid grid-cols-5 gap-2 md:gap-3 mt-4">
+      {/* 2. 중앙 5칸 카드 슬롯 (🌟 테마창 먹통 버그 해결: overflow-hidden 삭제!) */}
+      <div className="w-full bg-white/60 dark:bg-zinc-900/60 backdrop-blur-xl rounded-3xl p-4 md:p-6 shadow-2xl border border-white/50 dark:border-white/10 relative">
+        
+        {/* 🌟 수정된 상단 컨트롤 바 (좌측: 실스업 / 우측: 카드 자리 변경) */}
+        <div className="w-full flex justify-between items-center mb-2 px-1">
+          
+          {/* 🌟 3번 피드백: 현재 실스업 UI */}
+          <div className="flex items-center gap-1.5 bg-zinc-100/80 dark:bg-zinc-800/80 px-2.5 py-1.5 md:px-3 md:py-1.5 rounded-full shadow-sm border border-zinc-200 dark:border-zinc-700 backdrop-blur-sm">
+            <span className="text-[10px] md:text-xs font-black text-zinc-500 dark:text-zinc-400">현재 실스업</span>
+            <img src="/icons/now.png" alt="now" className="w-3 h-3 md:w-3.5 md:h-3.5 object-contain drop-shadow-sm" />
+            <span className="text-[#00d0b6] text-xs md:text-sm font-black tracking-tight drop-shadow-sm">
+              230% {/* 나중에 실제 계산된 실스업 state로 교체하시면 됩니다! */}
+            </span>
+            <button className="w-3.5 h-3.5 md:w-4 md:h-4 rounded-full bg-zinc-300 hover:bg-zinc-400 dark:bg-zinc-600 dark:hover:bg-zinc-500 text-white text-[9px] md:text-[10px] flex items-center justify-center font-bold ml-0.5 transition-colors">
+              i
+            </button>
+          </div>
+
+          {/* 카드 정렬(자리 바꾸기) 버튼 */}
+          <button 
+            onClick={() => {
+              setIsSwapMode(!isSwapMode);
+              setSwapSourceIndex(null);
+            }}
+            className={`px-3 py-1.5 md:px-4 md:py-2 rounded-full text-[10px] md:text-xs font-black transition-all shadow-sm flex items-center gap-1 ${
+              isSwapMode 
+                ? "bg-[#ff529a] text-white border-transparent" 
+                : "bg-white text-zinc-600 border border-zinc-300 hover:bg-zinc-50"
+            }`}
+          >
+            {isSwapMode ? "취소하기" : "⇄ 카드 자리 변경"}
+          </button>
+        </div>
+
+        <div className="grid grid-cols-5 gap-2 md:gap-3 mt-2">
           {currentDeck.map((card, index) => {
-            // 🌟 [추가 2-1] 장착된 카드의 마랭 데이터 찾기
+            // 🌟 1. 카드 기초 데이터 셋업 (레벨, 마랭, 보유 여부 등)
             const isOwned = card ? (userCardStates[card.id]?.isOwned || false) : false;
             const currentMasterRank = (card && isOwned) ? (userCardStates[card.id]?.masterRank || 0) : 0;
+            const currentSkillLevel = (card && isOwned) ? (userCardStates[card.id]?.skillLevel || 1) : 1;
+            const currentCharRank = (card && isOwned) ? ((userCardStates[card.id] as any)?.charRank || 1) : 1;
+
+            // 🌟 2. 3번 피드백: 동방 / 보카로 악곡 콜라보 체크 (각전 스위치 떼기!)
+            const cardInfoStr = card ? [(card as any)?.gacha, (card as any)?.eventName, (card as any)?.prefix, (card as any)?.name].join(" ") : "";
+            const isSpecialCollab = ["뒤섞이는 경계", "동방", "Dressed in Melodies", "보카로 악곡", "The Music Style"].some(keyword => cardInfoStr.includes(keyword));
+            
+            // 실제 각성 상태 계산 (콜라보 카드는 강제로 각후(true) 취급!)
+            const isActuallyAwakened = isSpecialCollab ? true : !isPreAwakeMode[index];
+
+            // 🌟 3. 기획자님의 장인정신 함수 2종 세트 가동! (스킬 퍼센트 계산 & 프리미엄 뱃지 스타일)
+            const calculatedSkillBonus = card ? getSkillBonusPercentage(card.skillType, currentSkillLevel, card.unit, isActuallyAwakened, currentCharRank, isOwned) : 0;
+            const badgeStyle = card ? getSkillBadgeStyle(card.skillType, card.unit) : "";
+
             return (
-              <div key={index} onClick={() => openMemberSelect(index)} className="relative w-full aspect-[11/15] bg-[#c3c9d6] dark:bg-zinc-800/80 rounded-[12px] md:rounded-[16px] cursor-pointer border-[2px] md:border-[3px] border-transparent hover:border-teal-400 transition-all duration-200 shadow-sm group z-0 mt-8 md:mt-10">
+              <div 
+                key={index} 
+                onClick={() => handleSlotClick(index)} 
+                className={`relative w-full aspect-[11/15] bg-[#c3c9d6] dark:bg-zinc-800/80 rounded-[12px] md:rounded-[16px] cursor-pointer border-[2px] md:border-[3px] transition-all duration-200 shadow-sm group z-0 mt-8 md:mt-10 ${
+                  swapSourceIndex === index 
+                    ? "border-[#ff529a] scale-105 shadow-md ring-4 ring-[#ff529a]/30" 
+                    : "border-transparent hover:border-teal-400"
+                }`}
+              >
                 
-                {/* 🌟 2. 캐릭터 미니 아이콘 (위치 더 올림 + 흰 테두리/배경 싹 제거!) */}
+                {/* 🌟 1번 피드백: 미니 아이콘 + 큼직한 스킬 수치 + 프리미엄 팔레트 뱃지! */}
                 {card && (
-                  <div className="absolute -top-[32px] left-1 md:-top-[44px] md:left-0 w-8 h-8 md:w-10 md:h-10 z-50 drop-shadow-md">
-                    <img src={`/icons/characters/${getCharIconName(card.character)}_icon.png`} alt={card.character} className="w-full h-full object-contain" />
+                  <div className="absolute -top-[32px] left-1 md:-top-[44px] md:left-0 z-50 flex items-end gap-0.5 pointer-events-none">
+                    {/* 미니 아이콘 */}
+                    <div className="w-8 h-8 md:w-10 md:h-10 drop-shadow-md">
+                      <img src={`/icons/characters/${getCharIconName(card.character)}_icon.png`} alt={card.character} className="w-full h-full object-contain" />
+                    </div>
+                    
+                    {/* 네모 박스 삭제! 텍스트 대폭 확대! */}
+                    <div className="relative flex items-end mb-1 md:mb-2.5 ml-0.5">
+                      <span className="text-white text-[15px] md:text-[18px] font-black drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] leading-none tracking-tighter">
+                        ▸{calculatedSkillBonus}%
+                      </span>
+                      
+                      {/* 🌟 기획자님의 프리미엄 컬러 뱃지 적용! (badgeStyle 100% 반영) */}
+                      <div className={`absolute -top-[1px] -right-[22px] translate-x-full text-[7px] md:text-[10px] font-black px-1.5 py-[2px] rounded-[5px] whitespace-nowrap ${badgeStyle}`}>
+                        {card.skillType || "스코어 업"}
+                      </div>
+                    </div>
                   </div>
                 )}
 
                 {/* 🌟 카드 내부 콘텐츠 */}
                 <div className="absolute inset-0 w-full h-full rounded-[10px] md:rounded-[13px] overflow-hidden flex items-center justify-center">
+                  
+                  {/* 리더 띠 (미선택 시 고정 유지) */}
+                  {index === 0 && (
+                    <div className="absolute top-[14px] -right-[28px] w-[90px] md:top-[5px] md:-right-[28px] md:w-[110px] bg-[#e93b81] text-white text-[8px] md:text-[9px] font-black text-center py-[1px] md:py-[1.5px] rotate-[28deg] shadow-sm z-30 drop-shadow-[0_1px_1px_rgba(0,0,0,0.6)] tracking-wide pl-[4px] md:pl-[8px]">
+                      리더
+                    </div>
+                  )}
+                  {index === 1 && (
+                    <div className="absolute top-[14px] -right-[28px] w-[90px] md:top-[6px] md:-right-[28px] md:w-[110px] bg-[#00b8a0] text-white text-[8px] md:text-[9px] font-black text-center py-[1px] md:py-[1.5px] rotate-[28deg] shadow-sm z-30 drop-shadow-[0_1px_1px_rgba(0,0,0,0.6)] tracking-wide pl-[4px] md:pl-[8px]">
+                      서브 리더
+                    </div>
+                  )}
+
                   {card ? (
                     <>
-                      {/* 각전/각후 이미지 */}
+                      {/* 🌟 각전/각후 이미지 (콜라보 카드는 강제로 각후(post) 적용!) */}
                       <img 
-                        src={isPreAwakeMode[index] 
+                        src={!isActuallyAwakened 
                           ? card.preAwakePath?.replace("pre.png", "cutout_pre.png") 
                           : card.postAwakePath?.replace("post.png", "cutout_post.png").replace("pre.png", "cutout_pre.png")
                         } 
@@ -281,53 +420,45 @@ export default function DeckSimulator() {
                         className="w-full h-full object-cover object-[center_15%]" 
                       />
                       
-                      {/* 🌟 4. 속성 클립 (오른쪽으로 살짝 이동! left-[5px]) */}
+                      {/* 속성 클립 */}
                       {card.attribute && (
                         <div className="absolute top-0 left-[5px] md:left-[5px] w-[24px] h-[28px] md:w-[28px] md:h-[30px] z-30 drop-shadow-sm">
                           <img src={`/icons/attr_clip_${card.attribute.toLowerCase()}.png`} alt={card.attribute} className="w-full h-full object-contain" />
                         </div>
                       )}
 
-                      {/* 🌟 무지개 띠 (상하단) */}
+                      {/* 무지개 띠 */}
                       <div className="absolute top-0 left-0 w-full h-[4px] md:h-[5px] bg-[linear-gradient(90deg,#ff8fa3_0%,#ffdf85_33%,#85ffb9_66%,#7be0ff_100%)] z-20 opacity-90" />
                       <div className="absolute bottom-0 left-0 w-full h-[4px] md:h-[5px] bg-[linear-gradient(90deg,#7be0ff_0%,#c88dff_50%,#ff8fa3_100%)] z-20 opacity-90" />
-                      
-                      {/* 🌟 1. 리더 띠 두께 슬림하게 & 각도 완만하게 수정! */}
-                      {index === 0 && (
-                        <div className="absolute top-[14px] -right-[28px] w-[90px] md:top-[5px] md:-right-[28px] md:w-[110px] bg-[#e93b81] text-white text-[8px] md:text-[9px] font-black text-center py-[1px] md:py-[1.5px] rotate-[28deg] shadow-sm z-30 drop-shadow-[0_1px_1px_rgba(0,0,0,0.6)] tracking-wide pl-[4px] md:pl-[8px]">
-                          리더
-                        </div>
-                      )}
-                      {index === 1 && (
-                        <div className="absolute top-[14px] -right-[28px] w-[90px] md:top-[6px] md:-right-[28px] md:w-[110px] bg-[#00b8a0] text-white text-[8px] md:text-[9px] font-black text-center py-[1px] md:py-[1.5px] rotate-[28deg] shadow-sm z-30 drop-shadow-[0_1px_1px_rgba(0,0,0,0.6)] tracking-wide pl-[4px] md:pl-[8px]">
-                          서브 리더
-                        </div>
-                      )}
 
-                      {/* 🌟 3. 별 크기 확대!*/}
+                      {/* 별 크기 확대 및 각전각후 토글 */}
                       <div className="absolute bottom-0 left-0 w-full h-[45%] bg-gradient-to-t from-black/90 via-black/30 to-transparent z-10 flex flex-col justify-end pl-1 md:pl-1 pb-2.5">
                         <div className="flex gap-[1.5px] mb-1.5 drop-shadow-md">
                           {[1, 2, 3, 4].map(starNum => (
-                            <img key={starNum} src={isPreAwakeMode[index] ? "/icons/pre_star.png" : "/icons/post_star.png"} alt="star" className="w-[16px] h-[16px] md:w-[22px] md:h-[22px] object-contain" />
+                            <img key={starNum} src={!isActuallyAwakened ? "/icons/pre_star.png" : "/icons/post_star.png"} alt="star" className="w-[16px] h-[16px] md:w-[22px] md:h-[22px] object-contain" />
                           ))}
                         </div>
-                        <div 
-                          onClick={(e) => {
-                            e.stopPropagation(); 
-                            setIsPreAwakeMode(prev => ({ ...prev, [index]: !prev[index] }));
-                          }}
-                          className="flex items-center gap-1.5 w-fit cursor-pointer bg-black/40 hover:bg-black/60 px-1.5 py-0.5 rounded-full border border-white/20 transition-colors backdrop-blur-sm"
-                        >
-                          <span className="text-white text-[8px] md:text-[9px] font-black">{isPreAwakeMode[index] ? "각전" : "각후"}</span>
-                          <div className={`w-5 h-2.5 md:w-6 md:h-3 rounded-full relative transition-colors ${isPreAwakeMode[index] ? "bg-zinc-500" : "bg-teal-400"}`}>
-                            <div className={`absolute top-[1px] w-2 h-2 md:w-2.5 md:h-2.5 bg-white rounded-full transition-all shadow-sm ${isPreAwakeMode[index] ? "left-[1px]" : "left-[11px] md:left-[13px]"}`} />
+
+                        {/* 🌟 3번 피드백: 콜라보 카드가 아닐 때만 토글 스위치 노출! */}
+                        {!isSpecialCollab && (
+                          <div 
+                            onClick={(e) => {
+                              e.stopPropagation(); 
+                              setIsPreAwakeMode(prev => ({ ...prev, [index]: !prev[index] }));
+                            }}
+                            className="flex items-center gap-1.5 w-fit cursor-pointer bg-black/40 hover:bg-black/60 px-1.5 py-0.5 rounded-full border border-white/20 transition-colors backdrop-blur-sm pointer-events-auto"
+                          >
+                            <span className="text-white text-[8px] md:text-[9px] font-black">{isPreAwakeMode[index] ? "각전" : "각후"}</span>
+                            <div className={`w-5 h-2.5 md:w-6 md:h-3 rounded-full relative transition-colors ${isPreAwakeMode[index] ? "bg-zinc-500" : "bg-teal-400"}`}>
+                              <div className={`absolute top-[1px] w-2 h-2 md:w-2.5 md:h-2.5 bg-white rounded-full transition-all shadow-sm ${isPreAwakeMode[index] ? "left-[1px]" : "left-[11px] md:left-[13px]"}`} />
+                            </div>
                           </div>
-                        </div>
+                        )}
                       </div>
                     </>
                   ) : (
-                    <div className="w-10 h-10 md:w-14 md:h-14 rounded-full bg-[#aab1c1] dark:bg-zinc-700 flex items-center justify-center group-hover:scale-110 transition-transform shadow-inner">
-                      <span className="text-white text-2xl md:text-4xl font-light leading-none -mt-1">+</span>
+                    <div className="w-full h-full flex items-center justify-center text-[#aab1c1] transition-colors duration-300 group-hover:text-teal-400">
+                      <span className="text-4xl md:text-5xl font-light leading-none -mt-2 drop-shadow-sm">+</span>
                     </div>
                   )}
                 </div>

@@ -410,6 +410,28 @@ const RINVbs = defineCharacterCards("비배스", "카가미네 린", "VS", "RIN"
             hasHair: true,
           },
         },
+        {
+          info: {
+            id: "VS_RIN_029",
+            cardName: "[겹쳐지는 마음과 노랫소리]",
+            attribute: "happy",
+            gachaType: "통상",
+            gachaPoolName: "Shady Stare 뽑기",
+            eventName: "After the Fire",
+            skillType: "힐",
+            releaseDate: "2027-09-06",
+          },
+          media: {
+            gachaBannerPath: "/gachas/27y/jbanner_27_26_v.png",
+            eventBannerPath: "/events/27y/jbanner_27_26_v.png",
+            songName: "정답",
+            songJacketPath: "/jacket/27y/Seikai.png",
+          },
+          costume: {
+            hasCostume: true,
+            costumeName: "B:olsterer",
+          },
+        },
   ]
 });
 
