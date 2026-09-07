@@ -330,7 +330,7 @@ export default function FutureEventCard({
                 title={isEventMode ? "가챠 배너로 돌아가기" : "이벤트 배너 보기"}
               > 
                 <img 
-                 src={isEventMode ? "/icons/Can.png" : "/icons/Crystal.png"} 
+                 src={isEventMode ? "/icons/can.png" : "/icons/Crystal.png"} 
                  alt="모드 전환" 
                  className="w-[22px] h-[22px] object-contain drop-shadow-sm transition-transform active:scale-95" 
                 />

@@ -63,7 +63,21 @@ export default function MyCardsPage() {
   const [mounted, setMounted] = useState(false);
   const [showPostAwake, setShowPostAwake] = useState(false);
   
+  // 🌟 [추가 1] 마랭 데이터를 저장할 State와 무전 수신기
   const [characterRanks, setCharacterRanks] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    const loadRanks = () => {
+      const saved = localStorage.getItem("sekard_character_ranks");
+      if (saved) {
+        try { setCharacterRanks(JSON.parse(saved)); } catch (e) {}
+      }
+    };
+    loadRanks(); // 켜졌을 때 한번 읽기
+    window.addEventListener("sekard_ranks_updated", loadRanks); // 헤더 무전 수신 대기
+    return () => window.removeEventListener("sekard_ranks_updated", loadRanks);
+  }, []);
+  
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest" | "score" | "bonus">("newest");
   const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
   const [refSkillLevel, setRefSkillLevel] = useState<number>(1);

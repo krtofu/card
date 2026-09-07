@@ -282,7 +282,7 @@ export default function ModalCostumePreviewCard({ preview, userState, cardId, ha
                       alt="Hair Icon"
                       // 🌟 마법의 조건: 0번 탭이고, 극장판이 아니고, '마랭이 2 미만일 때만' 흑백으로 잠금!
                       className={`w-full h-full object-cover transition-all duration-300 ${
-                        activeTabIndex === 0 && !isMovieStyle && (userState?.masterRank ?? 0) < 2
+                        (activeTabIndex === 0 || activeTabIndex === 1) && !isMovieStyle && (userState?.masterRank ?? 0) < 2
                           ? "grayscale opacity-40 contrast-75" 
                           : ""
                       }`}

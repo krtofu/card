@@ -23,7 +23,6 @@ const getSkillIconPath = (skill: string) => {
   return "";
 };
 
-// 🌟 텍스트 뱃지는 언제나 흔들림 없이 고유색(에메랄드/앰버) 유지!
 const getStateBadgeStyle = (isOwned: boolean, isTarget: boolean) => {
   if (isOwned) return "bg-emerald-50 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border-emerald-300 dark:border-emerald-500/50 shadow-sm"; 
   if (isTarget) return "bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-300 border-amber-300 dark:border-amber-500/50 shadow-sm"; 
@@ -43,6 +42,9 @@ export default function CardItem({
   const isOwned = userState?.isOwned || false;
   const isTarget = userState?.isTarget || false;
   
+  // 🌟 수정: 보유 중(isOwned)일 때만 마랭을 가져오고, 미보유면 무조건 0으로 강제 처리!
+  const currentMasterRank = isOwned ? (userState?.masterRank || 0) : 0;
+  
   const isReleased = card.releaseDate ? new Date(card.releaseDate) <= new Date() : false;
 
   const thumbPre = (card as any).media?.thumbPrePath || card.thumbPrePath || `/thumbnails/${card.id}.png`;
@@ -51,24 +53,36 @@ export default function CardItem({
   return (
     <div onClick={() => onClick(card)} className="relative p-1 cursor-pointer transition-all hover:scale-[1.05] flex flex-col items-center text-center group min-w-0">
       
-      <div className="relative h-[100px] w-fit flex justify-center bg-zinc-100 dark:bg-zinc-900 rounded-lg overflow-hidden border border-transparent group-hover:border-zinc-300 dark:group-hover:border-white/10 transition-colors">
-        <img 
-          src={showPostAwake ? thumbPost : thumbPre} 
-          alt={card.cardName} 
-          className="relative h-[100px] w-auto max-w-full object-contain transition-opacity duration-300 ease-in-out opacity-100 group-hover:opacity-0 rounded-lg border border-zinc-200 dark:border-white/10 group-hover:border-zinc-300 dark:group-hover:border-white/30 z-10" 
-          onError={(e) => { e.currentTarget.style.display = 'none'; }} 
-        />
-        <img 
-          src={showPostAwake ? thumbPre : thumbPost} 
-          alt={card.cardName + " hover"} 
-          className="absolute top-0 h-[100px] w-auto max-w-full object-contain transition-opacity duration-300 ease-in-out opacity-0 group-hover:opacity-100 rounded-lg border border-zinc-200 dark:border-white/10 group-hover:border-zinc-300 dark:group-hover:border-white/30 z-20" 
-          onError={(e) => { e.currentTarget.style.display = 'none'; }} 
-        />
+      {/* 🌟 [수정 2] 뱃지가 밖으로 튀어나올 수 있도록, overflow-hidden 족쇄가 없는 '바깥쪽 껍데기'를 하나 추가했습니다! */}
+      <div className="relative h-[100px] w-fit flex justify-center">
+        
+        {/* 기존의 썸네일 영역 (여기에만 overflow-hidden 유지) */}
+        <div className="relative h-[100px] w-fit flex justify-center bg-zinc-100 dark:bg-zinc-900 rounded-lg overflow-hidden border border-transparent group-hover:border-zinc-300 dark:group-hover:border-white/10 transition-colors">
+          <img 
+            src={showPostAwake ? thumbPost : thumbPre} 
+            alt={card.cardName} 
+            className="relative h-[100px] w-auto max-w-full object-contain transition-opacity duration-300 ease-in-out opacity-100 group-hover:opacity-0 rounded-lg border border-zinc-200 dark:border-white/10 group-hover:border-zinc-300 dark:group-hover:border-white/30 z-10" 
+            onError={(e) => { e.currentTarget.style.display = 'none'; }} 
+          />
+          <img 
+            src={showPostAwake ? thumbPre : thumbPost} 
+            alt={card.cardName + " hover"} 
+            className="absolute top-0 h-[100px] w-auto max-w-full object-contain transition-opacity duration-300 ease-in-out opacity-0 group-hover:opacity-100 rounded-lg border border-zinc-200 dark:border-white/10 group-hover:border-zinc-300 dark:group-hover:border-white/30 z-20" 
+            onError={(e) => { e.currentTarget.style.display = 'none'; }} 
+          />
+        </div>
+
+        {/* 🌟 4번 피드백: 마랭 고화질 뱃지 이미지 교체! (띠, 클립 없음) */}
+        {currentMasterRank > 0 && (
+          <div className="absolute -bottom-1 -right-1 w-6 h-6 md:w-7 md:h-7 z-30 drop-shadow-md transition-transform duration-300 group-hover:scale-[0.95] origin-bottom-right">
+            <img src={`/icons/mr_${currentMasterRank}.png`} alt={`마랭 ${currentMasterRank}`} className="w-full h-full object-contain" />
+          </div>
+        )}
+
       </div>
       
       <div className="mt-2.5 h-[64px] flex flex-col items-center justify-start w-full px-1">
         {sortOrder === "score" ? (
-          // 🌟 스업 수치순: 보유 시 무조건 '에메랄드'로 고정!
           <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md shadow-sm mt-1 transition-all w-[90px] justify-center ${
             isOwned 
               ? "bg-white dark:bg-zinc-900/90 border border-emerald-400 dark:border-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.3)]"
@@ -80,7 +94,6 @@ export default function CardItem({
             <span className={`text-[12px] font-bold tracking-tight ${isOwned ? 'text-emerald-500 dark:text-emerald-400' : isTarget ? 'text-amber-500 dark:text-amber-300' : 'text-zinc-400'}`}>{scoreBonus}%</span>
           </div>
         ) : sortOrder === "bonus" ? (
-          // 🌟 이벤트 보너스순: 기존의 핑크색을 버리고, 일반 정렬과 똑같이 '에메랄드'로 통일!
           <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md shadow-sm mt-1 transition-all w-[90px] justify-center ${
             isOwned 
               ? "bg-white dark:bg-zinc-900/90 border border-emerald-400 dark:border-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.3)]"
@@ -93,7 +106,6 @@ export default function CardItem({
           </div>
         ) : (
           <>
-            {/* 🌟 일반 정렬 (최신순/출시순): 보유 시 무조건 '에메랄드'로 고정! */}
             <p className={`text-[11px] font-semibold truncate w-full max-w-[100px] transition-colors flex items-center justify-center gap-0.5 ${
               isOwned 
                 ? "text-emerald-600 dark:text-emerald-400" 

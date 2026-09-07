@@ -513,7 +513,7 @@ export default function CardDetailModal({
 
               <div className="flex gap-3.5">
                 <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 shrink-0 overflow-hidden flex items-center justify-center transition-colors">
-                  <img src="/icons/Can.png" alt="이벤트" className="w-[22px] h-[22px] object-contain" />
+                  <img src="/icons/can.png" alt="이벤트" className="w-[22px] h-[22px] object-contain" />
                 </div>
                 <div className="flex-1 flex flex-col gap-2">
                   <span className="font-bold text-zinc-800 dark:text-zinc-200 text-sm mt-0.5 transition-colors">관련 이벤트</span>
