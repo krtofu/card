@@ -133,8 +133,8 @@ const MIKUOriginal = defineCharacterCards("버싱", "하츠네 미쿠", "VS", "M
         releaseDate: "2026-09-06",
       },
       media: {
-        gachaBannerPath: "/gachas/26y/jbanner_26_26_0.png",
-        eventBannerPath: "/events/26y/jbanner_26_26_0.png",
+        gachaBannerPath: "/gachas/26y/banner_26_26_0.png",
+        eventBannerPath: "/events/26y/banner_26_26_0.png",
         songName: "후회한다 쓰고 미래",
         songJacketPath: "/jacket/22y/Kuyamu_to_Kaite_Mirai.png",
       },

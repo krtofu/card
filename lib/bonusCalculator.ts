@@ -80,24 +80,27 @@ const matchAttribute = (cardAttr: string, targetAttr: string) => {
   return false;
 };
 
-// 🌟 통합형 유닛 매칭 헬퍼 (wds, ng, mmj 완벽 대응!)
+// 🌟 통합형 유닛 매칭 헬퍼 (서브유닛 버싱 완벽 대응, 양방향 스마트 매칭!)
 const matchUnit = (cardUnit: string, targetUnit: string) => {
   const c = (cardUnit || "").toLowerCase().replace(/[^a-z0-9가-힣]/g, "");
   const t = (targetUnit || "").toLowerCase().replace(/[^a-z0-9가-힣]/g, "");
   if (!c || !t) return false;
   
-  if ((t.includes("leo") || t.includes("ln")) && (c.includes("leo") || c.includes("레오니") || c.includes("ln"))) return true;
-  if ((t.includes("mmj") || t.includes("more")) && (c.includes("more") || c.includes("모모점") || c.includes("mmj"))) return true;
-  if ((t.includes("vbs") || t.includes("vivid")) && (c.includes("vivid") || c.includes("비배스") || c.includes("vbs"))) return true;
-  
-  // 🌟 wxs, wds 무엇을 쓰든 원더쇼로 인식!
-  if ((t.includes("wds") || t.includes("wxs")) && (c.includes("wonder") || c.includes("원더쇼") || c.includes("wxs") || c.includes("wds"))) return true;
-  
-  // 🌟 n25, ng 무엇을 쓰든 니고로 인식!
-  if ((t.includes("ng") || t.includes("n25") || t.includes("niigo")) && (c.includes("25") || c.includes("니고") || c.includes("niigo") || c.includes("n25") || c.includes("ng"))) return true;
-  
-  if (t.includes("vs") && (c.includes("vs") || c.includes("virtual") || c.includes("버싱"))) return true;
-  
+  // 양쪽 중 어느 쪽에 약칭/풀네임이 들어오든 완벽하게 캐치하는 무적의 판독기!
+  const isLeoNeed = (s: string) => s.includes("leo") || s.includes("레오니") || s.includes("ln");
+  const isMMJ = (s: string) => s.includes("more") || s.includes("모모점") || s.includes("mmj");
+  const isVBS = (s: string) => s.includes("vivid") || s.includes("비배스") || s.includes("vbs");
+  const isWxS = (s: string) => s.includes("wonder") || s.includes("원더쇼") || s.includes("wxs") || s.includes("wds") || s.includes("쇼타임");
+  const isN25 = (s: string) => s.includes("25") || s.includes("니고") || s.includes("niigo") || s.includes("n25") || s.includes("ng") || s.includes("나이트코드");
+  const isVS = (s: string) => s.includes("vs") || s.includes("virtual") || s.includes("버싱") || s.includes("무소속");
+
+  if (isLeoNeed(t) && isLeoNeed(c)) return true;
+  if (isMMJ(t) && isMMJ(c)) return true;
+  if (isVBS(t) && isVBS(c)) return true;
+  if (isWxS(t) && isWxS(c)) return true;
+  if (isN25(t) && isN25(c)) return true;
+  if (isVS(t) && isVS(c)) return true;
+
   return c.includes(t) || t.includes(c);
 };
 
@@ -247,4 +250,130 @@ export const calculateCardEventBonus = (
   }
 
   return totalBonus;
+};
+
+export const getSkillBonusPercentage = (
+  skillType: string,
+  level: number,
+  unit: string,
+  isAwakened: boolean,
+  charRank: number = 1,
+  isOwned: boolean = false,
+  deck: Array<FinalCardInfo | null> = [],
+  attribute: string = "",
+  supportUnit: string = "",
+  slotIndex: number = -1 // 🌟 [핵심] 헷갈리는 ID 대신 "지금 카드가 몇 번째 칸(Index)인지" 확실하게 받습니다!
+) => {
+  const safeLevel = Math.max(1, Math.min(4, level)); 
+  const idx = safeLevel - 1;
+  const skill = (skillType || "").replace(/\s+/g, "").toLowerCase();
+
+  // [블룸페스]
+  if (skill.includes("블페") || skill.includes("블룸")) {
+    if (isAwakened) {
+      const maxLimits = [140, 145, 150, 160];
+      if (!isOwned) return maxLimits[idx];
+      const bases = [90, 95, 100, 110];
+      const bloomBonus = Math.floor(charRank / 2);
+      return Math.min(maxLimits[idx], bases[idx] + bloomBonus);
+    }
+    const isVS = unit === "무소속 / VIRTUAL SINGER" || unit.includes("버싱") || unit.includes("VS") || unit.toLowerCase().includes("virtual");
+    return isVS ? [130, 135, 140, 150][idx] : [120, 130, 140, 150][idx];
+  }
+
+  // 🌟 [팀스업 로직 완벽 방어막 가동!]
+  if (skill.includes("팀스업")) {
+    const baseBonus = [80, 85, 90, 100][idx];
+    
+    // 🔥 카드가 실제로 부스팅해야 하는 '타겟 유닛' (서브 유닛이 있다면 메인 무시하고 무조건 서브 유닛 타겟!)
+    const targetUnit = supportUnit || unit;
+
+    let matchingOthers = 0; 
+    deck.forEach((deckCard, i) => {
+      // 🌟 ID 대신 자리 번호(i)로 비교해서 자기 자신을 100% 완벽하게 제외합니다!
+      if (deckCard && i !== slotIndex) {
+        const raw = deckCard as any;
+        const data = raw.info || raw;
+        const cUnit = data.unit || "";
+        const cSupport = data.supportUnit || "";
+
+        // 상대방의 메인이나 서브 중 하나라도 내 '타겟 유닛'과 맞으면 팀원으로 인정!
+        const isMainMatch = matchUnit(cUnit, targetUnit);
+        const isSupportMatch = matchUnit(cSupport, targetUnit);
+
+        if (isMainMatch || isSupportMatch) {
+          matchingOthers++; 
+        }
+      }
+    });
+
+    const maxBonus = [130, 135, 140, 150][idx];
+    
+    let finalBonus = baseBonus + (matchingOthers * 10);
+    // 나를 뺀 4명이 모두 맞으면 풀파티 +10% 발동!
+    if (matchingOthers === 4) {
+      finalBonus += 10;
+    }
+
+    return Math.min(maxBonus, finalBonus); 
+  }
+
+  // [기타 스킬들]
+  if (skill.includes("스업") && !skill.includes("퍼스업") && !skill.includes("굿스업") && !skill.includes("체스업") && !skill.includes("팀스업") && !skill.includes("조건부")) return [100, 105, 110, 120][idx];
+  if (skill.includes("퍼스업")) return [110, 115, 120, 130][idx];
+  if (skill.includes("굿스업")) return [120, 125, 130, 140][idx];
+  if (skill.includes("체스업")) return [120, 125, 130, 140][idx];
+  if (skill.includes("판강") || skill.includes("판정")) return [80, 85, 90, 100][idx];
+  if (skill.includes("힐") || skill.includes("회복")) return [80, 85, 90, 100][idx];
+
+  return 0;
+};
+
+// ==========================================
+// 🌟 4. 덱 전체 "실스업" 계산기 
+// ==========================================
+export const calculateDeckRealSkillBonus = (
+  deck: Array<FinalCardInfo | null>,
+  userCardStates: Record<string, any>,
+  isPreAwakeMode: Record<number, boolean>
+) => {
+  let leaderBonus = 0;
+  let subBonusSum = 0;
+
+  deck.forEach((card, index) => {
+    if (!card) return;
+    
+    const isOwned = userCardStates[card.id]?.isOwned || false;
+    const currentSkillLevel = isOwned ? (userCardStates[card.id]?.skillLevel || 1) : 1;
+    const currentCharRank = isOwned ? (userCardStates[card.id]?.charRank || 1) : 1;
+
+    const rawCard = card as any;
+    const cardData = rawCard?.info || rawCard;
+    const cardInfoStr = cardData ? [cardData.gachaPoolName, cardData.eventName, cardData.cardName].join(" ") : "";
+    const isSpecialCollab = cardData?.hasAwakening === false || ["뒤섞이는 경계", "동방", "Dressed in Melodies", "보카로 악곡", "The Music Style"].some(keyword => cardInfoStr.includes(keyword));
+    const isActuallyAwakened = isSpecialCollab ? true : !isPreAwakeMode[index];
+    
+    const cardSupportUnit = cardData.supportUnit || "";
+
+    const bonus = getSkillBonusPercentage(
+      card.skillType || "", 
+      currentSkillLevel, 
+      card.unit || "", 
+      isActuallyAwakened, 
+      currentCharRank, 
+      isOwned, 
+      deck,
+      card.attribute || "",
+      cardSupportUnit,
+      index // 🌟 여기도 card.id 대신 인덱스를 넘겨줍니다!
+    );
+
+    if (index === 0) {
+      leaderBonus = bonus;
+    } else {
+      subBonusSum += bonus;
+    }
+  });
+
+  return Math.floor(leaderBonus + (subBonusSum * 0.2));
 };

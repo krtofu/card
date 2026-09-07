@@ -70,48 +70,52 @@ export default function GlobalHeader() {
             </Link>
           </div>
 
-          {/* 🌟 모바일 꽉 참 방지: overflow-x-auto, whitespace-nowrap 추가, 스크롤바 숨김 */}
-          <nav className="flex items-center gap-1 sm:gap-2 text-sm overflow-x-auto overflow-y-hidden scrollbar-hide whitespace-nowrap ml-auto pl-2 py-1">
-            <Link href="/deck" className={`shrink-0 rounded-lg px-2.5 sm:px-3 py-1.5 font-semibold transition-all ${pathname === '/deck' ? 'text-primary bg-primary/10 dark:bg-primary/20' : 'text-zinc-600 hover:text-primary hover:bg-primary/5 dark:text-zinc-300 dark:hover:text-primary dark:hover:bg-primary/10'}`}>
-              덱 시뮬
-            </Link>
+          {/* 🌟 [수정됨] 전체를 묶는 컨테이너 추가 (우측 정렬 ml-auto) */}
+          <div className="flex items-center gap-1 sm:gap-2 ml-auto">
             
-            {/* 🌟 구분선 추가! */}
-            <div className="w-px h-3 bg-zinc-300 dark:bg-zinc-600 shrink-0" />
+            {/* 1. 글자 메뉴 영역 (여기는 모바일에서 가로 스크롤 가능하게 냅둠!) */}
+            <nav className="flex items-center gap-1 sm:gap-2 text-sm overflow-x-auto overflow-y-hidden scrollbar-hide whitespace-nowrap pl-2 py-1">
+              <Link href="/deck" className={`shrink-0 rounded-lg px-2.5 sm:px-3 py-1.5 font-semibold transition-all ${pathname === '/deck' ? 'text-primary bg-primary/10 dark:bg-primary/20' : 'text-zinc-600 hover:text-primary hover:bg-primary/5 dark:text-zinc-300 dark:hover:text-primary dark:hover:bg-primary/10'}`}>
+                덱 시뮬
+              </Link>
+              <div className="w-px h-3 bg-zinc-300 dark:bg-zinc-600 shrink-0" />
+              <Link href="/cards" className={`shrink-0 rounded-lg px-2.5 sm:px-3 py-1.5 font-semibold transition-all ${pathname === '/cards' ? 'text-primary bg-primary/10 dark:bg-primary/20' : 'text-zinc-600 hover:text-primary hover:bg-primary/5 dark:text-zinc-300 dark:hover:text-primary dark:hover:bg-primary/10'}`}>
+                내 카드
+              </Link>
+              <Link href="/future" className={`shrink-0 rounded-lg px-2.5 sm:px-3 py-1.5 font-semibold transition-all ${pathname === '/future' ? 'text-primary bg-primary/10 dark:bg-primary/20' : 'text-zinc-600 hover:text-primary hover:bg-primary/5 dark:text-zinc-300 dark:hover:text-primary dark:hover:bg-primary/10'}`}>
+                미래시
+              </Link>
+              <Link href="/eventcuts" className={`shrink-0 rounded-lg px-2.5 sm:px-3 py-1.5 font-semibold transition-all ${pathname === '/eventcuts' ? 'text-primary bg-primary/10 dark:bg-primary/20' : 'text-zinc-600 hover:text-primary hover:bg-primary/5 dark:text-zinc-300 dark:hover:text-primary dark:hover:bg-primary/10'}`}>
+                이벤컷
+              </Link>
+            </nav>
 
-            <Link href="/cards" className={`shrink-0 rounded-lg px-2.5 sm:px-3 py-1.5 font-semibold transition-all ${pathname === '/cards' ? 'text-primary bg-primary/10 dark:bg-primary/20' : 'text-zinc-600 hover:text-primary hover:bg-primary/5 dark:text-zinc-300 dark:hover:text-primary dark:hover:bg-primary/10'}`}>
-              내 카드
-            </Link>
-            <Link href="/future" className={`shrink-0 rounded-lg px-2.5 sm:px-3 py-1.5 font-semibold transition-all ${pathname === '/future' ? 'text-primary bg-primary/10 dark:bg-primary/20' : 'text-zinc-600 hover:text-primary hover:bg-primary/5 dark:text-zinc-300 dark:hover:text-primary dark:hover:bg-primary/10'}`}>
-              미래시
-            </Link>
-            <Link href="/eventcuts" className={`shrink-0 rounded-lg px-2.5 sm:px-3 py-1.5 font-semibold transition-all ${pathname === '/eventcuts' ? 'text-primary bg-primary/10 dark:bg-primary/20' : 'text-zinc-600 hover:text-primary hover:bg-primary/5 dark:text-zinc-300 dark:hover:text-primary dark:hover:bg-primary/10'}`}>
-              이벤컷
-            </Link>
+            {/* 2. 유틸 버튼 영역 (🌟 스크롤 박스 바깥으로 구출! 이제 잘리지 않습니다!) */}
+            <div className="flex items-center shrink-0">
+              <ThemeToggle />
+              <div className="w-px h-4 bg-zinc-300 dark:bg-zinc-700 mx-1 transition-colors shrink-0" />
 
-            <ThemeToggle />
-            <div className="w-px h-4 bg-zinc-300 dark:bg-zinc-700 mx-1 transition-colors shrink-0" />
-
-            {/* 🌟 말풍선 툴팁이 장착된 설정 버튼! */}
-            <div className="relative group flex items-center shrink-0">
-              <button
-                onClick={() => setIsSettingsOpen(true)}
-                onMouseEnter={() => setActiveTooltip('settings')}
-                onMouseLeave={() => setActiveTooltip(null)}
-                onClickCapture={() => setActiveTooltip(null)}
-                className="p-1.5 rounded-lg text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-white/10 transition-colors flex items-center justify-center"
-                title="블룸 페스 랭크 설정"
-              >
-                <img src="/icons/setting_1.png" alt="설정" className="w-5 h-5 object-contain opacity-70 hover:opacity-100 invert dark:invert-0 transition-opacity" />
-              </button>
-              
-              <span className={getTooltipClass(activeTooltip === 'settings')}>
-                블룸 페스 랭크 설정
-                <span className="absolute right-3 -top-1 h-2 w-2 rotate-45 border-l border-t border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-800" />
-              </span>
+              {/* 🌟 말풍선 툴팁이 장착된 설정 버튼! */}
+              <div className="relative group flex items-center shrink-0">
+                <button
+                  onClick={() => setIsSettingsOpen(true)}
+                  onMouseEnter={() => setActiveTooltip('settings')}
+                  onMouseLeave={() => setActiveTooltip(null)}
+                  onClickCapture={() => setActiveTooltip(null)}
+                  className="p-1.5 rounded-lg text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-white/10 transition-colors flex items-center justify-center"
+                  title="블룸 페스 랭크 설정"
+                >
+                  <img src="/icons/setting_1.png" alt="설정" className="w-5 h-5 object-contain opacity-70 hover:opacity-100 invert dark:invert-0 transition-opacity" />
+                </button>
+                
+                <span className={getTooltipClass(activeTooltip === 'settings')}>
+                  블룸 페스 랭크 설정
+                  <span className="absolute right-3 -top-1 h-2 w-2 rotate-45 border-l border-t border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-800" />
+                </span>
+              </div>
             </div>
-          </nav>
-        </div>
+           </div>
+          </div>
       </header>
 
       <CharacterSettingsModal

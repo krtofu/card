@@ -78,8 +78,8 @@ const LENOriginal = defineCharacterCards("버싱", "카가미네 렌", "VS", "LE
             releaseDate: "2026-09-06",
           },
           media: {
-            gachaBannerPath: "/gachas/26y/jbanner_26_26_0.png",
-            eventBannerPath: "/events/26y/jbanner_26_26_0.png",
+            gachaBannerPath: "/gachas/26y/banner_26_26_0.png",
+            eventBannerPath: "/events/26y/banner_26_26_0.png",
             songName: "Flyer!",
             songJacketPath: "/jacket/23y/Flyer.png",
           },

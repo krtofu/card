@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { FinalCardInfo } from "@/data/cards/template";
 import { ALL_CARDS } from "@/data/cards"; 
+import CardDetailModal from "@/components/CardDetailModal";
+import { getSkillBonusPercentage, calculateDeckRealSkillBonus } from "@/lib/bonusCalculator";
 
 // 🌟 [덱시뮬 5칸 전용] 완벽한 CSS 속성 클립 컴포넌트
 const AttributeClip = ({ attr }: { attr: string }) => {
@@ -52,6 +54,7 @@ const CHAR_LIST = [
 const latestDateMs = Math.max(...ALL_CARDS.map(c => new Date(c.releaseDate).getTime()));
 
 export default function DeckSimulator() {
+  const [activeModalCard, setActiveModalCard] = useState<any | null>(null);
   const [presets, setPresets] = useState<Array<Array<FinalCardInfo | null>>>(
     Array.from({ length: 6 }, () => Array(5).fill(null))
   );
@@ -68,6 +71,39 @@ export default function DeckSimulator() {
   // 🌟 3번 피드백: 자리 바꾸기(Swap) 모드 State 및 클릭 핸들러 추가
   const [isSwapMode, setIsSwapMode] = useState(false);
   const [swapSourceIndex, setSwapSourceIndex] = useState<number | null>(null);
+  const [presetName, setPresetName] = useState("프리셋 이름");
+  
+  // 🌟 실스업 정보 모달 상태
+  const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
+
+  // 🌟 프리셋 저장 기능
+  const handleSavePreset = () => {
+    const deckIds = currentDeck.map(card => card ? card.id : null);
+    const presetData = { name: presetName, deckIds };
+    localStorage.setItem("sekard_deck_preset", JSON.stringify(presetData));
+    alert(`'${presetName}' 덱이 성공적으로 저장되었습니다! 💾`);
+  };
+
+  // 🌟 처음 켰을 때 저장된 덱 불러오기 (새로고침 방어!)
+  useEffect(() => {
+    const saved = localStorage.getItem("sekard_deck_preset");
+    if (saved) {
+      try {
+        const { name, deckIds } = JSON.parse(saved);
+        if (name) setPresetName(name);
+        const restoredDeck = deckIds.map((id: string | null) => 
+          id ? ALL_CARDS.find(c => c.id === id) || null : null
+        );
+        setPresets((prevPresets) => {
+          const newPresets = [...prevPresets];
+          newPresets[activeTab] = restoredDeck;
+          return newPresets;
+        });
+      } catch (e) {
+        console.error("프리셋을 불러오는 중 오류가 발생했습니다.", e);
+      }
+    }
+  }, []);
 
   // 🌟 일반 클릭(멤버 선택창)과 스왑 클릭을 구분해주는 똑똑한 함수!
   const handleSlotClick = (index: number) => {
@@ -198,35 +234,6 @@ export default function DeckSimulator() {
     return foundKey ? charNameMap[foundKey] : "";
   };
 
-  // 🌟 1. 스킬 보너스 퍼센트 계산기
-const getSkillBonusPercentage = (skillType: string, level: number, unit: string, isAwakened: boolean, charRank: number = 1, isOwned: boolean = false) => {
-  const safeLevel = Math.max(1, Math.min(4, level)); 
-  const idx = safeLevel - 1;
-  const skill = (skillType || "").replace(/\s+/g, "").toLowerCase();
-
-  if (skill.includes("블페") || skill.includes("블룸")) {
-    if (isAwakened) {
-      const maxLimits = [140, 145, 150, 160];
-      if (!isOwned) return maxLimits[idx];
-      const bases = [90, 95, 100, 110];
-      const bloomBonus = Math.floor(charRank / 2);
-      return Math.min(maxLimits[idx], bases[idx] + bloomBonus);
-    }
-    const isVS = unit === "무소속 / VIRTUAL SINGER" || unit.includes("버싱") || unit.includes("VS") || unit.toLowerCase().includes("virtual");
-    return isVS ? [130, 135, 140, 150][idx] : [120, 130, 140, 150][idx];
-  }
-
-  if (skill.includes("스업") && !skill.includes("퍼스업") && !skill.includes("굿스업") && !skill.includes("체스업") && !skill.includes("팀스업") && !skill.includes("조건부")) return [100, 105, 110, 120][idx];
-  if (skill.includes("퍼스업")) return [110, 115, 120, 130][idx];
-  if (skill.includes("굿스업")) return [120, 125, 130, 140][idx];
-  if (skill.includes("체스업")) return [120, 125, 130, 140][idx];
-  if (skill.includes("팀스업")) return [130, 135, 140, 150][idx];
-  if (skill.includes("판강") || skill.includes("판정")) return [80, 85, 90, 100][idx];
-  if (skill.includes("힐") || skill.includes("회복")) return [80, 85, 90, 100][idx];
-
-  return 0;
-};
-
 // 🌟 2. 스킬명 오마카세 프리미엄 컬러 뱃지
 const getSkillBadgeStyle = (skill: string, unitName: string = "") => {
   const premiumStyle = "text-white border border-white/35 bg-[linear-gradient(180deg,rgba(255,255,255,0.18),rgba(255,255,255,0)_55%)] [text-shadow:0px_1px_2px_rgba(24,24,27,0.5),0px_0px_3px_rgba(24,24,27,0.2)] shadow-sm";
@@ -257,6 +264,11 @@ const getSkillBadgeStyle = (skill: string, unitName: string = "") => {
   
   return `bg-zinc-400 dark:bg-zinc-500 ${premiumStyle}`;
 };
+
+// 🌟 분리해 둔 파일에서 실스업 계산기를 불러와서 씁니다!
+  const currentRealSkillBonus = useMemo(() => {
+    return calculateDeckRealSkillBonus(currentDeck, userCardStates, isPreAwakeMode);
+  }, [currentDeck, userCardStates, isPreAwakeMode]);
 
   // 🌟 필터링 로직 확장!
   const toggleDraftUnitChars = (chars: string[]) => {
@@ -296,7 +308,7 @@ const getSkillBadgeStyle = (skill: string, unitName: string = "") => {
   });
 
   return (
-    <div className="w-full max-w-[1000px] mx-auto flex flex-col gap-4 relative select-none">
+    <div className="w-full max-w-[1280px] mx-auto px-4 md:px-8 flex flex-col gap-4 relative select-none">
       
       {/* 1. 프리셋 탭 */}
       <div className="flex justify-center">
@@ -310,35 +322,71 @@ const getSkillBadgeStyle = (skill: string, unitName: string = "") => {
       {/* 2. 중앙 5칸 카드 슬롯 (🌟 테마창 먹통 버그 해결: overflow-hidden 삭제!) */}
       <div className="w-full bg-white/60 dark:bg-zinc-900/60 backdrop-blur-xl rounded-3xl p-4 md:p-6 shadow-2xl border border-white/50 dark:border-white/10 relative">
         
-        {/* 🌟 수정된 상단 컨트롤 바 (좌측: 실스업 / 우측: 카드 자리 변경) */}
-        <div className="w-full flex justify-between items-center mb-2 px-1">
+          {/* 🌟 상단 컨트롤 패널 (좌측: 실스업 / 중앙: 프리셋 이름 / 우측: 자리변경) */}
+        <div className="relative flex items-center justify-between w-full mb-1">
           
-          {/* 🌟 3번 피드백: 현재 실스업 UI */}
-          <div className="flex items-center gap-1.5 bg-zinc-100/80 dark:bg-zinc-800/80 px-2.5 py-1.5 md:px-3 md:py-1.5 rounded-full shadow-sm border border-zinc-200 dark:border-zinc-700 backdrop-blur-sm">
-            <span className="text-[10px] md:text-xs font-black text-zinc-500 dark:text-zinc-400">현재 실스업</span>
-            <img src="/icons/now.png" alt="now" className="w-3 h-3 md:w-3.5 md:h-3.5 object-contain drop-shadow-sm" />
-            <span className="text-[#00d0b6] text-xs md:text-sm font-black tracking-tight drop-shadow-sm">
-              230% {/* 나중에 실제 계산된 실스업 state로 교체하시면 됩니다! */}
+          {/* 🌟 1. 좌측: 현재 실스업 UI */}
+          <div className="flex items-center gap-2 pl-0 -mt-2">
+            <span className="text-sm md:text-base mt-0.5 font-bold text-zinc-800 dark:text-zinc-100 transition-colors">
+              현재 실스업
             </span>
-            <button className="w-3.5 h-3.5 md:w-4 md:h-4 rounded-full bg-zinc-300 hover:bg-zinc-400 dark:bg-zinc-600 dark:hover:bg-zinc-500 text-white text-[9px] md:text-[10px] flex items-center justify-center font-bold ml-0.5 transition-colors">
+            <img src="/icons/now.png" alt="now" className="w-4 h-4 md:w-8 md:h-10 object-contain drop-shadow-sm invert dark:invert-0 transition-all" />
+            <span className="text-[#00d0b6] text-lg md:text-xl font-black tracking-tight drop-shadow-sm -mt-0.5">
+              {currentRealSkillBonus}%
+            </span>
+            
+            {/* 🌟 i 버튼: 누르면 모달창 열림! */}
+            <button 
+              onClick={() => setIsInfoModalOpen(true)}
+              className="w-4 h-4 md:w-4.5 md:h-4.5 rounded-full bg-zinc-300 hover:bg-zinc-400 dark:bg-zinc-600 dark:hover:bg-zinc-500 text-white text-[10px] md:text-[11px] flex items-center justify-center font-bold ml-1 transition-colors"
+              title="실스업 계산 공식 보기"
+            >
               i
+            </button>
+
+            {/* 🌟 알약 모양 프리셋 저장 버튼! */}
+            <button
+              onClick={handleSavePreset}
+              className="px-3 py-1 mt-0 ml-2.5 rounded-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 text-[10px] md:text-xs font-bold transition-all flex items-center gap-1 shadow-sm active:scale-95"
+              title="현재 덱 저장하기"
+            >
+              프리셋 저장
             </button>
           </div>
 
-          {/* 카드 정렬(자리 바꾸기) 버튼 */}
+          {/* 🌟 2. 중앙: 프리셋 이름 입력칸 */}
+          <div className="absolute left-1/2 -translate-x-1/2 -mt-2 flex items-center bg-zinc-100 dark:bg-zinc-800/50 rounded-lg px-1.5 py-1.5 border border-transparent focus-within:border-primary/50 focus-within:bg-white dark:focus-within:bg-zinc-900 transition-all shadow-sm group w-36 md:w-56 h-36 md:h-7">
+            <input
+              type="text"
+              value={presetName}
+              onChange={(e) => setPresetName(e.target.value)}
+              placeholder="이름 없는 프리셋"
+              maxLength={15}
+              className="w-full bg-transparent text-xs md:text-sm font-bold text-center text-zinc-800 dark:text-zinc-200 outline-none placeholder:text-zinc-400 transition-colors pl-2"
+            />
+            {/* 아이콘 (text.png): 마찬가지로 하얀색 원본을 다크모드 환경에 맞춰 자동 반전! */}
+            <img
+              src="/icons/text.png"
+              alt="edit"
+              className="w-3.5 h-3.5 md:w-7 md:h-8 opacity-75 group-focus-within:opacity-100 group-hover:opacity-100 ml-1.5 shrink-0 invert dark:invert-0 transition-all"
+            />
+          </div>
+
+          {/* 🌟 3. 우측: 카드 정렬(자리 바꾸기) 버튼 */}
           <button 
             onClick={() => {
               setIsSwapMode(!isSwapMode);
               setSwapSourceIndex(null);
             }}
-            className={`px-3 py-1.5 md:px-4 md:py-2 rounded-full text-[10px] md:text-xs font-black transition-all shadow-sm flex items-center gap-1 ${
+            className={`px-3 py-1.5 -mt-1 md:px-4 md:py-2 rounded-full text-[10px] md:text-xs font-black transition-all shadow-sm flex items-center gap-1 ${
               isSwapMode 
                 ? "bg-[#ff529a] text-white border-transparent" 
-                : "bg-white text-zinc-600 border border-zinc-300 hover:bg-zinc-50"
+                : "bg-white text-zinc-600 border border-zinc-300 hover:bg-zinc-50 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-700"
             }`}
           >
             {isSwapMode ? "취소하기" : "⇄ 카드 자리 변경"}
           </button>
+          
         </div>
 
         <div className="grid grid-cols-5 gap-2 md:gap-3 mt-2">
@@ -349,15 +397,35 @@ const getSkillBadgeStyle = (skill: string, unitName: string = "") => {
             const currentSkillLevel = (card && isOwned) ? (userCardStates[card.id]?.skillLevel || 1) : 1;
             const currentCharRank = (card && isOwned) ? ((userCardStates[card.id] as any)?.charRank || 1) : 1;
 
-            // 🌟 2. 3번 피드백: 동방 / 보카로 악곡 콜라보 체크 (각전 스위치 떼기!)
-            const cardInfoStr = card ? [(card as any)?.gacha, (card as any)?.eventName, (card as any)?.prefix, (card as any)?.name].join(" ") : "";
-            const isSpecialCollab = ["뒤섞이는 경계", "동방", "Dressed in Melodies", "보카로 악곡", "The Music Style"].some(keyword => cardInfoStr.includes(keyword));
+            // 🌟 2. 3번 피드백: 동방 / 보카로 악곡 콜라보 체크 (실제 데이터 구조 완벽 반영!)
+            const rawCard = card as any;
+            const cardData = rawCard?.info || rawCard; // (데이터가 info 안에 있든 바깥에 있든 알아서 찾습니다!)
+            
+            // 진짜 데이터의 이름(gachaPoolName, cardName)들을 하나로 합칩니다!
+            const cardInfoStr = cardData ? [cardData.gachaPoolName, cardData.eventName, cardData.cardName].join(" ") : "";
+            
+            // 🔥 기획자님 데이터의 'hasAwakening: false'를 활용한 무적의 조건 + 키워드 2중 방어망!
+            const isSpecialCollab = 
+              cardData?.hasAwakening === false || 
+              ["뒤섞이는 경계", "동방", "Dressed in Melodies", "보카로 악곡", "The Music Style"].some(keyword => cardInfoStr.includes(keyword));
             
             // 실제 각성 상태 계산 (콜라보 카드는 강제로 각후(true) 취급!)
             const isActuallyAwakened = isSpecialCollab ? true : !isPreAwakeMode[index];
 
-            // 🌟 3. 기획자님의 장인정신 함수 2종 세트 가동! (스킬 퍼센트 계산 & 프리미엄 뱃지 스타일)
-            const calculatedSkillBonus = card ? getSkillBonusPercentage(card.skillType, currentSkillLevel, card.unit, isActuallyAwakened, currentCharRank, isOwned) : 0;
+            const cardSupportUnit = card ? ((card as any).supportUnit || (cardData as any).supportUnit || "") : "";
+            
+            const calculatedSkillBonus = card ? getSkillBonusPercentage(
+              card.skillType || "", 
+              currentSkillLevel, 
+              card.unit || "", 
+              isActuallyAwakened, 
+              currentCharRank, 
+              isOwned,
+              currentDeck,         
+              card.attribute || "",
+              cardSupportUnit,
+              index  
+            ) : 0;
             const badgeStyle = card ? getSkillBadgeStyle(card.skillType, card.unit) : "";
 
             return (
@@ -371,26 +439,38 @@ const getSkillBadgeStyle = (skill: string, unitName: string = "") => {
                 }`}
               >
                 
-                {/* 🌟 1번 피드백: 미니 아이콘 + 큼직한 스킬 수치 + 프리미엄 팔레트 뱃지! */}
+                {/* 🌟 1번 피드백: 미니 아이콘 + 스킬 수치 (좌측) & 상세 정보 버튼 (우측 독립 배치!) */}
                 {card && (
-                  <div className="absolute -top-[32px] left-1 md:-top-[44px] md:left-0 z-50 flex items-end gap-0.5 pointer-events-none">
-                    {/* 미니 아이콘 */}
-                    <div className="w-8 h-8 md:w-10 md:h-10 drop-shadow-md">
-                      <img src={`/icons/characters/${getCharIconName(card.character)}_icon.png`} alt={card.character} className="w-full h-full object-contain" />
-                    </div>
-                    
-                    {/* 네모 박스 삭제! 텍스트 대폭 확대! */}
-                    <div className="relative flex items-end mb-1 md:mb-2.5 ml-0.5">
-                      <span className="text-white text-[15px] md:text-[18px] font-black drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] leading-none tracking-tighter">
-                        ▸{calculatedSkillBonus}%
-                      </span>
+                  <>
+                    {/* 📍 [좌측 그룹] 미니 아이콘 & 수치 (얘네들끼리만 묶여있음) */}
+                    <div className="absolute -top-[32px] left-1 md:-top-[44px] md:left-0 z-50 flex items-end gap-1 pointer-events-none">
+                      <div className="w-8 h-8 md:w-10 md:h-10 drop-shadow-md z-10">
+                        <img src={`/icons/characters/${getCharIconName(card.character)}_icon.png`} alt={card.character} className="w-full h-full object-contain" />
+                      </div>
                       
-                      {/* 🌟 기획자님의 프리미엄 컬러 뱃지 적용! (badgeStyle 100% 반영) */}
-                      <div className={`absolute -top-[1px] -right-[22px] translate-x-full text-[7px] md:text-[10px] font-black px-1.5 py-[2px] rounded-[5px] whitespace-nowrap ${badgeStyle}`}>
-                        {card.skillType || "스코어 업"}
+                      <div className="flex flex-col justify-end items-start mb-0.5 md:mb-1">
+                        <div className={`text-[6px] md:text-[8px] font-black px-1.5 py-[1px] md:px-2 md:py-[1.5px] rounded-full whitespace-nowrap mb-[1px] md:mb-0.5 z-20 ${badgeStyle}`}>
+                          {card.skillType === "힐" || card.skillType === "회복" ? "라이프 회복" : (card.skillType || "스코어 업")}
+                        </div>
+                        <span className="text-white text-[10px] md:text-[16px] font-black drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] leading-none tracking-tighter ml-0.5 mb-1 md:mb-0.25">
+                          ⤷ {calculatedSkillBonus}%
+                        </span>
                       </div>
                     </div>
-                  </div>
+
+                    {/* 📍 [독립된 우측 버튼] 수치 길이에 절대 영향 안 받음! (카드 위쪽 & 우측 끝 고정) */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation(); 
+                        setActiveModalCard(card);
+                      }}
+                      // 🌟 아래 className에서 위치를 조절하세요! (카드는 안 덮으면서 우측으로 고정됨)
+                      className="absolute -top-[24px] right-0 md:-top-[32px] md:right-0.5 w-5 h-5 md:w-6 md:h-6 z-50 hover:scale-110 transition-transform pointer-events-auto"
+                      title="카드 상세 정보"
+                    >
+                      <img src="/icons/help.png" alt="help" className="w-full h-full object-contain drop-shadow-[0_2px_3px_rgba(0,0,0,0.5)]" />
+                    </button>
+                  </>
                 )}
 
                 {/* 🌟 카드 내부 콘텐츠 */}
@@ -726,6 +806,64 @@ const getSkillBadgeStyle = (skill: string, unitName: string = "") => {
           </div>
         </div>
       )}
+
+      {/* 🌟 모달창 부착! (DeckSimulator의 가장 바깥쪽 </div> 바로 위에 넣어주세요) */}
+      <CardDetailModal 
+        card={activeModalCard} 
+        userState={activeModalCard ? (userCardStates[activeModalCard.id] || { isOwned: false, isTarget: false, masterRank: 0, skillLevel: 1 }) : { isOwned: false, isTarget: false, masterRank: 0, skillLevel: 1 }} 
+        onUpdateState={(id, newState) => {
+          // (덱 시뮬레이터 내부에 카드를 업데이트하는 함수가 있다면 여기에 연결해주세요!)
+          console.log("덱 시뮬레이터 모달에서 상태 업데이트 됨:", id, newState);
+        }} 
+        onClose={() => setActiveModalCard(null)} 
+      />
+
+    {/* 🌟 실스업 계산 공식 안내 모달창 */}
+      {isInfoModalOpen && (
+        <div className="fixed inset-0 z-[999999] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl p-6 w-full max-w-sm border border-zinc-200 dark:border-zinc-800">
+            
+            <div className="flex justify-between items-center mb-4 border-b border-zinc-100 dark:border-white/10 pb-3">
+              <h3 className="text-lg font-black text-zinc-800 dark:text-zinc-100 flex items-center gap-2">
+                <span className="w-5 h-5 rounded-full bg-[#00d0b6] text-white flex items-center justify-center text-sm">i</span>
+                실스업 계산 공식
+              </h3>
+              <button onClick={() => setIsInfoModalOpen(false)} className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors text-xl font-bold">
+                ✕
+              </button>
+            </div>
+
+            <div className="text-sm font-medium text-zinc-600 dark:text-zinc-300 space-y-4">
+              <p>프로젝트 세카이의 덱 전체 실스업(실제 스코어 업) 수치는 다음 공식으로 적용됩니다.</p>
+              
+              <div className="bg-zinc-50 dark:bg-zinc-800/50 p-4 rounded-xl border border-zinc-100 dark:border-white/5 space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="font-bold text-zinc-700 dark:text-zinc-200">👑 리더 카드 스킬</span>
+                  <span className="font-black text-[#00d0b6]">100% 적용</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="font-bold text-zinc-700 dark:text-zinc-200">👥 서브 카드 4장</span>
+                  <span className="font-black text-primary">합산 후 20% 적용</span>
+                </div>
+              </div>
+
+              <div className="text-xs text-zinc-500 dark:text-zinc-400 bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg leading-relaxed">
+                <span className="font-bold text-blue-600 dark:text-blue-400">💡 계산 예시:</span><br/>
+                리더가 150%, 서브 4명의 합이 400%일 경우<br/>
+                <span className="font-bold">150 + (400 × 0.2) = 최종 230% 상승</span>
+              </div>
+            </div>
+
+            <button 
+              onClick={() => setIsInfoModalOpen(false)}
+              className="w-full mt-5 bg-zinc-800 hover:bg-zinc-900 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 py-3 rounded-xl font-bold transition-colors"
+            >
+              확인
+            </button>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

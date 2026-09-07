@@ -101,8 +101,8 @@ const RINOriginal = defineCharacterCards("버싱", "카가미네 린", "VS", "RI
             releaseDate: "2026-09-06",
           },
           media: {
-            gachaBannerPath: "/gachas/26y/jbanner_26_26_0.png",
-            eventBannerPath: "/events/26y/jbanner_26_26_0.png",
+            gachaBannerPath: "/gachas/26y/banner_26_26_0.png",
+            eventBannerPath: "/events/26y/banner_26_26_0.png",
             songName: "킬러",
             songJacketPath: "/jacket/25y/KILLER.png",
           },
